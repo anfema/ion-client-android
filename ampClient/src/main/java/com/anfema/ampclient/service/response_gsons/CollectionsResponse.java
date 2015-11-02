@@ -3,33 +3,16 @@ package com.anfema.ampclient.service.response_gsons;
 
 public class CollectionsResponse
 {
-	private Collection[] collection;
+	private Collection[] collections;
 
-	private Meta meta;
-
-	public Collection[] getCollections()
+	public Collection getCollection()
 	{
-		return collection;
-	}
-
-	public void setCollections( Collection[] collection )
-	{
-		this.collection = collection;
-	}
-
-	public Meta getMeta()
-	{
-		return meta;
-	}
-
-	public void setMeta( Meta meta )
-	{
-		this.meta = meta;
+		return collections[ 0 ];
 	}
 
 	@Override
 	public String toString()
 	{
-		return "ClassPojo [collection = " + collection + ", meta = " + meta + "]";
+		return "collection = " + collections[ 0 ];
 	}
 }

@@ -2,4 +2,5 @@
 <resources>
     <!-- Should end with "/" -->
     <string name="base_url">http://ampdev2.anfema.com/client/v1/</string>
+    <string name="collection_identifier">test</string>
 </resources>

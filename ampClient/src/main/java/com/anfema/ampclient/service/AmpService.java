@@ -10,6 +10,7 @@ import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
 import retrofit.http.Header;
 import retrofit.http.POST;
+import retrofit.http.Path;
 
 public interface AmpService
 {
@@ -17,9 +18,9 @@ public interface AmpService
 	@POST("login")
 	Call<LoginResponse> authenticate( @Field("username") String username, @Field("password") String password );
 
-	@GET("pages")
-	Call<PagesResponse> getPages( @Header("Authorization") String authorizationToken );
+	@GET("collections/{identifier}")
+	Call<CollectionsResponse> getCollection( @Path("identifier") String identifier, @Header("Authorization") String authorizationToken );
 
-	@GET("collections")
-	Call<CollectionsResponse> getCollections( @Header("Authorization") String authorizationToken );
+	@GET("pages/{identifier}")
+	Call<PagesResponse> getPage( @Path("identifier") String identifier, @Header("Authorization") String authorizationToken );
 }

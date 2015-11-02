@@ -37,30 +37,30 @@ public class MainActivity extends AppCompatActivity
 				if ( loginResponse.isSuccess() )
 				{
 					final String apiToken = "Token " + loginResponse.body().getToken();
-					Call<PagesResponse> pagesCall = client.getPages( apiToken );
-					pagesCall.enqueue( new Callback<PagesResponse>()
+					final Call<CollectionsResponse> collectionsCall = client.getCollection( getString( R.string.collection_identifier ), apiToken );
+					collectionsCall.enqueue( new Callback<CollectionsResponse>()
 					{
 						@Override
-						public void onResponse( Response<PagesResponse> pagesResponse, Retrofit retrofit )
+						public void onResponse( Response<CollectionsResponse> collectionsResponse, Retrofit retrofit )
 						{
-							if ( pagesResponse.isSuccess() )
+							if ( collectionsResponse.isSuccess() )
 							{
-								final Page[] pages = pagesResponse.body().getPages();
-
-								final Call<CollectionsResponse> collectionsCall = client.getCollections( apiToken );
-								collectionsCall.enqueue( new Callback<CollectionsResponse>()
+								Collection[] collections = collectionsResponse.body().getCollection();
+								// get first page
+								String pageIdentifier = collections[ 0 ].getPages().get( 0 ).getIdentifier();
+								Call<PagesResponse> pagesCall = client.getPage( pageIdentifier, apiToken );
+								pagesCall.enqueue( new Callback<PagesResponse>()
 								{
 									@Override
-									public void onResponse( Response<CollectionsResponse> collectionsResponse, Retrofit retrofit )
+									public void onResponse( Response<PagesResponse> pagesResponse, Retrofit retrofit )
 									{
-										if ( collectionsResponse.isSuccess() )
+										if ( pagesResponse.isSuccess() )
 										{
-											Collection[] collections = collectionsResponse.body().getCollections();
-											collections.toString();
+											final Page[] pages = pagesResponse.body().getPages();
 										}
 										else
 										{
-											Log.e( "Unsuccessful Request", "... returned code " + collectionsResponse.code() );
+											Log.e( "Unsuccessful Request", "... returned code " + pagesResponse.code() );
 										}
 									}
 
@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity
 							}
 							else
 							{
-								Log.e( "Unsuccessful Request", "... returned code " + pagesResponse.code() );
+								Log.e( "Unsuccessful Request", "... returned code " + collectionsResponse.code() );
 							}
 						}
 

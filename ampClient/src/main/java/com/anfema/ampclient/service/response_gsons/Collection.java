@@ -1,10 +1,12 @@
 package com.anfema.ampclient.service.response_gsons;
 
+import java.util.ArrayList;
+
 public class Collection
 {
 	private String id;
 
-	private Page[] pages;
+	private ArrayList<Page> pages;
 
 	private String default_locale;
 
@@ -22,12 +24,12 @@ public class Collection
 		this.id = id;
 	}
 
-	public Page[] getPages()
+	public ArrayList<Page> getPages()
 	{
 		return pages;
 	}
 
-	public void setPages( Page[] pages )
+	public void setPages( ArrayList<Page> pages )
 	{
 		this.pages = pages;
 	}
@@ -65,6 +67,6 @@ public class Collection
 	@Override
 	public String toString()
 	{
-		return "ClassPojo [id = " + id + ", pages = " + pages + ", default_locale = " + default_locale + ", name = " + name + ", identifier = " + identifier + "]";
+		return "Collection [id = " + id + ", pages = " + pages + ", default_locale = " + default_locale + ", name = " + name + ", identifier = " + identifier + "]";
 	}
 }
