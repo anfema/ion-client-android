@@ -36,8 +36,9 @@ public class MainActivity extends AppCompatActivity
 			{
 				if ( loginResponse.isSuccess() )
 				{
+					final String collectionIdentifier = getString( R.string.collection_identifier );
 					final String apiToken = "Token " + loginResponse.body().getToken();
-					final Call<CollectionsResponse> collectionsCall = client.getCollection( getString( R.string.collection_identifier ), apiToken );
+					final Call<CollectionsResponse> collectionsCall = client.getCollection( collectionIdentifier, apiToken );
 					collectionsCall.enqueue( new Callback<CollectionsResponse>()
 					{
 						@Override
@@ -45,10 +46,10 @@ public class MainActivity extends AppCompatActivity
 						{
 							if ( collectionsResponse.isSuccess() )
 							{
-								Collection[] collections = collectionsResponse.body().getCollection();
+								Collection collection = collectionsResponse.body().getCollection();
 								// get first page
-								String pageIdentifier = collections[ 0 ].getPages().get( 0 ).getIdentifier();
-								Call<PagesResponse> pagesCall = client.getPage( pageIdentifier, apiToken );
+								String pageIdentifier = collection.getPages().get( 0 ).getIdentifier();
+								Call<PagesResponse> pagesCall = client.getPage( collectionIdentifier, pageIdentifier, apiToken );
 								pagesCall.enqueue( new Callback<PagesResponse>()
 								{
 									@Override
@@ -56,7 +57,8 @@ public class MainActivity extends AppCompatActivity
 									{
 										if ( pagesResponse.isSuccess() )
 										{
-											final Page[] pages = pagesResponse.body().getPages();
+											final Page page = pagesResponse.body().getPage();
+											Log.i( "Amp Client", page.toString() );
 										}
 										else
 										{

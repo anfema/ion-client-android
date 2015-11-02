@@ -6,13 +6,13 @@ public class Collection
 {
 	private String id;
 
-	private ArrayList<Page> pages;
-
-	private String default_locale;
+	private String identifier;
 
 	private String name;
 
-	private String identifier;
+	private String default_locale;
+
+	private ArrayList<ColPage> pages;
 
 	public String getId()
 	{
@@ -24,24 +24,14 @@ public class Collection
 		this.id = id;
 	}
 
-	public ArrayList<Page> getPages()
+	public String getIdentifier()
 	{
-		return pages;
+		return identifier;
 	}
 
-	public void setPages( ArrayList<Page> pages )
+	public void setIdentifier( String identifier )
 	{
-		this.pages = pages;
-	}
-
-	public String getDefault_locale()
-	{
-		return default_locale;
-	}
-
-	public void setDefault_locale( String default_locale )
-	{
-		this.default_locale = default_locale;
+		this.identifier = identifier;
 	}
 
 	public String getName()
@@ -54,14 +44,24 @@ public class Collection
 		this.name = name;
 	}
 
-	public String getIdentifier()
+	public String getDefault_locale()
 	{
-		return identifier;
+		return default_locale;
 	}
 
-	public void setIdentifier( String identifier )
+	public void setDefault_locale( String default_locale )
 	{
-		this.identifier = identifier;
+		this.default_locale = default_locale;
+	}
+
+	public ArrayList<ColPage> getPages()
+	{
+		return pages;
+	}
+
+	public void setPages( ArrayList<ColPage> pages )
+	{
+		this.pages = pages;
 	}
 
 	@Override

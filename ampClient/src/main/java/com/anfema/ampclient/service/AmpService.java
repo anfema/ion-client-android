@@ -18,9 +18,9 @@ public interface AmpService
 	@POST("login")
 	Call<LoginResponse> authenticate( @Field("username") String username, @Field("password") String password );
 
-	@GET("collections/{identifier}")
-	Call<CollectionsResponse> getCollection( @Path("identifier") String identifier, @Header("Authorization") String authorizationToken );
+	@GET("collections/{collection_identifier}")
+	Call<CollectionsResponse> getCollection( @Path("collection_identifier") String collectionIdentifier, @Header("Authorization") String authorizationToken );
 
-	@GET("pages/{identifier}")
-	Call<PagesResponse> getPage( @Path("identifier") String identifier, @Header("Authorization") String authorizationToken );
+	@GET("pages/{collection_identifier}/{page_identifier}")
+	Call<PagesResponse> getPage( @Path("collection_identifier") String collectionIdentifier, @Path("page_identifier") String pageIdentifier, @Header("Authorization") String authorizationToken );
 }

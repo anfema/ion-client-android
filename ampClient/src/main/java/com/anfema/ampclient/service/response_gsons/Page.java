@@ -4,54 +4,24 @@ public class Page
 {
 	private String identifier;
 
+	private String collection;
+
 	private String last_changed;
+
+	private Translation[] translations;
 
 	private String parent;
 
 	private String[] children;
 
-	private Translation[] translations;
-
-	private String collection;
-
-	public Translation[] getTranslations()
+	public String getIdentifier()
 	{
-		return translations;
+		return identifier;
 	}
 
-	public void setTranslations( Translation[] translations )
+	public void setIdentifier( String identifier )
 	{
-		this.translations = translations;
-	}
-
-	public String[] getChildren()
-	{
-		return children;
-	}
-
-	public void setChildren( String[] children )
-	{
-		this.children = children;
-	}
-
-	public String getParent()
-	{
-		return parent;
-	}
-
-	public void setParent( String parent )
-	{
-		this.parent = parent;
-	}
-
-	public String getLast_changed()
-	{
-		return last_changed;
-	}
-
-	public void setLast_changed( String last_changed )
-	{
-		this.last_changed = last_changed;
+		this.identifier = identifier;
 	}
 
 	public String getCollection()
@@ -64,19 +34,49 @@ public class Page
 		this.collection = collection;
 	}
 
-	public String getIdentifier()
+	public String getLast_changed()
 	{
-		return identifier;
+		return last_changed;
 	}
 
-	public void setIdentifier( String identifier )
+	public void setLast_changed( String last_changed )
 	{
-		this.identifier = identifier;
+		this.last_changed = last_changed;
+	}
+
+	public Translation[] getTranslations()
+	{
+		return translations;
+	}
+
+	public void setTranslations( Translation[] translations )
+	{
+		this.translations = translations;
+	}
+
+	public String getParent()
+	{
+		return parent;
+	}
+
+	public void setParent( String parent )
+	{
+		this.parent = parent;
+	}
+
+	public String[] getChildren()
+	{
+		return children;
+	}
+
+	public void setChildren( String[] children )
+	{
+		this.children = children;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "ClassPojo [translations = " + translations + ", children = " + children + ", parent = " + parent + ", last_changed = " + last_changed + ", collection = " + collection + ", identifier = " + identifier + "]";
+		return "Page [identifier = " + identifier + ", collection = " + collection + ", last_changed = " + last_changed + ", translations = " + translations + ", parent = " + parent + ", children = " + children + "]";
 	}
 }
