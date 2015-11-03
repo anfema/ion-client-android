@@ -3,6 +3,7 @@ package com.anfema.ampclient;
 import android.util.Log;
 
 import com.anfema.ampclient.service.AmpService;
+import com.anfema.ampclient.service.models.AContent;
 import com.squareup.okhttp.Interceptor;
 
 import java.util.Collection;

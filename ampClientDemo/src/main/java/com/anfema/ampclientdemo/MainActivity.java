@@ -6,11 +6,11 @@ import android.util.Log;
 
 import com.anfema.ampclient.AmpClientFactory;
 import com.anfema.ampclient.service.AmpService;
-import com.anfema.ampclient.service.response_gsons.Collection;
-import com.anfema.ampclient.service.response_gsons.CollectionsResponse;
-import com.anfema.ampclient.service.response_gsons.LoginResponse;
-import com.anfema.ampclient.service.response_gsons.Page;
-import com.anfema.ampclient.service.response_gsons.PagesResponse;
+import com.anfema.ampclient.service.models.Collection;
+import com.anfema.ampclient.service.models.CollectionsResponse;
+import com.anfema.ampclient.service.models.LoginResponse;
+import com.anfema.ampclient.service.models.Page;
+import com.anfema.ampclient.service.models.PagesResponse;
 
 import retrofit.Call;
 import retrofit.Callback;

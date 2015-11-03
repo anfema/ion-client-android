@@ -1,4 +1,4 @@
-package com.anfema.ampclient.service.response_gsons;
+package com.anfema.ampclient.service.models;
 
 public class ColPage
 {

@@ -1,8 +1,8 @@
 package com.anfema.ampclient.service;
 
-import com.anfema.ampclient.service.response_gsons.CollectionsResponse;
-import com.anfema.ampclient.service.response_gsons.LoginResponse;
-import com.anfema.ampclient.service.response_gsons.PagesResponse;
+import com.anfema.ampclient.service.models.CollectionsResponse;
+import com.anfema.ampclient.service.models.LoginResponse;
+import com.anfema.ampclient.service.models.PagesResponse;
 
 import retrofit.Call;
 import retrofit.http.Field;
