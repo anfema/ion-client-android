@@ -1,12 +1,14 @@
 package com.anfema.ampclient.service.models;
 
+import org.joda.time.DateTime;
+
 public class Page
 {
 	public String identifier;
 
 	public String collection;
 
-	public String last_changed;
+	public DateTime last_changed;
 
 	public Translation[] translations;
 

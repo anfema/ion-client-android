@@ -1,12 +1,14 @@
 package com.anfema.ampclient.service.models;
 
+import org.joda.time.DateTime;
+
 public class ColPage
 {
 	public String identifier;
 
 	public String parent;
 
-	public String last_changed;
+	public DateTime last_changed;
 
 	public String title;
 

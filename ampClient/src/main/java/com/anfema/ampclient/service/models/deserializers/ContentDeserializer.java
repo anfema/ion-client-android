@@ -1,4 +1,4 @@
-package com.anfema.ampclient.service.models.contents.deserializer;
+package com.anfema.ampclient.service.models.deserializers;
 
 import com.anfema.ampclient.service.models.contents.AContent;
 import com.google.gson.JsonDeserializationContext;
