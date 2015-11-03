@@ -1,32 +1,14 @@
 package com.anfema.ampclient.service.models;
 
+import com.anfema.ampclient.service.models.contents.AContent;
+
 import java.util.ArrayList;
 
 public class Translation
 {
-	private String locale;
+	public String locale;
 
-	private ArrayList<AContent> content;
-
-	public String getLocale()
-	{
-		return locale;
-	}
-
-	public void setLocale( String locale )
-	{
-		this.locale = locale;
-	}
-
-	public ArrayList<AContent> getContent()
-	{
-		return content;
-	}
-
-	public void setContent( ArrayList<AContent> content )
-	{
-		this.content = content;
-	}
+	public ArrayList<AContent> content;
 
 	@Override
 	public String toString()

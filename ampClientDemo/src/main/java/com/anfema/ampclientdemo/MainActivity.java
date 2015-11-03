@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity
 							{
 								Collection collection = collectionsResponse.body().getCollection();
 								// get first page
-								String pageIdentifier = collection.getPages().get( 0 ).getIdentifier();
+								String pageIdentifier = collection.getPages().get( 0 ).identifier;
 								Call<PagesResponse> pagesCall = client.getPage( collectionIdentifier, pageIdentifier, apiToken );
 								pagesCall.enqueue( new Callback<PagesResponse>()
 								{
@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity
 									@Override
 									public void onFailure( Throwable t )
 									{
-										Log.d( "Amp Client", "Failure" );
+										Log.d( "Amp Client", "Failure in pages call" );
 									}
 								} );
 
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity
 						@Override
 						public void onFailure( Throwable t )
 						{
-							Log.d( "Amp Client", "Failure" );
+							Log.d( "Amp Client", "Failure in collections call" );
 						}
 					} );
 				}
@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity
 			@Override
 			public void onFailure( Throwable t )
 			{
-				Log.d( "Amp Client", "Failure" );
+				Log.d( "Amp Client", "Failure in login call" );
 			}
 		} );
 	}

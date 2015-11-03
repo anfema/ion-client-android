@@ -2,77 +2,17 @@ package com.anfema.ampclient.service.models;
 
 public class Page
 {
-	private String identifier;
+	public String identifier;
 
-	private String collection;
+	public String collection;
 
-	private String last_changed;
+	public String last_changed;
 
-	private Translation[] translations;
+	public Translation[] translations;
 
-	private String parent;
+	public String parent;
 
-	private String[] children;
-
-	public String getIdentifier()
-	{
-		return identifier;
-	}
-
-	public void setIdentifier( String identifier )
-	{
-		this.identifier = identifier;
-	}
-
-	public String getCollection()
-	{
-		return collection;
-	}
-
-	public void setCollection( String collection )
-	{
-		this.collection = collection;
-	}
-
-	public String getLast_changed()
-	{
-		return last_changed;
-	}
-
-	public void setLast_changed( String last_changed )
-	{
-		this.last_changed = last_changed;
-	}
-
-	public Translation[] getTranslations()
-	{
-		return translations;
-	}
-
-	public void setTranslations( Translation[] translations )
-	{
-		this.translations = translations;
-	}
-
-	public String getParent()
-	{
-		return parent;
-	}
-
-	public void setParent( String parent )
-	{
-		this.parent = parent;
-	}
-
-	public String[] getChildren()
-	{
-		return children;
-	}
-
-	public void setChildren( String[] children )
-	{
-		this.children = children;
-	}
+	public String[] children;
 
 	@Override
 	public String toString()

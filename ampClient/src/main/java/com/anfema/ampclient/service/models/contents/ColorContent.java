@@ -1,4 +1,4 @@
-package com.anfema.ampclient.service.models;
+package com.anfema.ampclient.service.models.contents;
 
 public class ColorContent extends AContent
 {
@@ -9,4 +9,6 @@ public class ColorContent extends AContent
 	public String b;
 
 	public String a;
+
+	public String position;
 }

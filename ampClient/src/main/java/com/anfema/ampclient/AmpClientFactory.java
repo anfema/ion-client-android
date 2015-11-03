@@ -3,8 +3,8 @@ package com.anfema.ampclient;
 import android.util.Log;
 
 import com.anfema.ampclient.service.AmpService;
-import com.anfema.ampclient.service.models.AContent;
-import com.anfema.ampclient.service.models.deserializer.ContentDeserializerFactory;
+import com.anfema.ampclient.service.models.contents.AContent;
+import com.anfema.ampclient.service.models.contents.deserializer.ContentDeserializerFactory;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.Interceptor;

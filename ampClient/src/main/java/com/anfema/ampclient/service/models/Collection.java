@@ -4,15 +4,15 @@ import java.util.ArrayList;
 
 public class Collection
 {
-	private String id;
+	public String id;
 
-	private String identifier;
+	public String identifier;
 
-	private String name;
+	public String name;
 
-	private String default_locale;
+	public String default_locale;
 
-	private ArrayList<ColPage> pages;
+	public ArrayList<ColPage> pages;
 
 	public String getId()
 	{

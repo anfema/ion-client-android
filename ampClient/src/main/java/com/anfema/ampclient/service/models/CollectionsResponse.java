@@ -13,6 +13,6 @@ public class CollectionsResponse
 	@Override
 	public String toString()
 	{
-		return "collection = " + getCollection();
+		return "CollectionsResponse [collection = " + getCollection() + "]";
 	}
 }

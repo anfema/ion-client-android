@@ -19,12 +19,12 @@ public class LoginResponse
 	 */
 	public String getToken()
 	{
-		return login.getToken();
+		return login.token;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "ClassPojo [login = " + login + "]";
+		return "LoginResponse [login = " + login + "]";
 	}
 }
