@@ -4,6 +4,9 @@ import android.util.Log;
 
 import com.anfema.ampclient.service.AmpService;
 import com.anfema.ampclient.service.models.AContent;
+import com.anfema.ampclient.service.models.deserializer.ContentDeserializerFactory;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.Interceptor;
 
 import java.util.Collection;
@@ -23,7 +26,8 @@ public class AmpClientFactory
 		}
 
 		final Builder builder = new Builder();
-		builder.addConverterFactory( GsonConverterFactory.create() );
+		final Gson gson = new GsonBuilder().registerTypeAdapter( AContent.class, ContentDeserializerFactory.newInstance() ).create();
+		builder.addConverterFactory( GsonConverterFactory.create( gson ) );
 		builder.baseUrl( baseUrl );
 		Retrofit retrofit = builder.build();
 
