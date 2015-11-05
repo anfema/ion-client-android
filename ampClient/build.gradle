@@ -14,9 +14,16 @@ android {
         consumerProguardFiles 'proguard-rules.pro'
     }
     buildTypes {
+        debug {
+            // default build flags. do not change values here, but in Config.java
+            buildConfigField "boolean", "LOGGING_DEFAULT", "true"
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            // default build flags. do not change values here, but in Config.java
+            buildConfigField "boolean", "LOGGING_DEFAULT", "false"
         }
     }
 }
@@ -25,7 +32,10 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.1.0'
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
+    // http requests
     compile 'com.squareup.retrofit:retrofit:2.0.0-beta2'
+    // json parsing
     compile 'com.squareup.retrofit:converter-gson:2.0.0-beta2'
+    // better DateTime handling
     compile 'joda-time:joda-time:2.9'
 }

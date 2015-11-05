@@ -2,7 +2,6 @@ package com.anfema.ampclientdemo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
 import com.anfema.ampclient.AmpClientFactory;
 import com.anfema.ampclient.service.AmpService;
@@ -11,6 +10,7 @@ import com.anfema.ampclient.service.models.CollectionsResponse;
 import com.anfema.ampclient.service.models.LoginResponse;
 import com.anfema.ampclient.service.models.Page;
 import com.anfema.ampclient.service.models.PagesResponse;
+import com.anfema.ampclient.utils.Log;
 
 import retrofit.Call;
 import retrofit.Callback;
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity
 										if ( pagesResponse.isSuccess() )
 										{
 											final Page page = pagesResponse.body().getPage();
-											Log.i( "Amp Client", page.toString() );
+											Log.d( "Amp Client", page.toString() );
 										}
 										else
 										{
@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity
 									public void onFailure( Throwable t )
 									{
 										Log.d( "Amp Client", "Failure in pages call" );
+										Log.ex( t );
 									}
 								} );
 
@@ -84,6 +85,7 @@ public class MainActivity extends AppCompatActivity
 						public void onFailure( Throwable t )
 						{
 							Log.d( "Amp Client", "Failure in collections call" );
+							Log.ex( t );
 						}
 					} );
 				}
@@ -97,6 +99,7 @@ public class MainActivity extends AppCompatActivity
 			public void onFailure( Throwable t )
 			{
 				Log.d( "Amp Client", "Failure in login call" );
+				Log.ex( t );
 			}
 		} );
 	}

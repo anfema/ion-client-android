@@ -1,11 +1,12 @@
 package com.anfema.ampclient;
 
-import android.util.Log;
+import android.support.annotation.NonNull;
 
 import com.anfema.ampclient.service.AmpService;
 import com.anfema.ampclient.service.models.contents.AContent;
 import com.anfema.ampclient.service.models.deserializers.ContentDeserializerFactory;
 import com.anfema.ampclient.service.models.deserializers.DateTimeDeserializer;
+import com.anfema.ampclient.utils.Log;
 import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.Interceptor;
 
@@ -26,13 +27,8 @@ public class AmpClientFactory
 			baseUrl = baseUrl + "/";
 			Log.i( "AmpClient", "slash was appended to base URL" );
 		}
+		final GsonConverterFactory gsonConverter = getGsonConverterFactory();
 
-		// configure gson converter
-		final GsonBuilder gsonBuilder = new GsonBuilder();
-		gsonBuilder.registerTypeAdapter( AContent.class, ContentDeserializerFactory.newInstance() );
-		// parse da
-		gsonBuilder.registerTypeAdapter( DateTime.class, new DateTimeDeserializer() );
-		final GsonConverterFactory gsonConverter = GsonConverterFactory.create( gsonBuilder.create() );
 
 		// configure retrofit
 		final Builder retrofitBuilder = new Builder();
@@ -51,5 +47,17 @@ public class AmpClientFactory
 	public static AmpService createClient( String baseUrl )
 	{
 		return createClient( baseUrl, null );
+	}
+
+	@NonNull
+	private static GsonConverterFactory getGsonConverterFactory()
+	{
+		// configure gson converter
+		final GsonBuilder gsonBuilder = new GsonBuilder();
+		// parse content subtypes
+		gsonBuilder.registerTypeAdapter( AContent.class, ContentDeserializerFactory.newInstance() );
+		// parse datetime strings (trying two patterns)
+		gsonBuilder.registerTypeAdapter( DateTime.class, new DateTimeDeserializer() );
+		return GsonConverterFactory.create( gsonBuilder.create() );
 	}
 }

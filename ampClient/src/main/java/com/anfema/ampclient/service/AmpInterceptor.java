@@ -1,8 +1,7 @@
 package com.anfema.ampclient.service;
 
 
-import android.util.Log;
-
+import com.anfema.ampclient.utils.Log;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
