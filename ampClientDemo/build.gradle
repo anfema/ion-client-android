@@ -1,4 +1,24 @@
 apply plugin: 'com.android.application'
+apply plugin: 'me.tatarka.retrolambda' // apply last because it might interfere with android-apt commands
+
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'me.tatarka:gradle-retrolambda:3.2.3' // activate lambda expressions (on maven central)
+        classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2' // get of lint errors due to Java 1.8
+    }
+
+    // Exclude the version that the android plugin depends on.
+    configurations.classpath.exclude group: 'com.android.tools.external.lombok'
+}
+
+repositories {
+    mavenCentral()
+}
 
 android {
     compileSdkVersion 23
@@ -16,6 +36,11 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 

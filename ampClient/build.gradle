@@ -1,4 +1,32 @@
 apply plugin: 'com.android.library'
+apply plugin: 'me.tatarka.retrolambda' // apply last because it might interfere with android-apt commands
+
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'me.tatarka:gradle-retrolambda:3.2.3' // activate lambda expressions (on maven central)
+        classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2'
+    }
+
+    // Exclude the version that the android plugin depends on.
+    configurations.classpath.exclude group: 'com.android.tools.external.lombok'
+}
+
+repositories {
+    mavenCentral()
+}
+
+println("***************** ---------- *******************")
+println("JAVA_HOME: " + System.getenv("JAVA_HOME"))
+println("JAVA6_HOME: " + System.getenv("JAVA6_HOME"))
+println("JAVA7_HOME: " + System.getenv("JAVA7_HOME"))
+println("JAVA8_HOME: " + System.getenv("JAVA8_HOME"))
+println("TEST: " + System.getenv("TEST"))
+println("***************** ---------- *******************")
 
 android {
     compileSdkVersion 23
@@ -13,6 +41,7 @@ android {
         // in this files proguard rules are exposed and can be used by the application project
         consumerProguardFiles 'proguard-rules.pro'
     }
+
     buildTypes {
         debug {
             // default build flags. do not change values here, but in Config.java
@@ -26,16 +55,24 @@ android {
             buildConfigField "boolean", "LOGGING_DEFAULT", "false"
         }
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:23.1.0'
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:23.1.0'
 
-    // http requests
-    compile 'com.squareup.retrofit:retrofit:2.0.0-beta2'
-    // json parsing
-    compile 'com.squareup.retrofit:converter-gson:2.0.0-beta2'
-    // better DateTime handling
-    compile 'joda-time:joda-time:2.9'
+    compile 'com.squareup.retrofit:retrofit:2.0.0-beta2' // http requests
+    compile 'com.squareup.retrofit:converter-gson:2.0.0-beta2' // json parsing
+    compile 'com.squareup.retrofit:adapter-rxjava:2.0.0-beta2' // retrofit with observables
+    compile 'io.reactivex:rxandroid:1.0.1' // rxjava (observables)
+    compile 'io.reactivex:rxjava:1.0.14' // RxAndroid releases are few and far between, so depend on latest version for bug fixes and new features.
+
+    compile 'joda-time:joda-time:2.9' // better DateTime handling
+
+    // provided 'com.squareup.dagger:dagger-compiler:1.2.2' // dependency injection
 }
