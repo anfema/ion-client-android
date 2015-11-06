@@ -1,15 +1,19 @@
 package com.anfema.ampclient;
 
-import com.anfema.ampclient.service.models.CollectionsResponse;
-import com.anfema.ampclient.service.models.PagesResponse;
+import com.anfema.ampclient.service.models.CollectionResponse;
+import com.anfema.ampclient.service.models.LoginResponse;
+import com.anfema.ampclient.service.models.PageResponse;
 
 import retrofit.Call;
+import rx.Observable;
 
 public interface AmpClientAPI
 {
-	Call<String> authenticate( String username, String password );
+	Call<CollectionResponse> getCollection();
 
-	Call<CollectionsResponse> getCollection();
+	Call<PageResponse> getPage( String pageIdentifier );
 
-	Call<PagesResponse> getPage( String pageIdentifier );
+	Observable<PageResponse> getPageRx( String pageIdentifier );
+
+	Observable<CollectionResponse> getCollectionRx();
 }

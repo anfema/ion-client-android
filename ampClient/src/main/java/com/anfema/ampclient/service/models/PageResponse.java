@@ -1,6 +1,6 @@
 package com.anfema.ampclient.service.models;
 
-public class PagesResponse
+public class PageResponse
 {
 	private Page[] page;
 

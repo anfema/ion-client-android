@@ -1,7 +1,7 @@
 package com.anfema.ampclient.service.models;
 
 
-public class CollectionsResponse
+public class CollectionResponse
 {
 	private Collection[] collection;
 
