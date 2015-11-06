@@ -1,8 +1,7 @@
-package com.anfema.ampclient;
+package com.anfema.ampclient.service;
 
 import android.support.annotation.NonNull;
 
-import com.anfema.ampclient.service.AmpService;
 import com.anfema.ampclient.service.models.contents.AContent;
 import com.anfema.ampclient.service.models.deserializers.ContentDeserializerFactory;
 import com.anfema.ampclient.service.models.deserializers.DateTimeDeserializer;
@@ -18,9 +17,9 @@ import retrofit.GsonConverterFactory;
 import retrofit.Retrofit;
 import retrofit.Retrofit.Builder;
 
-public class AmpClientFactory
+public class AmpApiFactory
 {
-	public static AmpService createClient( String baseUrl, Collection<Interceptor> interceptors )
+	public static AmpApi newInstance( String baseUrl, Collection<Interceptor> interceptors )
 	{
 		if ( !baseUrl.endsWith( "/" ) )
 		{
@@ -41,12 +40,12 @@ public class AmpClientFactory
 			retrofit.client().interceptors().addAll( interceptors );
 		}
 
-		return retrofit.create( AmpService.class );
+		return retrofit.create( AmpApi.class );
 	}
 
-	public static AmpService createClient( String baseUrl )
+	public static AmpApi newInstance( String baseUrl )
 	{
-		return createClient( baseUrl, null );
+		return newInstance( baseUrl, null );
 	}
 
 	@NonNull

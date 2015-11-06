@@ -1,6 +1,7 @@
 package com.anfema.ampclient.service.models.deserializers;
 
 import com.anfema.ampclient.service.models.contents.AContent;
+import com.anfema.ampclient.utils.Log;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -17,7 +18,7 @@ public class ContentDeserializer implements JsonDeserializer<AContent>
 	private final String ELEMENT_NAME_FOR_TYPE = "type";
 
 
-	Map<String, Class<? extends AContent>> contentTypeRegistry = new HashMap<String, Class<? extends AContent>>();
+	Map<String, Class<? extends AContent>> contentTypeRegistry = new HashMap<>();
 
 	void registerContentType( String typeName, Class<? extends AContent> type )
 	{
@@ -32,12 +33,12 @@ public class ContentDeserializer implements JsonDeserializer<AContent>
 		// determine content type
 		String typeName = jsonObject.get( ELEMENT_NAME_FOR_TYPE ).getAsString();
 		Class<? extends AContent> type = contentTypeRegistry.get( typeName );
+
 		if ( type == null )
 		{
+			Log.w( "Content deserialization failed because no type is registered for " + typeName + "." );
 			return null;
-			//			throw new JsonParseException( "Content deserialization failed because type " + typeName + " is unknown." );
 		}
-
 		return context.deserialize( jsonObject, type );
 	}
 }
