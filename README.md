@@ -11,8 +11,8 @@ Lambda expressions shorten code (esp. Listeners with one method). Lambda express
 To be able to use Lambda expressions anyway, we use RetroLambda. See tutorial: https://github.com/evant/gradle-retrolambda)
 
 Prerequesite is to make Java 8 available with these two steps:
-1. Download Java 8
-2. Set environment variable JAVA8_HOME pointing to installation path of Java 8 'Home' folder
+- Download Java 8
+- Set environment variable JAVA8_HOME pointing to installation path of Java 8 'Home' folder (Mac tutorial: http://stackoverflow.com/questions/135688/setting-environment-variables-in-os-x)
 
 Every module (probably the app module) using lambda expressions need the following in the build.gradle:
 
