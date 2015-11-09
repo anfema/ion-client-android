@@ -98,7 +98,7 @@ public class AmpTests
 				.init( baseUrl, apiToken, collectionIdentifier );
 		// get first page
 		ampClient.getCollection()
-				.map( Collection::getPages )
+				.map( collection -> collection.pages )
 				.flatMap( Observable::from )
 				.map( page -> page.identifier )
 				.flatMap( ampClient::getPage )
@@ -150,7 +150,7 @@ public class AmpTests
 				{
 					Collection collection = collectionsResponse.body().getCollection();
 					// get first page
-					String pageIdentifier = collection.getPages().get( 0 ).identifier;
+					String pageIdentifier = collection.pages.get( 0 ).identifier;
 					loadPageDirect( pageIdentifier, ampApi, collectionIdentifier, apiToken );
 
 				}

@@ -4,65 +4,31 @@ import java.util.ArrayList;
 
 public class Collection
 {
+	/**
+	 * AMP internal id of the collection
+	 */
 	public String id;
 
+	/**
+	 * Usually, there is one collection that is used per app. Thus, the collection identifier can be hard-coded and passed to AMP client configuration.
+	 * The identifier matches the collection_identifer in the API requests.
+	 */
 	public String identifier;
 
+	/**
+	 * displayable name of the collection
+	 */
 	public String name;
 
+	/**
+	 * e.g "de_DE"
+	 */
 	public String default_locale;
 
+	/**
+	 * page previews and meta information about them
+	 */
 	public ArrayList<ColPage> pages;
-
-	public String getId()
-	{
-		return id;
-	}
-
-	public void setId( String id )
-	{
-		this.id = id;
-	}
-
-	public String getIdentifier()
-	{
-		return identifier;
-	}
-
-	public void setIdentifier( String identifier )
-	{
-		this.identifier = identifier;
-	}
-
-	public String getName()
-	{
-		return name;
-	}
-
-	public void setName( String name )
-	{
-		this.name = name;
-	}
-
-	public String getDefault_locale()
-	{
-		return default_locale;
-	}
-
-	public void setDefault_locale( String default_locale )
-	{
-		this.default_locale = default_locale;
-	}
-
-	public ArrayList<ColPage> getPages()
-	{
-		return pages;
-	}
-
-	public void setPages( ArrayList<ColPage> pages )
-	{
-		this.pages = pages;
-	}
 
 	@Override
 	public String toString()

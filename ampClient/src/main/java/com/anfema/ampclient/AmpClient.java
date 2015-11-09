@@ -3,8 +3,8 @@ package com.anfema.ampclient;
 import android.content.Context;
 
 import com.anfema.ampclient.models.Collection;
-import com.anfema.ampclient.service.responses.CollectionResponse;
 import com.anfema.ampclient.models.Page;
+import com.anfema.ampclient.service.responses.CollectionResponse;
 import com.anfema.ampclient.service.responses.PageResponse;
 import com.anfema.ampclient.utils.RxUtils;
 
@@ -107,7 +107,7 @@ public class AmpClient implements AmpClientAPI
 	public Observable<Page> getAllPages()
 	{
 		return getCollection()
-				.map( Collection::getPages )
+				.map( collection -> collection.pages )
 				.flatMap( Observable::from )
 				.map( page -> page.identifier )
 				.flatMap( this::getPage );
