@@ -17,10 +17,10 @@ import retrofit.Call;
 import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
+import rx.Observable;
 
 public class AmpTests
 {
-
 	private Context context;
 
 	public AmpTests( Context appContext )
@@ -30,23 +30,67 @@ public class AmpTests
 
 	public void execute()
 	{
-		String baseUrl = context.getString( R.string.base_url );
-		AmpAuthenticator.requestApiToken( baseUrl, "admin@anfe.ma", "test", ( apiToken, responseCode ) -> {
-			if ( apiToken != null )
-			{
-				AmpClient.getInstance();
-				// TODO getFirstPage
-			}
-		} );
+		getAllPages();
 
 		authenticateDirect();
+	}
+
+	private void authenticateConventional()
+	{
+		String baseUrl = context.getString( R.string.base_url );
+		AmpAuthenticator.requestApiTokenConventional( baseUrl, "admin@anfe.ma", "test", ( apiToken, responseCode ) -> {
+					if ( apiToken != null )
+					{
+						String collectionIdentifier = context.getString( R.string.collection_identifier );
+						AmpClient ampClient = AmpClient.getInstance( context );
+						ampClient.init( baseUrl, apiToken, collectionIdentifier );
+						ampClient.getAllPages()
+								.subscribe( page -> {/* process a page*/}, throwable -> {}, () -> Log.d( "All pages downloaded!" ) );
+					}
+				}
+
+		);
+	}
+
+	private Observable<AmpClient> getInitializedAmpClient()
+	{
+		String baseUrl = context.getString( R.string.base_url );
+		String collectionIdentifier = context.getString( R.string.collection_identifier );
+		AmpClient ampClient = AmpClient.getInstance( context );
+
+		return AmpAuthenticator.requestApiToken( baseUrl, "admin@anfe.ma", "test" )
+				// TODO throw exception if api Token == null?
+				.filter( apiToken -> apiToken != null )
+				.map( apiToken -> ampClient.init( baseUrl, apiToken, collectionIdentifier ) );
+	}
+
+	private void getAllPages()
+	{
+		getInitializedAmpClient()
+				.map( AmpClient::getAllPages )
+				.subscribe( page -> {/* process a page*/}, throwable -> {}, () -> Log.d( "All pages downloaded!" ) );
+	}
+
+	private void getFirstPage( String baseUrl, String apiToken )
+	{
+		String collectionIdentifier = context.getString( R.string.collection_identifier );
+		AmpClient ampClient = AmpClient.getInstance( context )
+				.init( baseUrl, apiToken, collectionIdentifier );
+		// get first page
+		ampClient.getCollection()
+				.map( Collection::getPages )
+				.flatMap( Observable::from )
+				.map( page -> page.identifier )
+				.flatMap( ampClient::getPage )
+				.map( Page::toString )
+				.subscribe( Log::d );
 	}
 
 	private void authenticateDirect()
 	{
 		final AmpApi ampApi = AmpApiFactory.newInstance( context.getString( R.string.base_url ) );
 
-		final Call<LoginResponse> authenticateCall = ampApi.authenticate( "admin@anfe.ma", "test" );
+		final Call<LoginResponse> authenticateCall = ampApi.authenticateConventional( "admin@anfe.ma", "test" );
 		authenticateCall.enqueue( new Callback<LoginResponse>()
 		{
 			@Override
@@ -76,7 +120,7 @@ public class AmpTests
 	{
 		final String collectionIdentifier = context.getString( R.string.collection_identifier );
 		final String apiToken = "Token " + loginResponse.body().getToken();
-		final Call<CollectionResponse> collectionsCall = ampApi.getCollection( collectionIdentifier, apiToken );
+		final Call<CollectionResponse> collectionsCall = ampApi.getCollectionConventional( collectionIdentifier, apiToken );
 		collectionsCall.enqueue( new Callback<CollectionResponse>()
 		{
 			@Override
@@ -107,7 +151,7 @@ public class AmpTests
 
 	void loadPageDirect( String pageIdentifier, AmpApi ampApi, String collectionIdentifier, String apiToken )
 	{
-		Call<PageResponse> pagesCall = ampApi.getPage( collectionIdentifier, pageIdentifier, apiToken );
+		Call<PageResponse> pagesCall = ampApi.getPageConventional( collectionIdentifier, pageIdentifier, apiToken );
 		pagesCall.enqueue( new Callback<PageResponse>()
 		{
 			@Override
@@ -137,7 +181,7 @@ public class AmpTests
 	//	{
 	//		final String collectionIdentifier = getString( R.string.collection_identifier );
 	//		final String apiToken = "Token " + loginResponse.body().getToken();
-	//		Observable<CollectionsResponse> collectionObservable = client.getCollectionRx( collectionIdentifier, apiToken );
+	//		Observable<CollectionsResponse> collectionObservable = client.getCollection( collectionIdentifier, apiToken );
 	//		collectionObservable.( new Callback<CollectionsResponse>()
 	//		{
 	//			@Override
@@ -145,7 +189,7 @@ public class AmpTests
 	//			{
 	//				if ( collectionsResponse.isSuccess() )
 	//				{
-	//					Collection collection = collectionsResponse.body().getCollection();
+	//					Collection collection = collectionsResponse.body().getCollectionConventional();
 	//					// get first page
 	//					String pageIdentifier = collection.getPages().get( 0 ).identifier;
 	//					loadPageDirect( pageIdentifier, client, collectionIdentifier, apiToken );

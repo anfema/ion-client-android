@@ -1,7 +1,9 @@
 package com.anfema.ampclient;
 
+import com.anfema.ampclient.service.models.Collection;
 import com.anfema.ampclient.service.models.CollectionResponse;
 import com.anfema.ampclient.service.models.LoginResponse;
+import com.anfema.ampclient.service.models.Page;
 import com.anfema.ampclient.service.models.PageResponse;
 
 import retrofit.Call;
@@ -9,11 +11,13 @@ import rx.Observable;
 
 public interface AmpClientAPI
 {
-	Call<CollectionResponse> getCollection();
+	Call<CollectionResponse> getCollectionConventional();
 
-	Call<PageResponse> getPage( String pageIdentifier );
+	Call<PageResponse> getPageConventional( String pageIdentifier );
 
-	Observable<PageResponse> getPageRx( String pageIdentifier );
+	Observable<Page> getPage( String pageIdentifier );
 
-	Observable<CollectionResponse> getCollectionRx();
+	Observable<Collection> getCollection();
+
+	Observable<Page> getAllPages();
 }

@@ -16,6 +16,7 @@ import java.util.Collection;
 import retrofit.GsonConverterFactory;
 import retrofit.Retrofit;
 import retrofit.Retrofit.Builder;
+import retrofit.RxJavaCallAdapterFactory;
 
 public class AmpApiFactory
 {
@@ -26,12 +27,11 @@ public class AmpApiFactory
 			baseUrl = baseUrl + "/";
 			Log.i( "AmpClient", "slash was appended to base URL" );
 		}
-		final GsonConverterFactory gsonConverter = getGsonConverterFactory();
-
 
 		// configure retrofit
 		final Builder retrofitBuilder = new Builder();
-		retrofitBuilder.addConverterFactory( gsonConverter );
+		retrofitBuilder.addCallAdapterFactory( RxJavaCallAdapterFactory.create() ); // enable returning Observables
+		retrofitBuilder.addConverterFactory( getGsonConverterFactory() );
 		retrofitBuilder.baseUrl( baseUrl );
 		Retrofit retrofit = retrofitBuilder.build();
 
@@ -51,7 +51,6 @@ public class AmpApiFactory
 	@NonNull
 	private static GsonConverterFactory getGsonConverterFactory()
 	{
-		// configure gson converter
 		final GsonBuilder gsonBuilder = new GsonBuilder();
 		// parse content subtypes
 		gsonBuilder.registerTypeAdapter( AContent.class, ContentDeserializerFactory.newInstance() );

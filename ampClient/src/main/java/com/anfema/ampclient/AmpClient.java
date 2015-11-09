@@ -2,8 +2,11 @@ package com.anfema.ampclient;
 
 import android.content.Context;
 
+import com.anfema.ampclient.service.models.Collection;
 import com.anfema.ampclient.service.models.CollectionResponse;
+import com.anfema.ampclient.service.models.Page;
 import com.anfema.ampclient.service.models.PageResponse;
+import com.anfema.ampclient.utils.RxUtils;
 
 import retrofit.Call;
 import rx.Observable;
@@ -28,13 +31,26 @@ public class AmpClient implements AmpClientAPI
 	}
 	/// Singleton END
 
+	/// configuration
+
 	/**
-	 * mandatory to initialize the client!
+	 * It is mandatory to initialize the client!
 	 */
-	public void init( String baseUrl, String authorizationToken, String collectionIdentifier )
+	public AmpClient init( String baseUrl, String apiToken, String collectionIdentifier )
 	{
-		config = new AmpClientConfig( appContext, baseUrl, authorizationToken, collectionIdentifier );
+		config = new AmpClientConfig( appContext, baseUrl, apiToken, collectionIdentifier );
+		return this;
 	}
+
+	/**
+	 * Update API token
+	 */
+	public void setApiToken( String apiToken )
+	{
+		getConfig().setApiToken( apiToken );
+	}
+
+	/// configuration END
 
 	/// API Interface
 
@@ -42,43 +58,60 @@ public class AmpClient implements AmpClientAPI
 	 * add collection identifier and authorization token to request
 	 */
 	@Override
-	public Call<CollectionResponse> getCollection()
+	public Call<CollectionResponse> getCollectionConventional()
 	{
 		AmpClientConfig config = getConfig();
-		return config.getAmpApi().getCollection( config.getCollectionIdentifier(), config.getApiToken() );
+		return config.getAmpApi().getCollectionConventional( config.getCollectionIdentifier(), config.getApiToken() );
 	}
 
 	/**
 	 * add collection identifier and authorization token to request
 	 */
 	@Override
-	public Call<PageResponse> getPage( String pageIdentifier )
+	public Call<PageResponse> getPageConventional( String pageIdentifier )
 	{
 		AmpClientConfig config = getConfig();
-		return config.getAmpApi().getPage( config.getCollectionIdentifier(), pageIdentifier, config.getApiToken() );
+		return config.getAmpApi().getPageConventional( config.getCollectionIdentifier(), pageIdentifier, config.getApiToken() );
 	}
 
 	/**
 	 * add collection identifier and authorization token to request
 	 */
 	@Override
-	public Observable<CollectionResponse> getCollectionRx()
+	public Observable<Collection> getCollection()
 	{
 		AmpClientConfig config = getConfig();
-		return config.getAmpApi().getCollectionRx( config.getCollectionIdentifier(), config.getApiToken() );
+		return config.getAmpApi().getCollection( config.getCollectionIdentifier(), config.getApiToken() )
+				.map( CollectionResponse::getCollection )
+				.doOnError( RxUtils.DEFAULT_EXCEPTION_HANDLER )
+				.compose( RxUtils.applySchedulers() );
 	}
 
 	/**
 	 * add collection identifier and authorization token to request
 	 */
 	@Override
-	public Observable<PageResponse> getPageRx( String pageIdentifier )
+	public Observable<Page> getPage( String pageIdentifier )
 	{
 		AmpClientConfig config = getConfig();
-		return config.getAmpApi().getPageRx( config.getCollectionIdentifier(), pageIdentifier, config.getApiToken() );
+		return config.getAmpApi().getPage( config.getCollectionIdentifier(), pageIdentifier, config.getApiToken() )
+				.map( PageResponse::getPage )
+				.doOnError( RxUtils.DEFAULT_EXCEPTION_HANDLER )
+				.compose( RxUtils.applySchedulers() );
 	}
 
-	// TODO getAllPages
+	/**
+	 * A set of pages is "returned" by emitting multiple events.
+	 */
+	@Override
+	public Observable<Page> getAllPages()
+	{
+		return getCollection()
+				.map( Collection::getPages )
+				.flatMap( Observable::from )
+				.map( page -> page.identifier )
+				.flatMap( this::getPage );
+	}
 
 	/// API Interface END
 

@@ -20,6 +20,7 @@ public class AmpClientConfig
 	private String  baseUrl;
 	private String  apiToken;
 	private String  collectionIdentifier;
+	// TODO add Locale, add variation, add caching strategy ?
 
 	public AmpClientConfig( Context appContext, String baseUrl, String apiToken, String collectionIdentifier )
 	{
@@ -71,7 +72,7 @@ public class AmpClientConfig
 		return apiToken;
 	}
 
-	private void setApiToken( String apiToken )
+	void setApiToken( String apiToken )
 	{
 		Editor editor = getEditor();
 		editor.putString( PREFS_API_TOKEN, apiToken ).apply();

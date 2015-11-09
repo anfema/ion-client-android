@@ -1,6 +1,7 @@
 package com.anfema.ampclient.service.models.deserializers;
 
 import com.anfema.ampclient.utils.DateTimeUtils;
+import com.anfema.ampclient.utils.Log;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -23,7 +24,7 @@ public class DateTimeDeserializer implements JsonDeserializer<DateTime>
 		}
 		catch ( ParseException e )
 		{
-			e.printStackTrace();
+			Log.ex( e );
 			return null;
 		}
 	}
