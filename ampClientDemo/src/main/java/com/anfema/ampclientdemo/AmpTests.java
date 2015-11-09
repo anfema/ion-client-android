@@ -12,6 +12,7 @@ import com.anfema.ampclient.service.models.LoginResponse;
 import com.anfema.ampclient.service.models.Page;
 import com.anfema.ampclient.service.models.PageResponse;
 import com.anfema.ampclient.utils.Log;
+import com.anfema.ampclient.utils.RxDebugHooks;
 import com.anfema.ampclient.utils.RxUtils;
 
 import retrofit.Call;
@@ -20,7 +21,6 @@ import retrofit.Response;
 import retrofit.Retrofit;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 public class AmpTests
 {
@@ -33,16 +33,18 @@ public class AmpTests
 
 	public void execute()
 	{
-//		String baseUrl = context.getString( R.string.base_url );
-//		AmpAuthenticator.requestApiToken( baseUrl, "admin@anfe.ma", "test" )
-//				.subscribeOn( Schedulers.io() )
-//				.observeOn( AndroidSchedulers.mainThread() )
-//				.subscribe( Log::d, RxUtils.DEFAULT_EXCEPTION_HANDLER, () -> Log.d( "API token finished" ) );
+		RxDebugHooks.enableObservableHook();
+
+		//		String baseUrl = context.getString( R.string.base_url );
+		//		AmpAuthenticator.requestApiToken( baseUrl, "admin@anfe.ma", "test" )
+		//				.subscribeOn( Schedulers.io() )
+		//				.observeOn( AndroidSchedulers.mainThread() )
+		//				.subscribe( Log::d, RxUtils.DEFAULT_EXCEPTION_HANDLER, () -> Log.d( "API token finished" ) );
 
 
 		getAllPages();
 
-//		authenticateDirect();
+		//		authenticateDirect();
 	}
 
 	private void authenticateConventional()
@@ -55,7 +57,7 @@ public class AmpTests
 						AmpClient ampClient = AmpClient.getInstance( context );
 						ampClient.init( baseUrl, apiToken, collectionIdentifier );
 						ampClient.getAllPages()
-								.subscribe( page -> {/* process a page*/}, throwable -> {}, () -> Log.d( "All pages downloaded!" ) );
+								.subscribe( page -> {/* process a page*/}, RxUtils.IGNORE_ERROR, () -> Log.d( "All pages downloaded!" ) );
 					}
 				}
 
@@ -86,7 +88,7 @@ public class AmpTests
 		getInitializedAmpClient()
 				.flatMap( AmpClient::getAllPages )
 				.observeOn( AndroidSchedulers.mainThread() )
-				.subscribe( page -> Log.d( page.toString() ), RxUtils.IGNORE_ERROR, RxUtils.NOTHING );
+				.subscribe( page -> Log.d( page.toString() ), RxUtils.IGNORE_ERROR, () -> Log.d( "All pages downloaded" ) );
 	}
 
 	private void getFirstPage( String baseUrl, String apiToken )
