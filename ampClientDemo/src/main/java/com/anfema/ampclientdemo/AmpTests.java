@@ -12,12 +12,15 @@ import com.anfema.ampclient.service.models.LoginResponse;
 import com.anfema.ampclient.service.models.Page;
 import com.anfema.ampclient.service.models.PageResponse;
 import com.anfema.ampclient.utils.Log;
+import com.anfema.ampclient.utils.RxUtils;
 
 import retrofit.Call;
 import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
 import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class AmpTests
 {
@@ -30,9 +33,16 @@ public class AmpTests
 
 	public void execute()
 	{
+//		String baseUrl = context.getString( R.string.base_url );
+//		AmpAuthenticator.requestApiToken( baseUrl, "admin@anfe.ma", "test" )
+//				.subscribeOn( Schedulers.io() )
+//				.observeOn( AndroidSchedulers.mainThread() )
+//				.subscribe( Log::d, RxUtils.DEFAULT_EXCEPTION_HANDLER, () -> Log.d( "API token finished" ) );
+
+
 		getAllPages();
 
-		authenticateDirect();
+//		authenticateDirect();
 	}
 
 	private void authenticateConventional()
@@ -59,7 +69,14 @@ public class AmpTests
 		AmpClient ampClient = AmpClient.getInstance( context );
 
 		return AmpAuthenticator.requestApiToken( baseUrl, "admin@anfe.ma", "test" )
-				// TODO throw exception if api Token == null?
+				.map( apiToken -> {
+					Log.d( "API Token", apiToken );
+					if ( apiToken == null )
+					{
+						Log.e( "API token is null" );
+					}
+					return apiToken;
+				} )// TODO throw exception if api Token == null?
 				.filter( apiToken -> apiToken != null )
 				.map( apiToken -> ampClient.init( baseUrl, apiToken, collectionIdentifier ) );
 	}
@@ -67,8 +84,9 @@ public class AmpTests
 	private void getAllPages()
 	{
 		getInitializedAmpClient()
-				.map( AmpClient::getAllPages )
-				.subscribe( page -> {/* process a page*/}, throwable -> {}, () -> Log.d( "All pages downloaded!" ) );
+				.flatMap( AmpClient::getAllPages )
+				.observeOn( AndroidSchedulers.mainThread() )
+				.subscribe( page -> Log.d( page.toString() ), RxUtils.IGNORE_ERROR, RxUtils.NOTHING );
 	}
 
 	private void getFirstPage( String baseUrl, String apiToken )
