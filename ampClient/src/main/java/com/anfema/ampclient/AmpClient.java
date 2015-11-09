@@ -61,7 +61,7 @@ public class AmpClient implements AmpClientAPI
 	public Call<CollectionResponse> getCollectionConventional()
 	{
 		AmpClientConfig config = getConfig();
-		return config.getAmpApi().getCollectionConventional( config.getCollectionIdentifier(), config.getApiToken() );
+		return config.getAmpApi().getCollectionConventional( config.getCollectionIdentifier(), config.getAuthHeaderValue() );
 	}
 
 	/**
@@ -71,7 +71,7 @@ public class AmpClient implements AmpClientAPI
 	public Call<PageResponse> getPageConventional( String pageIdentifier )
 	{
 		AmpClientConfig config = getConfig();
-		return config.getAmpApi().getPageConventional( config.getCollectionIdentifier(), pageIdentifier, config.getApiToken() );
+		return config.getAmpApi().getPageConventional( config.getCollectionIdentifier(), pageIdentifier, config.getAuthHeaderValue() );
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class AmpClient implements AmpClientAPI
 	public Observable<Collection> getCollection()
 	{
 		AmpClientConfig config = getConfig();
-		return config.getAmpApi().getCollection( config.getCollectionIdentifier(), config.getApiToken() )
+		return config.getAmpApi().getCollection( config.getCollectionIdentifier(), config.getAuthHeaderValue() )
 				.map( CollectionResponse::getCollection )
 				.doOnError( RxUtils.DEFAULT_EXCEPTION_HANDLER )
 				.compose( RxUtils.applySchedulers() );
@@ -94,7 +94,7 @@ public class AmpClient implements AmpClientAPI
 	public Observable<Page> getPage( String pageIdentifier )
 	{
 		AmpClientConfig config = getConfig();
-		return config.getAmpApi().getPage( config.getCollectionIdentifier(), pageIdentifier, config.getApiToken() )
+		return config.getAmpApi().getPage( config.getCollectionIdentifier(), pageIdentifier, config.getAuthHeaderValue() )
 				.map( PageResponse::getPage )
 				.doOnError( RxUtils.DEFAULT_EXCEPTION_HANDLER )
 				.compose( RxUtils.applySchedulers() );

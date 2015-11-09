@@ -72,6 +72,11 @@ public class AmpClientConfig
 		return apiToken;
 	}
 
+	public String getAuthHeaderValue()
+	{
+		return "token " + getApiToken();
+	}
+
 	void setApiToken( String apiToken )
 	{
 		Editor editor = getEditor();
