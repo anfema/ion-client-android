@@ -1,10 +1,9 @@
 package com.anfema.ampclient;
 
-import com.anfema.ampclient.service.models.Collection;
-import com.anfema.ampclient.service.models.CollectionResponse;
-import com.anfema.ampclient.service.models.LoginResponse;
-import com.anfema.ampclient.service.models.Page;
-import com.anfema.ampclient.service.models.PageResponse;
+import com.anfema.ampclient.models.Collection;
+import com.anfema.ampclient.service.responses.CollectionResponse;
+import com.anfema.ampclient.models.Page;
+import com.anfema.ampclient.service.responses.PageResponse;
 
 import retrofit.Call;
 import rx.Observable;

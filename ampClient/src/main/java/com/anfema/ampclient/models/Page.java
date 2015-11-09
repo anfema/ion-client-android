@@ -1,4 +1,4 @@
-package com.anfema.ampclient.service.models;
+package com.anfema.ampclient.models;
 
 import org.joda.time.DateTime;
 

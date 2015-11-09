@@ -1,4 +1,6 @@
-package com.anfema.ampclient.service.models;
+package com.anfema.ampclient.service.responses;
+
+import com.anfema.ampclient.models.Page;
 
 public class PageResponse
 {

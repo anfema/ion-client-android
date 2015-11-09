@@ -1,5 +1,7 @@
-package com.anfema.ampclient.service.models;
+package com.anfema.ampclient.service.responses;
 
+
+import com.anfema.ampclient.models.Collection;
 
 public class CollectionResponse
 {

@@ -1,6 +1,6 @@
-package com.anfema.ampclient.service.models;
+package com.anfema.ampclient.models;
 
-import com.anfema.ampclient.service.models.contents.AContent;
+import com.anfema.ampclient.models.contents.AContent;
 
 import java.util.ArrayList;
 

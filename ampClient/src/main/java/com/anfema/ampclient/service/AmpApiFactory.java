@@ -2,9 +2,9 @@ package com.anfema.ampclient.service;
 
 import android.support.annotation.NonNull;
 
-import com.anfema.ampclient.service.models.contents.AContent;
-import com.anfema.ampclient.service.models.deserializers.ContentDeserializerFactory;
-import com.anfema.ampclient.service.models.deserializers.DateTimeDeserializer;
+import com.anfema.ampclient.models.contents.AContent;
+import com.anfema.ampclient.service.deserializers.ContentDeserializerFactory;
+import com.anfema.ampclient.service.deserializers.DateTimeDeserializer;
 import com.anfema.ampclient.utils.Log;
 import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.Interceptor;

@@ -1,14 +1,14 @@
-package com.anfema.ampclient.service.models.deserializers;
+package com.anfema.ampclient.service.deserializers;
 
-import com.anfema.ampclient.service.models.contents.ColorContent;
-import com.anfema.ampclient.service.models.contents.ContainerContent;
-import com.anfema.ampclient.service.models.contents.DatetimeContent;
-import com.anfema.ampclient.service.models.contents.FileContent;
-import com.anfema.ampclient.service.models.contents.FlagContent;
-import com.anfema.ampclient.service.models.contents.ImageContent;
-import com.anfema.ampclient.service.models.contents.MediaContent;
-import com.anfema.ampclient.service.models.contents.OptionContent;
-import com.anfema.ampclient.service.models.contents.TextContent;
+import com.anfema.ampclient.models.contents.ColorContent;
+import com.anfema.ampclient.models.contents.DatetimeContent;
+import com.anfema.ampclient.models.contents.FileContent;
+import com.anfema.ampclient.models.contents.FlagContent;
+import com.anfema.ampclient.models.contents.ImageContent;
+import com.anfema.ampclient.models.contents.MediaContent;
+import com.anfema.ampclient.models.contents.ContainerContent;
+import com.anfema.ampclient.models.contents.OptionContent;
+import com.anfema.ampclient.models.contents.TextContent;
 
 /**
  * This is where content types are registered.

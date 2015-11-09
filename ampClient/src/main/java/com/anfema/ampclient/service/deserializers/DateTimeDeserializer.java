@@ -1,4 +1,4 @@
-package com.anfema.ampclient.service.models.deserializers;
+package com.anfema.ampclient.service.deserializers;
 
 import com.anfema.ampclient.utils.DateTimeUtils;
 import com.anfema.ampclient.utils.Log;

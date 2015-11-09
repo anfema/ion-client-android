@@ -2,7 +2,7 @@ package com.anfema.ampclient;
 
 import com.anfema.ampclient.service.AmpApi;
 import com.anfema.ampclient.service.AmpApiFactory;
-import com.anfema.ampclient.service.models.LoginResponse;
+import com.anfema.ampclient.service.responses.LoginResponse;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.RxUtils;
 
