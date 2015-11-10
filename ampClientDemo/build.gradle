@@ -42,11 +42,24 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/dependencies.txt'
+        exclude 'META-INF/LGPL2.1'
+    }
 }
 
 dependencies {
     debugCompile project(path: ':ampClient', configuration: 'debug')
     releaseCompile project(path: ':ampClient', configuration: 'release')
 
-    compile 'com.google.code.gson:gson:2.3'
+    compile 'com.facebook.stetho:stetho:1.2.0' // debug with chrome browser
 }
