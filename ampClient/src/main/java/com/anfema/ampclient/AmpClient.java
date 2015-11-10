@@ -4,8 +4,8 @@ import android.content.Context;
 
 import com.anfema.ampclient.models.Collection;
 import com.anfema.ampclient.models.Page;
-import com.anfema.ampclient.service.responses.CollectionResponse;
-import com.anfema.ampclient.service.responses.PageResponse;
+import com.anfema.ampclient.models.responses.CollectionResponse;
+import com.anfema.ampclient.models.responses.PageResponse;
 import com.anfema.ampclient.utils.RxUtils;
 
 import retrofit.Call;

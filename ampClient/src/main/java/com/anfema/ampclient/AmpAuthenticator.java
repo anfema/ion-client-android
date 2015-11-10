@@ -2,7 +2,7 @@ package com.anfema.ampclient;
 
 import com.anfema.ampclient.service.AmpApi;
 import com.anfema.ampclient.service.AmpApiFactory;
-import com.anfema.ampclient.service.responses.LoginResponse;
+import com.anfema.ampclient.models.responses.LoginResponse;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.RxUtils;
 
@@ -13,7 +13,7 @@ import retrofit.Retrofit;
 import rx.Observable;
 
 /**
- * Log in and retrieve API token.
+ * Use AMPs internal login request and retrieve API token.
  */
 public class AmpAuthenticator
 {

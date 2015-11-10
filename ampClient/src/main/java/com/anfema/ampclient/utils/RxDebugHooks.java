@@ -33,6 +33,7 @@ public class RxDebugHooks
 		public void error( Object context, Throwable e )
 		{
 			Log.e( RX_DEBUG, "error on " + context );
+			Log.ex( RX_DEBUG, e );
 		}
 	} );
 
