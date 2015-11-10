@@ -7,7 +7,7 @@ import android.content.SharedPreferences.Editor;
 import com.anfema.ampclient.service.AmpApi;
 import com.anfema.ampclient.service.AmpApiFactory;
 
-public class AmpClientConfig
+public class AmpClientConfigConventional
 {
 	// keys for shared preferences
 	public static final String PREFS_NAME                  = "prefs_amp_client";
@@ -22,7 +22,7 @@ public class AmpClientConfig
 	private String  collectionIdentifier;
 	// TODO add Locale, add variation, add caching strategy ?
 
-	public AmpClientConfig( Context appContext, String baseUrl, String apiToken, String collectionIdentifier )
+	public AmpClientConfigConventional( Context appContext, String baseUrl, String apiToken, String collectionIdentifier )
 	{
 		this.appContext = appContext;
 		ampApi = AmpApiFactory.newInstance( baseUrl );
@@ -31,7 +31,7 @@ public class AmpClientConfig
 		setCollectionIdentifier( collectionIdentifier );
 	}
 
-	public AmpClientConfig( Context appContext )
+	public AmpClientConfigConventional( Context appContext )
 	{
 		this.appContext = appContext;
 	}

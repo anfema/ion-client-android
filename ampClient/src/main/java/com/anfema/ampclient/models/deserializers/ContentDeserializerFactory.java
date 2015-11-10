@@ -1,4 +1,4 @@
-package com.anfema.ampclient.service.deserializers;
+package com.anfema.ampclient.models.deserializers;
 
 import com.anfema.ampclient.models.contents.ColorContent;
 import com.anfema.ampclient.models.contents.DatetimeContent;

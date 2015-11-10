@@ -1,4 +1,4 @@
-package com.anfema.ampclient.service.responses;
+package com.anfema.ampclient.models.responses;
 
 
 import com.anfema.ampclient.models.Collection;
