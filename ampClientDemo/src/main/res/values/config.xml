@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Should end with "/" -->
-    <string name="base_url">http://ampdev2.anfema.com/client/v1/</string>
-    <string name="collection_identifier">test</string>
-</resources>
