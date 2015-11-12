@@ -1,13 +1,13 @@
-package com.anfema.ampclient;
+package com.anfema.ampclient.callbackapproach;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
-import com.anfema.ampclient.service.AmpApi;
+import com.anfema.ampclient.service.AmpApiCallbacks;
 import com.anfema.ampclient.service.AmpApiFactory;
 
-public class AmpClientConfigConventional
+public class AmpClientConfigCallbacks
 {
 	// keys for shared preferences
 	public static final String PREFS_NAME                  = "prefs_amp_client";
@@ -15,32 +15,32 @@ public class AmpClientConfigConventional
 	public static final String PREFS_API_TOKEN             = "prefs_api_token";
 	public static final String PREFS_COLLECTION_IDENTIFIER = "prefs_collection_identifier";
 
-	private Context appContext;
-	private AmpApi  ampApi;
-	private String  baseUrl;
-	private String  apiToken;
-	private String  collectionIdentifier;
+	private Context         appContext;
+	private AmpApiCallbacks ampApi;
+	private String          baseUrl;
+	private String          apiToken;
+	private String          collectionIdentifier;
 	// TODO add Locale, add variation, add caching strategy ?
 
-	public AmpClientConfigConventional( Context appContext, String baseUrl, String apiToken, String collectionIdentifier )
+	public AmpClientConfigCallbacks( Context appContext, String baseUrl, String apiToken, String collectionIdentifier )
 	{
 		this.appContext = appContext;
-		ampApi = AmpApiFactory.newInstance( baseUrl );
+		ampApi = AmpApiFactory.newInstance( baseUrl, AmpApiCallbacks.class );
 		setBaseUrl( baseUrl );
 		setApiToken( apiToken );
 		setCollectionIdentifier( collectionIdentifier );
 	}
 
-	public AmpClientConfigConventional( Context appContext )
+	public AmpClientConfigCallbacks( Context appContext )
 	{
 		this.appContext = appContext;
 	}
 
-	public AmpApi getAmpApi()
+	public AmpApiCallbacks getAmpApi()
 	{
 		if ( ampApi == null )
 		{
-			ampApi = AmpApiFactory.newInstance( getBaseUrl() );
+			ampApi = AmpApiFactory.newInstance( getBaseUrl(), AmpApiCallbacks.class );
 		}
 		return ampApi;
 	}

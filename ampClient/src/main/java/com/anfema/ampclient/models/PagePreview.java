@@ -5,7 +5,7 @@ import org.joda.time.DateTime;
 /**
  * Meta/preview information for pages. It does not hold the content for a page.
  */
-public class ColPage
+public class PagePreview
 {
 	/**
 	 * page identifier
@@ -40,6 +40,6 @@ public class ColPage
 	@Override
 	public String toString()
 	{
-		return "ColPage [identifier = " + identifier + ", parent = " + parent + ", last_changed = " + last_changed + ", title = " + title + ", thumbnail = " + thumbnail + ", layout = " + layout + "]";
+		return "PagePreview [identifier = " + identifier + ", parent = " + parent + ", last_changed = " + last_changed + ", title = " + title + ", thumbnail = " + thumbnail + ", layout = " + layout + "]";
 	}
 }

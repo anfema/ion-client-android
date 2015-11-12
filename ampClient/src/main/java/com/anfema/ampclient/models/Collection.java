@@ -28,7 +28,7 @@ public class Collection
 	/**
 	 * page previews and meta information about them
 	 */
-	public ArrayList<ColPage> pages;
+	public ArrayList<PagePreview> pages;
 
 	@Override
 	public String toString()

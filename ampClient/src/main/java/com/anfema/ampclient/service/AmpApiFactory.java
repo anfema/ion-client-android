@@ -20,7 +20,7 @@ import retrofit.RxJavaCallAdapterFactory;
 
 public class AmpApiFactory
 {
-	public static AmpApi newInstance( String baseUrl, Collection<Interceptor> interceptors )
+	public static <T> T newInstance( String baseUrl, Collection<Interceptor> interceptors, Class<T> serviceApi )
 	{
 		if ( !baseUrl.endsWith( "/" ) )
 		{
@@ -40,12 +40,12 @@ public class AmpApiFactory
 			retrofit.client().interceptors().addAll( interceptors );
 		}
 
-		return retrofit.create( AmpApi.class );
+		return retrofit.create( serviceApi );
 	}
 
-	public static AmpApi newInstance( String baseUrl )
+	public static <T> T newInstance( String baseUrl, Class<T> serviceApi )
 	{
-		return newInstance( baseUrl, null );
+		return newInstance( baseUrl, null, serviceApi );
 	}
 
 	@NonNull
