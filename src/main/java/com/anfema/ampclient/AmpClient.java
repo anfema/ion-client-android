@@ -3,13 +3,13 @@ package com.anfema.ampclient;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import com.anfema.ampclient.exceptions.AmpClientConfigInstantiateException;
 import com.anfema.ampclient.models.Collection;
 import com.anfema.ampclient.models.Page;
 import com.anfema.ampclient.models.responses.CollectionResponse;
 import com.anfema.ampclient.models.responses.PageResponse;
 import com.anfema.ampclient.service.AmpApiFactory;
 import com.anfema.ampclient.service.AmpApiRx;
-import com.anfema.ampclient.exceptions.AmpClientConfigInstantiateException;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.RxUtils;
 
@@ -85,9 +85,15 @@ public class AmpClient implements AmpClientApi
 			client.appContext = appContext;
 		}
 
+		// At this point the client is initialized, but might not have an API token yet.
+
 		return client.getInstanceWithAuthToken( appContext );
 	}
 
+	/**
+	 * Asynchronously equests API token if not available yet.
+	 * @return Observable emitting initialized client having an API token
+	 */
 	@NonNull
 	private Observable<AmpClient> getInstanceWithAuthToken( Context appContext )
 	{
