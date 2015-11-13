@@ -68,13 +68,10 @@ dependencies {
     compile 'io.reactivex:rxjava-debug:1.0.3' // allows hooks to log intermediates steps
 
     compile 'joda-time:joda-time:2.9' // better DateTime handling
-
-    // provided 'com.squareup.dagger:dagger-compiler:1.2.2' // dependency injection
 }
 
-println("***************** ---------- *******************")
+// output in gradle console
+println("********************************** ------------------ **********************************")
 println("debugging: environment variable JAVA8_HOME must be set and point to Java 8 home folder")
-println("JAVA_HOME: " + System.getenv("JAVA_HOME"))
-println("JAVA7_HOME: " + System.getenv("JAVA7_HOME"))
 println("JAVA8_HOME: " + System.getenv("JAVA8_HOME"))
-println("***************** ---------- *******************")
+println("********************************** ------------------ **********************************")
