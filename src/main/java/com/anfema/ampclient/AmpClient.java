@@ -92,6 +92,7 @@ public class AmpClient implements AmpClientApi
 
 	/**
 	 * Asynchronously equests API token if not available yet.
+	 *
 	 * @return Observable emitting initialized client having an API token
 	 */
 	@NonNull
@@ -107,13 +108,9 @@ public class AmpClient implements AmpClientApi
 		{
 			// need to retrieve API token
 			final AmpClient finalClient = this;
-			clientObservable = ampClientConfig.retrieveApiToken( appContext )
-					.doOnNext( this::setAuthHeaderValue )
-					.doOnNext( apiToken -> Log.d( "****** Amp Client ******", "received API token: " + apiToken ) )
-					.map( apiToken -> finalClient );
+			clientObservable = ampClientConfig.retrieveApiToken( appContext ).doOnNext( this::setAuthHeaderValue ).doOnNext( apiToken -> Log.d( "****** Amp Client ******", "received API token: " + apiToken ) ).map( apiToken -> finalClient );
 		}
-		return clientObservable
-				.doOnError( RxUtils.DEFAULT_EXCEPTION_HANDLER );
+		return clientObservable.doOnError( RxUtils.DEFAULT_EXCEPTION_HANDLER );
 	}
 
 	/// Multiton END
@@ -142,10 +139,7 @@ public class AmpClient implements AmpClientApi
 	public Observable<Collection> getCollection()
 	{
 		Log.d( "***** Amp Client *****", "Auth header value: " + authHeaderValue );
-		return ampApi.getCollection( ampClientConfig.getCollectionIdentifier( appContext ), authHeaderValue )
-				.doOnNext( o -> Log.d( "****** Amp Client", "Received collection response" ) )
-				.map( CollectionResponse::getCollection )
-				.compose( RxUtils.applySchedulers() );
+		return ampApi.getCollection( ampClientConfig.getCollectionIdentifier( appContext ), authHeaderValue ).doOnNext( o -> Log.d( "****** Amp Client", "Received collection response" ) ).map( CollectionResponse::getCollection ).compose( RxUtils.applySchedulers() );
 	}
 
 	/**
@@ -154,9 +148,7 @@ public class AmpClient implements AmpClientApi
 	@Override
 	public Observable<Page> getPage( String pageIdentifier )
 	{
-		return ampApi.getPage( ampClientConfig.getCollectionIdentifier( appContext ), pageIdentifier, authHeaderValue )
-				.map( PageResponse::getPage )
-				.compose( RxUtils.applySchedulers() );
+		return ampApi.getPage( ampClientConfig.getCollectionIdentifier( appContext ), pageIdentifier, authHeaderValue ).map( PageResponse::getPage ).compose( RxUtils.applySchedulers() );
 	}
 
 	/**
@@ -165,17 +157,13 @@ public class AmpClient implements AmpClientApi
 	@Override
 	public Observable<Page> getAllPages()
 	{
-		return getCollection()
-				.doOnNext( collection1 -> Log.d( "received collection" ) )
-				.map( collection -> collection.pages )
-				.doOnNext( collection -> Log.d( "mapping1: col pages" ) )
-				.flatMap( Observable::from )
-				.doOnNext( collection -> Log.d( "split col page" ) )
-				.map( page -> page.identifier )
-				.doOnNext( collection -> Log.d( "mapping2: page_identifier" ) )
-				.flatMap( this::getPage )
-				.doOnNext( collection -> Log.d( "received pages" ) );
+		return getCollection().doOnNext( collection1 -> Log.d( "received collection" ) ).map( collection -> collection.pages ).doOnNext( collection -> Log.d( "mapping1: col pages" ) ).flatMap( Observable::from ).doOnNext( collection -> Log.d( "split col page" ) ).map( page -> page.identifier ).doOnNext( collection -> Log.d( "mapping2: page_identifier" ) ).flatMap( this::getPage ).doOnNext( collection -> Log.d( "received pages" ) );
 	}
 
 	/// API Interface END
+	// FIXME this is only a hack
+	public static AmpClient getInstanceHack( Class<? extends AmpClientConfig> configClass, Context appContext )
+	{
+		return instances.get( configClass );
+	}
 }
