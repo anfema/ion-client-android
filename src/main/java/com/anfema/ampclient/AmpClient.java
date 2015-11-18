@@ -10,10 +10,14 @@ import com.anfema.ampclient.models.responses.CollectionResponse;
 import com.anfema.ampclient.models.responses.PageResponse;
 import com.anfema.ampclient.service.AmpApiFactory;
 import com.anfema.ampclient.service.AmpApiRx;
+import com.anfema.ampclient.service.HttpLoggingInterceptor;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.RxUtils;
+import com.squareup.okhttp.Interceptor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import rx.Observable;
@@ -23,31 +27,6 @@ public class AmpClient implements AmpClientApi
 	/// Multiton
 
 	private static Map<Class<? extends AmpClientConfig>, AmpClient> instances = new HashMap<>();
-	private Context         appContext;
-	private AmpClientConfig ampClientConfig;
-	private AmpApiRx        ampApi;
-
-	private AmpClient( Class<? extends AmpClientConfig> configClass, Context appContext ) throws AmpClientConfigInstantiateException
-	{
-		this.appContext = appContext;
-
-		//noinspection TryWithIdenticalCatches
-		try
-		{
-			ampClientConfig = configClass.newInstance();
-			ampApi = AmpApiFactory.newInstance( ampClientConfig.getBaseUrl( appContext ), AmpApiRx.class );
-
-			instances.put( configClass, this );
-		}
-		catch ( InstantiationException e )
-		{
-			throw new AmpClientConfigInstantiateException();
-		}
-		catch ( IllegalAccessException e )
-		{
-			throw new AmpClientConfigInstantiateException();
-		}
-	}
 
 	/**
 	 * @param configClass implementation of AmpClientConfig interface
@@ -92,6 +71,7 @@ public class AmpClient implements AmpClientApi
 
 	/**
 	 * Asynchronously equests API token if not available yet.
+	 *
 	 * @return Observable emitting initialized client having an API token
 	 */
 	@NonNull
@@ -121,7 +101,34 @@ public class AmpClient implements AmpClientApi
 
 	/// configuration
 
-	public String authHeaderValue;
+	private Context         appContext;
+	private AmpClientConfig ampClientConfig;
+	private AmpApiRx        ampApi;
+	private String          authHeaderValue;
+
+	private AmpClient( Class<? extends AmpClientConfig> configClass, Context appContext ) throws AmpClientConfigInstantiateException
+	{
+		this.appContext = appContext;
+
+		//noinspection TryWithIdenticalCatches
+		try
+		{
+			ampClientConfig = configClass.newInstance();
+			List<Interceptor> interceptors = new ArrayList<>();
+			interceptors.add( new HttpLoggingInterceptor( "Retrofit Request" ) );
+			ampApi = AmpApiFactory.newInstance( ampClientConfig.getBaseUrl( appContext ), interceptors, AmpApiRx.class );
+
+			instances.put( configClass, this );
+		}
+		catch ( InstantiationException e )
+		{
+			throw new AmpClientConfigInstantiateException();
+		}
+		catch ( IllegalAccessException e )
+		{
+			throw new AmpClientConfigInstantiateException();
+		}
+	}
 
 	/**
 	 * Update API token
@@ -136,34 +143,56 @@ public class AmpClient implements AmpClientApi
 	/// API Interface
 
 	/**
-	 * add collection identifier and authorization token to request
+	 * Add collection identifier and authorization token to request
 	 */
 	@Override
-	public Observable<Collection> getCollection()
+	public Observable<Collection> getCollection( String collectionIdentifier )
 	{
-		Log.d( "***** Amp Client *****", "Auth header value: " + authHeaderValue );
-		return ampApi.getCollection( ampClientConfig.getCollectionIdentifier( appContext ), authHeaderValue )
+		Log.d( Log.DEFAULT_TAG, "Requesting collections with collection identifier: " + collectionIdentifier + ", auth header value: " + authHeaderValue );
+		return ampApi.getCollection( collectionIdentifier, authHeaderValue )
 				.doOnNext( o -> Log.d( "****** Amp Client", "Received collection response" ) )
 				.map( CollectionResponse::getCollection )
+						//				.doOnNext( storeCollection() )
 				.compose( RxUtils.applySchedulers() );
 	}
 
 	/**
-	 * add collection identifier and authorization token to request
+	 * Add collection identifier and authorization token to request.<br/>
+	 * Use default collection identifier as specified in {@link AmpClientConfig#getCollectionIdentifier(Context)}
 	 */
 	@Override
-	public Observable<Page> getPage( String pageIdentifier )
+	public Observable<Collection> getCollection()
 	{
+		return getCollection( ampClientConfig.getCollectionIdentifier( appContext ) );
+	}
+
+	/**
+	 * Add collection identifier and authorization token to request
+	 */
+	@Override
+	public Observable<Page> getPage( String collectionIdentifier, String pageIdentifier )
+	{
+		Log.d( Log.DEFAULT_TAG, "Requesting page with collection identifier: " + collectionIdentifier + ", page identifier: " + pageIdentifier + ", auth header value: " + authHeaderValue );
 		return ampApi.getPage( ampClientConfig.getCollectionIdentifier( appContext ), pageIdentifier, authHeaderValue )
 				.map( PageResponse::getPage )
 				.compose( RxUtils.applySchedulers() );
 	}
 
 	/**
-	 * A set of pages is "returned" by emitting multiple events.
+	 * Add collection identifier and authorization token to request.<br/>
+	 * Use default collection identifier as specified in {@link AmpClientConfig#getCollectionIdentifier(Context)}
 	 */
 	@Override
-	public Observable<Page> getAllPages()
+	public Observable<Page> getPage( String pageIdentifier )
+	{
+		return getPage( ampClientConfig.getCollectionIdentifier( appContext ), pageIdentifier );
+	}
+
+	/**
+	 * A set of pages is "returned" by emitting multiple events
+	 */
+	@Override
+	public Observable<Page> getAllPages( String collectionIdentifier )
 	{
 		return getCollection()
 				.doOnNext( collection1 -> Log.d( "received collection" ) )
@@ -175,6 +204,16 @@ public class AmpClient implements AmpClientApi
 				.doOnNext( collection -> Log.d( "mapping2: page_identifier" ) )
 				.flatMap( this::getPage )
 				.doOnNext( collection -> Log.d( "received pages" ) );
+	}
+
+	/**
+	 * A set of pages is "returned" by emitting multiple events.<br/>
+	 * Use default collection identifier as specified in {@link AmpClientConfig#getCollectionIdentifier(Context)}
+	 */
+	@Override
+	public Observable<Page> getAllPages()
+	{
+		return getAllPages( ampClientConfig.getCollectionIdentifier( appContext ) );
 	}
 
 	/// API Interface END
