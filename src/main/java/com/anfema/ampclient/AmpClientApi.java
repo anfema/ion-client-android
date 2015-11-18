@@ -7,9 +7,24 @@ import rx.Observable;
 
 public interface AmpClientApi
 {
-	Observable<Page> getPage( String pageIdentifier );
+	Observable<Collection> getCollection( String collectionIdentifier );
 
+	Observable<Page> getPage( String collectionIdentifier, String pageIdentifier );
+
+	Observable<Page> getAllPages( String collectionIdentifier );
+
+	/**
+	 * assume there is one collection identifier, specified in {@link AmpClientConfig#getCollectionIdentifier}
+	 */
 	Observable<Collection> getCollection();
 
+	/**
+	 * assume there is one collection identifier, specified in {@link AmpClientConfig#getCollectionIdentifier}
+	 */
+	Observable<Page> getPage( String pageIdentifier );
+
+	/**
+	 * assume there is one collection identifier, specified in {@link AmpClientConfig#getCollectionIdentifier}
+	 */
 	Observable<Page> getAllPages();
 }
