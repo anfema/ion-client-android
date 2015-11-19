@@ -147,11 +147,8 @@ public class AmpClient implements AmpClientApi
 	@Override
 	public Observable<Collection> getCollection( String collectionIdentifier )
 	{
-		Log.d( Log.DEFAULT_TAG, "Requesting collections with collection identifier: " + collectionIdentifier + ", auth header value: " + authHeaderValue );
 		return ampApi.getCollection( collectionIdentifier, authHeaderValue )
-				.doOnNext( o -> Log.d( "****** Amp Client", "Received collection response" ) )
 				.map( CollectionResponse::getCollection )
-						//				.doOnNext( storeCollection() )
 				.compose( RxUtils.applySchedulers() );
 	}
 
@@ -171,7 +168,6 @@ public class AmpClient implements AmpClientApi
 	@Override
 	public Observable<Page> getPage( String collectionIdentifier, String pageIdentifier )
 	{
-		Log.d( Log.DEFAULT_TAG, "Requesting page with collection identifier: " + collectionIdentifier + ", page identifier: " + pageIdentifier + ", auth header value: " + authHeaderValue );
 		return ampApi.getPage( ampClientConfig.getCollectionIdentifier( appContext ), pageIdentifier, authHeaderValue )
 				.map( PageResponse::getPage )
 				.compose( RxUtils.applySchedulers() );
@@ -193,7 +189,7 @@ public class AmpClient implements AmpClientApi
 	@Override
 	public Observable<Page> getAllPages( String collectionIdentifier )
 	{
-		return getCollection()
+		return getCollection( collectionIdentifier )
 				.map( collection -> collection.pages )
 				.flatMap( Observable::from )
 				.map( page -> page.identifier )
@@ -212,7 +208,7 @@ public class AmpClient implements AmpClientApi
 
 	public Observable<Page> getSomePages( String collectionIdentifier, Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return getCollection()
+		return getCollection( collectionIdentifier )
 				.map( collection -> collection.pages )
 				.flatMap( Observable::from )
 				.filter( pagesFilter )
