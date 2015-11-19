@@ -231,9 +231,4 @@ public class AmpClient implements AmpClientApi
 
 
 	/// API Interface END
-	// FIXME this is only a hack
-	public static AmpClient getInstanceHack( Class<? extends AmpClientConfig> configClass, Context appContext )
-	{
-		return instances.get( configClass );
-	}
 }
