@@ -6,11 +6,12 @@ import android.support.annotation.NonNull;
 import com.anfema.ampclient.exceptions.AmpClientConfigInstantiateException;
 import com.anfema.ampclient.models.Collection;
 import com.anfema.ampclient.models.Page;
+import com.anfema.ampclient.models.PagePreview;
 import com.anfema.ampclient.models.responses.CollectionResponse;
 import com.anfema.ampclient.models.responses.PageResponse;
 import com.anfema.ampclient.service.AmpApiFactory;
 import com.anfema.ampclient.service.AmpApiRx;
-import com.anfema.ampclient.service.HttpLoggingInterceptor;
+import com.anfema.ampclient.service.AmpRequestLogger;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.RxUtils;
 import com.squareup.okhttp.Interceptor;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import rx.Observable;
+import rx.functions.Func1;
 
 public class AmpClient implements AmpClientApi
 {
@@ -88,7 +90,7 @@ public class AmpClient implements AmpClientApi
 			// need to retrieve API token
 			final AmpClient finalClient = this;
 			clientObservable = ampClientConfig.retrieveApiToken( appContext )
-					.doOnNext( this::setAuthHeaderValue )
+					.doOnNext( this::updateApiToken )
 					.doOnNext( apiToken -> Log.d( "****** Amp Client ******", "received API token: " + apiToken ) )
 					.map( apiToken -> finalClient );
 		}
@@ -115,7 +117,7 @@ public class AmpClient implements AmpClientApi
 		{
 			ampClientConfig = configClass.newInstance();
 			List<Interceptor> interceptors = new ArrayList<>();
-			interceptors.add( new HttpLoggingInterceptor( "Retrofit Request" ) );
+			interceptors.add( new AmpRequestLogger( "Retrofit Request" ) );
 			ampApi = AmpApiFactory.newInstance( ampClientConfig.getBaseUrl( appContext ), interceptors, AmpApiRx.class );
 
 			instances.put( configClass, this );
@@ -130,10 +132,7 @@ public class AmpClient implements AmpClientApi
 		}
 	}
 
-	/**
-	 * Update API token
-	 */
-	private void setAuthHeaderValue( String apiToken )
+	private void updateApiToken( String apiToken )
 	{
 		authHeaderValue = "token " + apiToken;
 	}
@@ -195,15 +194,10 @@ public class AmpClient implements AmpClientApi
 	public Observable<Page> getAllPages( String collectionIdentifier )
 	{
 		return getCollection()
-				.doOnNext( collection1 -> Log.d( "received collection" ) )
 				.map( collection -> collection.pages )
-				.doOnNext( collection -> Log.d( "mapping1: col pages" ) )
 				.flatMap( Observable::from )
-				.doOnNext( collection -> Log.d( "split col page" ) )
 				.map( page -> page.identifier )
-				.doOnNext( collection -> Log.d( "mapping2: page_identifier" ) )
-				.flatMap( this::getPage )
-				.doOnNext( collection -> Log.d( "received pages" ) );
+				.flatMap( this::getPage );
 	}
 
 	/**
@@ -215,6 +209,26 @@ public class AmpClient implements AmpClientApi
 	{
 		return getAllPages( ampClientConfig.getCollectionIdentifier( appContext ) );
 	}
+
+	public Observable<Page> getSomePages( String collectionIdentifier, Func1<PagePreview, Boolean> pagesFilter )
+	{
+		return getCollection()
+				.map( collection -> collection.pages )
+				.flatMap( Observable::from )
+				.filter( pagesFilter )
+				.map( page -> page.identifier )
+				.flatMap( this::getPage );
+	}
+
+	/**
+	 * A set of pages is "returned" by emitting multiple events.<br/>
+	 * Use default collection identifier as specified in {@link AmpClientConfig#getCollectionIdentifier(Context)}
+	 */
+	public Observable<Page> getSomePages( Func1<PagePreview, Boolean> pagesFilter )
+	{
+		return getSomePages( ampClientConfig.getCollectionIdentifier( appContext ), pagesFilter );
+	}
+
 
 	/// API Interface END
 	// FIXME this is only a hack

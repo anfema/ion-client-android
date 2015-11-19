@@ -8,11 +8,11 @@ import com.squareup.okhttp.Response;
 
 import java.io.IOException;
 
-public class HttpLoggingInterceptor implements Interceptor
+public class AmpRequestLogger implements Interceptor
 {
 	private final String logTag;
 
-	public HttpLoggingInterceptor( String logTag )
+	public AmpRequestLogger( String logTag )
 	{
 		this.logTag = logTag;
 	}
