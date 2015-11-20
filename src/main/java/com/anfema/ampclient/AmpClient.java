@@ -12,6 +12,7 @@ import com.anfema.ampclient.models.responses.PageResponse;
 import com.anfema.ampclient.service.AmpApiFactory;
 import com.anfema.ampclient.service.AmpApiRx;
 import com.anfema.ampclient.service.AmpRequestLogger;
+import com.anfema.ampclient.service.CachingInterceptor;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.RxUtils;
 import com.squareup.okhttp.Interceptor;
@@ -91,7 +92,7 @@ public class AmpClient implements AmpClientApi
 			final AmpClient finalClient = this;
 			clientObservable = ampClientConfig.retrieveApiToken( appContext )
 					.doOnNext( this::updateApiToken )
-					.doOnNext( apiToken -> Log.d( "****** Amp Client ******", "received API token: " + apiToken ) )
+					.doOnNext( apiToken -> Log.v( "Amp Client", "received API token: " + apiToken ) )
 					.map( apiToken -> finalClient );
 		}
 		return clientObservable
@@ -118,6 +119,7 @@ public class AmpClient implements AmpClientApi
 			ampClientConfig = configClass.newInstance();
 			List<Interceptor> interceptors = new ArrayList<>();
 			interceptors.add( new AmpRequestLogger( "Retrofit Request" ) );
+			interceptors.add( new CachingInterceptor( appContext ) );
 			ampApi = AmpApiFactory.newInstance( ampClientConfig.getBaseUrl( appContext ), interceptors, AmpApiRx.class );
 
 			instances.put( configClass, this );
