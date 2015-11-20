@@ -1,15 +1,8 @@
 package com.anfema.ampclient.service;
 
-import android.support.annotation.NonNull;
-
-import com.anfema.ampclient.models.contents.AContent;
-import com.anfema.ampclient.models.deserializers.ContentDeserializerFactory;
-import com.anfema.ampclient.models.deserializers.DateTimeDeserializer;
+import com.anfema.ampclient.serialization.GsonFactory;
 import com.anfema.ampclient.utils.Log;
-import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.Interceptor;
-
-import org.joda.time.DateTime;
 
 import java.util.Collection;
 
@@ -31,7 +24,7 @@ public class AmpApiFactory
 		// configure retrofit
 		final Builder retrofitBuilder = new Builder();
 		retrofitBuilder.addCallAdapterFactory( RxJavaCallAdapterFactory.create() ); // enable returning Observables
-		retrofitBuilder.addConverterFactory( getGsonConverterFactory() );
+		retrofitBuilder.addConverterFactory( GsonConverterFactory.create( GsonFactory.newInstance() ) );
 		retrofitBuilder.baseUrl( baseUrl );
 		Retrofit retrofit = retrofitBuilder.build();
 
@@ -46,16 +39,5 @@ public class AmpApiFactory
 	public static <T> T newInstance( String baseUrl, Class<T> serviceApi )
 	{
 		return newInstance( baseUrl, null, serviceApi );
-	}
-
-	@NonNull
-	private static GsonConverterFactory getGsonConverterFactory()
-	{
-		final GsonBuilder gsonBuilder = new GsonBuilder();
-		// parse content subtypes
-		gsonBuilder.registerTypeAdapter( AContent.class, ContentDeserializerFactory.newInstance() );
-		// parse datetime strings (trying two patterns)
-		gsonBuilder.registerTypeAdapter( DateTime.class, new DateTimeDeserializer() );
-		return GsonConverterFactory.create( gsonBuilder.create() );
 	}
 }

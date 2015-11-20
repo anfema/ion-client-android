@@ -1,4 +1,4 @@
-package com.anfema.ampclient.models.deserializers;
+package com.anfema.ampclient.serialization;
 
 import com.anfema.ampclient.models.contents.AContent;
 import com.anfema.ampclient.utils.Log;
