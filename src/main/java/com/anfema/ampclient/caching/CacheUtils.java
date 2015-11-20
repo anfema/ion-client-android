@@ -3,6 +3,7 @@ package com.anfema.ampclient.caching;
 import android.content.Context;
 
 import com.anfema.ampclient.exceptions.AmpClientUnknownRequest;
+import com.anfema.ampclient.service.AmpCall;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.StringUtils;
 import com.squareup.okhttp.HttpUrl;
@@ -73,11 +74,6 @@ public class CacheUtils
 		return index;
 	}
 
-	public enum AmpCall
-	{
-		COLLECTIONS, PAGES, FILES
-	}
-
 	/**
 	 * endpoints are defined in enum {@link AmpCall}
 	 *
@@ -88,7 +84,7 @@ public class CacheUtils
 	{
 		try
 		{
-			AmpCall.valueOf( pathSegment.toUpperCase() );
+			AmpCall.fromPathSegment( pathSegment );
 			return true;
 		}
 		catch ( IllegalArgumentException e )

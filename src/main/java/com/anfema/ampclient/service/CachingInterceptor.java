@@ -2,8 +2,8 @@ package com.anfema.ampclient.service;
 
 import android.content.Context;
 
-import com.anfema.ampclient.exceptions.AmpClientUnknownRequest;
 import com.anfema.ampclient.caching.CacheUtils;
+import com.anfema.ampclient.exceptions.AmpClientUnknownRequest;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.Log;
 import com.squareup.okhttp.HttpUrl;
@@ -38,39 +38,53 @@ public class CachingInterceptor implements Interceptor
 		Request request = chain.request();
 		HttpUrl url = request.httpUrl();
 
-		try
+		// filter out all request that shall not use caching
+		if ( AmpCall.isLoginRequest( url ) )
 		{
-			String filePath = CacheUtils.getFilePath( url.toString(), appContext );
-			if ( CacheUtils.isInCache( filePath ) )
-			{
-				Log.v( LOG_TAG, "Reading from cache" );
-				String responseBody = FileUtils.readFromFile( filePath );
-				Response cacheResponse = new Response.Builder()
-						.protocol( Protocol.HTTP_1_1 )
-						.request( request )
-						.code( HttpURLConnection.HTTP_OK )
-						.body( ResponseBody.create( MediaType.parse( com.anfema.ampclient.utils.MediaType.JSON_UTF_8.toString() ), responseBody ) )
-						.build();
-				return cacheResponse;
-			}
-
-			// not in cache, perform request
-			Log.v( LOG_TAG, "Performing real request" );
-			Response response = chain.proceed( request );
-
-			// write response to cache
-			String responseBody = getResponseBody( response );
-			FileUtils.writeToFile( responseBody, filePath );
-
-			return response;
-		}
-
-		catch ( AmpClientUnknownRequest e )
-		{
-			Log.e( LOG_TAG, "Skip caching and perform HTTP request" );
-			Log.ex( LOG_TAG, new AmpClientUnknownRequest( url.toString() ) );
 			return chain.proceed( request );
 		}
+
+		// intercept on collections and pages calls
+		{
+			try
+			{
+				String filePath = CacheUtils.getFilePath( url.toString(), appContext );
+				if ( CacheUtils.isInCache( filePath ) )
+				{
+					Log.v( LOG_TAG, "Reading from cache" );
+					return createCacheResponse( request, filePath );
+				}
+
+				// not in cache, perform request
+				Log.v( LOG_TAG, "Performing real request" );
+				Response response = chain.proceed( request );
+
+				// write response to cache
+				String responseBody = getResponseBody( response );
+				FileUtils.writeToFile( responseBody, filePath );
+
+				return response;
+			}
+
+			catch ( AmpClientUnknownRequest e )
+			{
+				Log.e( LOG_TAG, "Skip caching and perform HTTP request" );
+				Log.ex( LOG_TAG, new AmpClientUnknownRequest( url.toString() ) );
+				return chain.proceed( request );
+			}
+		}
+	}
+
+	private Response createCacheResponse( Request request, String filePath ) throws IOException
+	{
+		String responseBody = FileUtils.readFromFile( filePath );
+		Response cacheResponse = new Response.Builder()
+				.protocol( Protocol.HTTP_1_1 )
+				.request( request )
+				.code( HttpURLConnection.HTTP_OK )
+				.body( ResponseBody.create( MediaType.parse( com.anfema.ampclient.utils.MediaType.JSON_UTF_8.toString() ), responseBody ) )
+				.build();
+		return cacheResponse;
 	}
 
 	/**
