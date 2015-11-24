@@ -172,7 +172,7 @@ public class AmpClient implements AmpClientApi
 	public Observable<Page> getPage( String collectionIdentifier, String pageIdentifier )
 	{
 		Log.d( Log.DEFAULT_TAG, "Requesting page with collection identifier: " + collectionIdentifier + ", page identifier: " + pageIdentifier + ", auth header value: " + authHeaderValue );
-		return ampApi.getPage( ampClientConfig.getCollectionIdentifier( appContext ), pageIdentifier, authHeaderValue )
+		return ampApi.getPage( collectionIdentifier, pageIdentifier, authHeaderValue )
 				.map( PageResponse::getPage )
 				.compose( RxUtils.applySchedulers() );
 	}
