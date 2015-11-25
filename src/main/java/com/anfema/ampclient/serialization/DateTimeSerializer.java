@@ -6,14 +6,27 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 import org.joda.time.DateTime;
 
 import java.lang.reflect.Type;
 import java.text.ParseException;
 
-public class DateTimeDeserializer implements JsonDeserializer<DateTime>
+/**
+ * Class doing both serialization and deserialization of DateTime objects.
+ */
+public class DateTimeSerializer implements JsonDeserializer<DateTime>, JsonSerializer<DateTime>
 {
+
+	@Override
+	public JsonElement serialize( DateTime src, Type typeOfSrc, JsonSerializationContext context )
+	{
+		return new JsonPrimitive( DateTimeUtils.toString( src ) );
+	}
+
 	@Override
 	public DateTime deserialize( JsonElement json, Type typeOfT, JsonDeserializationContext context ) throws JsonParseException
 	{
@@ -24,6 +37,7 @@ public class DateTimeDeserializer implements JsonDeserializer<DateTime>
 		}
 		catch ( ParseException e )
 		{
+			Log.e( "Amp Deserializer", json.toString() );
 			Log.ex( e );
 			return null;
 		}
