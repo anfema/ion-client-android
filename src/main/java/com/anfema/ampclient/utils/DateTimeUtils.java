@@ -9,9 +9,6 @@ import java.text.ParseException;
 
 public class DateTimeUtils extends org.joda.time.DateTimeUtils
 {
-	//	public static final String DATETIME_PATTERN             = "yyyy-MM-dd'T'HH:mm:ssZZ";
-	//	public static final String DATETIME_PATTERN_WITH_MILLIS = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
-
 	public static final String DATETIME_PATTERN             = "yyyy-MM-dd'T'HH:mm:ss";
 	public static final String DATETIME_PATTERN_WITH_MILLIS = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 

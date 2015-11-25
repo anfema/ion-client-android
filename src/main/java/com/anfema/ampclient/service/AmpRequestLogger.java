@@ -22,7 +22,7 @@ public class AmpRequestLogger implements Interceptor
 	{
 		Request request = chain.request();
 		HttpUrl url = request.httpUrl();
-		Log.d( logTag, url.toString() + " Headers: " + request.headers().toString() );
+		Log.i( logTag, url.toString() + " Headers: " + request.headers().toString() );
 		return chain.proceed( request );
 	}
 }

@@ -12,6 +12,7 @@ public abstract class AmpClientConfig
 
 	/**
 	 * Implement to provide the base URL for the AMP endpoint.
+	 * Must end with "/".
 	 */
 	public abstract String getBaseUrl( Context appContext );
 

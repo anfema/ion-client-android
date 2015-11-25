@@ -1,6 +1,9 @@
 package com.anfema.ampclient.service;
 
+import android.support.annotation.NonNull;
+
 import com.anfema.ampclient.serialization.GsonFactory;
+import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.Log;
 import com.squareup.okhttp.Interceptor;
 
@@ -15,11 +18,7 @@ public class AmpApiFactory
 {
 	public static <T> T newInstance( String baseUrl, Collection<Interceptor> interceptors, Class<T> serviceApi )
 	{
-		if ( !baseUrl.endsWith( "/" ) )
-		{
-			baseUrl = baseUrl + "/";
-			Log.i( "AmpClient", "slash was appended to base URL" );
-		}
+		baseUrl = ensureEndsWithSlash( baseUrl );
 
 		// configure retrofit
 		final Builder retrofitBuilder = new Builder();
@@ -34,6 +33,17 @@ public class AmpApiFactory
 		}
 
 		return retrofit.create( serviceApi );
+	}
+
+	@NonNull
+	public static String ensureEndsWithSlash( String baseUrl )
+	{
+		if ( !baseUrl.endsWith( FileUtils.SLASH ) )
+		{
+			baseUrl = baseUrl + FileUtils.SLASH;
+			Log.i( "AmpClient", "slash was appended to base URL" );
+		}
+		return baseUrl;
 	}
 
 	public static <T> T newInstance( String baseUrl, Class<T> serviceApi )

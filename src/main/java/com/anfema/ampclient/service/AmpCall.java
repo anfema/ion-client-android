@@ -1,8 +1,7 @@
 package com.anfema.ampclient.service;
 
+import com.anfema.ampclient.utils.FileUtils;
 import com.squareup.okhttp.HttpUrl;
-
-import java.util.HashSet;
 
 public enum AmpCall
 {
@@ -34,18 +33,16 @@ public enum AmpCall
 		throw new IllegalArgumentException( "No AmpCall found for " + pathSegment );
 	}
 
-	public static boolean isLoginRequest( HttpUrl url )
+	public static AmpCall determineCall( HttpUrl httpUrl )
 	{
-		boolean containsLogin = url.encodedPath().contains( AUTHENTICATE.toString() );
-		if ( !containsLogin )
+		String url = httpUrl.toString();
+		for ( AmpCall ampCall : AmpCall.values() )
 		{
-			return false;
+			if ( url.contains( FileUtils.SLASH + ampCall.toString() + FileUtils.SLASH ) )
+			{
+				return ampCall;
+			}
 		}
-
-		HashSet<String> loginParameters = new HashSet<>();
-		loginParameters.add( "username" );
-		loginParameters.add( "password" );
-		boolean containsParameters = url.queryParameterNames().containsAll( loginParameters );
-		return containsParameters;
+		throw new IllegalArgumentException( "No AmpCall could be determined for " + url );
 	}
 }

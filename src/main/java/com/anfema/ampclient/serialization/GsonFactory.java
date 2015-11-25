@@ -14,7 +14,7 @@ public class GsonFactory
 		// parse content subtypes
 		gsonBuilder.registerTypeAdapter( AContent.class, ContentDeserializerFactory.newInstance() );
 		// parse datetime strings (trying two patterns)
-		gsonBuilder.registerTypeAdapter( DateTime.class, new DateTimeDeserializer() );
+		gsonBuilder.registerTypeAdapter( DateTime.class, new DateTimeSerializer() );
 		return gsonBuilder.create();
 	}
 }

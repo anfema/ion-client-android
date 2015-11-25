@@ -3,26 +3,36 @@ package com.anfema.ampclient;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import com.anfema.ampclient.caching.CacheUtils;
+import com.anfema.ampclient.caching.CollectionCacheMeta;
+import com.anfema.ampclient.caching.PageCacheMeta;
 import com.anfema.ampclient.exceptions.AmpClientConfigInstantiateException;
+import com.anfema.ampclient.exceptions.ReadFromCacheException;
 import com.anfema.ampclient.models.Collection;
 import com.anfema.ampclient.models.Page;
 import com.anfema.ampclient.models.PagePreview;
 import com.anfema.ampclient.models.responses.CollectionResponse;
 import com.anfema.ampclient.models.responses.PageResponse;
+import com.anfema.ampclient.serialization.GsonFactory;
 import com.anfema.ampclient.service.AmpApiFactory;
 import com.anfema.ampclient.service.AmpApiRx;
+import com.anfema.ampclient.service.AmpCall;
 import com.anfema.ampclient.service.AmpRequestLogger;
 import com.anfema.ampclient.service.CachingInterceptor;
+import com.anfema.ampclient.utils.DateTimeUtils;
+import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.RxUtils;
 import com.squareup.okhttp.Interceptor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import rx.Observable;
+import rx.functions.Action1;
 import rx.functions.Func1;
 
 public class AmpClient implements AmpClientApi
@@ -33,7 +43,6 @@ public class AmpClient implements AmpClientApi
 
 	/**
 	 * @param configClass implementation of AmpClientConfig interface
-	 * @param appContext
 	 * @return client instance, ready to go (with API token set)
 	 */
 	public static Observable<AmpClient> getInstance( Class<? extends AmpClientConfig> configClass, Context appContext )
@@ -92,7 +101,7 @@ public class AmpClient implements AmpClientApi
 			final AmpClient finalClient = this;
 			clientObservable = ampClientConfig.retrieveApiToken( appContext )
 					.doOnNext( this::updateApiToken )
-					.doOnNext( apiToken -> Log.v( "Amp Client", "received API token: " + apiToken ) )
+					.doOnNext( apiToken -> Log.i( "received API token: " + apiToken ) )
 					.map( apiToken -> finalClient );
 		}
 		return clientObservable
@@ -144,14 +153,22 @@ public class AmpClient implements AmpClientApi
 	/// API Interface
 
 	/**
-	 * Add collection identifier and authorization token to request
+	 * Add collection identifier and authorization token to request.
 	 */
 	@Override
 	public Observable<Collection> getCollection( String collectionIdentifier )
 	{
-		return ampApi.getCollection( collectionIdentifier, authHeaderValue )
-				.map( CollectionResponse::getCollection )
-				.compose( RxUtils.applySchedulers() );
+		String collectionUrl = getCollectionUrl( collectionIdentifier );
+		CollectionCacheMeta cacheMeta = CollectionCacheMeta.retrieve( collectionUrl, appContext );
+
+		if ( cacheMeta == null || cacheMeta.isOutdated() )
+		{
+			return getCollectionFromServer( collectionIdentifier, true );
+		}
+		else
+		{
+			return getCollectionFromCache( collectionIdentifier, true );
+		}
 	}
 
 	/**
@@ -170,9 +187,29 @@ public class AmpClient implements AmpClientApi
 	@Override
 	public Observable<Page> getPage( String collectionIdentifier, String pageIdentifier )
 	{
-		return ampApi.getPage( ampClientConfig.getCollectionIdentifier( appContext ), pageIdentifier, authHeaderValue )
-				.map( PageResponse::getPage )
-				.compose( RxUtils.applySchedulers() );
+		String pageUrl = getPageUrl( collectionIdentifier, pageIdentifier );
+		PageCacheMeta pageCacheMeta = PageCacheMeta.retrieve( pageUrl, appContext );
+
+		if ( pageCacheMeta == null )
+		{
+			return getPageFromServer( collectionIdentifier, pageIdentifier, false );
+		}
+
+		return getCollection( collectionIdentifier )
+				// get page's last_changed date from collection
+				.flatMap( collection -> collection.getPageLastChanged( pageIdentifier ) )
+						// compare last_changed date of cached page with that of collection
+				.map( pageCacheMeta::isOutdated )
+				.flatMap( isOutdated -> {
+					if ( isOutdated )
+					{
+						return getPageFromServer( collectionIdentifier, pageIdentifier, true );
+					}
+					else
+					{
+						return getPageFromCache( collectionIdentifier, pageIdentifier, true );
+					}
+				} );
 	}
 
 	/**
@@ -229,4 +266,153 @@ public class AmpClient implements AmpClientApi
 
 
 	/// API Interface END
+
+
+	/// Get collection methods
+
+	private Observable<Collection> getCollectionFromCache( String collectionIdentifier, boolean serverCallAsBackup )
+	{
+		try
+		{
+			String collectionUrl = getCollectionUrl( collectionIdentifier );
+			Log.i( "Cache Request", collectionUrl );
+			String filePath = CacheUtils.getFilePath( collectionUrl, appContext );
+			return FileUtils
+					.readFromFile( filePath )
+					.map( collectionsString -> GsonFactory.newInstance().fromJson( collectionsString, CollectionResponse.class ) )
+					.map( CollectionResponse::getCollection )
+					.compose( RxUtils.applySchedulers() )
+					.onErrorResumeNext( throwable -> {
+						return handleUnsuccessfulCollectionCacheReading( collectionIdentifier, serverCallAsBackup, throwable );
+					} );
+		}
+		catch ( IOException e )
+		{
+			return handleUnsuccessfulCollectionCacheReading( collectionIdentifier, serverCallAsBackup, e );
+		}
+	}
+
+	private Observable<Collection> handleUnsuccessfulCollectionCacheReading( String collectionIdentifier, boolean serverCallAsBackup, Throwable e )
+	{
+		Log.ex( e );
+		if ( serverCallAsBackup )
+		{
+			return getCollectionFromServer( collectionIdentifier, false );
+		}
+		else
+		{
+			return Observable.error( e );
+		}
+	}
+
+	private Observable<Collection> getCollectionFromServer( String collectionIdentifier, boolean cacheAsBackup )
+	{
+		return ampApi.getCollection( collectionIdentifier, authHeaderValue )
+				.map( CollectionResponse::getCollection )
+				.doOnNext( saveCollectionMeta() )
+				.compose( RxUtils.applySchedulers() )
+				.onErrorResumeNext( throwable -> {
+					Log.ex( throwable );
+					if ( cacheAsBackup )
+					{
+						return getCollectionFromCache( collectionIdentifier, false );
+					}
+					return Observable.error( new ReadFromCacheException( getCollectionUrl( collectionIdentifier ) ) );
+				} );
+	}
+
+
+	/// Get collection methods END
+
+
+	/// Get page methods
+
+	/**
+	 * @param serverCallAsBackup If reading from cache is not successful, should a server call be made?
+	 */
+	private Observable<Page> getPageFromCache( String collectionIdentifier, String pageIdentifier, boolean serverCallAsBackup )
+	{
+		String pageUrl = getPageUrl( collectionIdentifier, pageIdentifier );
+		Log.i( "Cache Request", pageUrl );
+		try
+		{
+			String filePath = CacheUtils.getFilePath( pageUrl, appContext );
+			return FileUtils
+					.readFromFile( filePath )
+					.map( pagesString -> GsonFactory.newInstance().fromJson( pagesString, PageResponse.class ) )
+					.map( PageResponse::getPage )
+					.compose( RxUtils.applySchedulers() )
+					.onErrorResumeNext( throwable -> {
+						return handleUnsuccessfulPageCacheReading( collectionIdentifier, pageIdentifier, serverCallAsBackup, pageUrl, throwable );
+					} );
+		}
+		catch ( IOException e )
+		{
+			return handleUnsuccessfulPageCacheReading( collectionIdentifier, pageIdentifier, serverCallAsBackup, pageUrl, e );
+		}
+	}
+
+	private Observable<Page> handleUnsuccessfulPageCacheReading( String collectionIdentifier, String pageIdentifier, boolean serverCallAsBackup, String pageUrl, Throwable e )
+	{
+		Log.ex( e );
+		if ( serverCallAsBackup )
+		{
+			return getPageFromServer( collectionIdentifier, pageIdentifier, false );
+		}
+		return Observable.error( new ReadFromCacheException( pageUrl ) );
+	}
+
+	/**
+	 * @param cacheAsBackup If server call is not successful, should cached version be used (even if it might be old)?
+	 */
+	private Observable<Page> getPageFromServer( String collectionIdentifier, String pageIdentifier, boolean cacheAsBackup )
+	{
+		return ampApi.getPage( ampClientConfig.getCollectionIdentifier( appContext ), pageIdentifier, authHeaderValue )
+				.map( PageResponse::getPage )
+				.doOnNext( savePageMeta() )
+				.compose( RxUtils.applySchedulers() )
+				.onErrorResumeNext( throwable -> {
+					Log.ex( throwable );
+					if ( cacheAsBackup )
+					{
+						return getPageFromCache( collectionIdentifier, pageIdentifier, false );
+					}
+					return Observable.error( throwable );
+				} );
+	}
+
+	/// Get page methods END
+
+
+	@NonNull
+	private Action1<Collection> saveCollectionMeta()
+	{
+		return collection -> {
+			String url = getCollectionUrl( collection.identifier );
+			CollectionCacheMeta cacheMeta = new CollectionCacheMeta( url, DateTimeUtils.now() );
+			CollectionCacheMeta.save( url, cacheMeta, appContext );
+		};
+	}
+
+	@NonNull
+	private Action1<Page> savePageMeta()
+	{
+		return page -> {
+			String url = getPageUrl( page.collection, page.identifier );
+			PageCacheMeta cacheMeta = new PageCacheMeta( url, page.last_changed );
+			PageCacheMeta.save( url, cacheMeta, appContext );
+		};
+	}
+
+	private String getCollectionUrl( String collectionId )
+	{
+		String baseUrl = ampClientConfig.getBaseUrl( appContext );
+		return baseUrl + AmpCall.COLLECTIONS.toString() + FileUtils.SLASH + collectionId;
+	}
+
+	private String getPageUrl( String collectionId, String pageId )
+	{
+		String baseUrl = ampClientConfig.getBaseUrl( appContext );
+		return baseUrl + AmpCall.PAGES.toString() + FileUtils.SLASH + collectionId + FileUtils.SLASH + pageId;
+	}
 }

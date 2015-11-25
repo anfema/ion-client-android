@@ -11,8 +11,12 @@ import java.io.OutputStreamWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import rx.Observable;
+
 public class FileUtils
 {
+	public static final String SLASH = "/";
+
 	public static void createFolders( String pageFilePath )
 	{
 		File pageFolder = new File( pageFilePath );
@@ -38,7 +42,6 @@ public class FileUtils
 	public static void writeToFile( String content, File file ) throws IOException
 	{
 		Log.d( "FileUtil", "write to file: " + file.getPath() );
-		Log.d( "FileUtil", "is file: " + file.isFile() );
 		if ( file.exists() )
 		{
 			file.delete();
@@ -50,38 +53,37 @@ public class FileUtils
 		bufferedWriter.close();
 	}
 
-	//	public static String readFromFile( File file ) throws IOException
-	//	{
-	//		InputStream inputStream = new FileInputStream( file );
-	//		BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( inputStream ) );
-	//		char[] buffer = null;
-	//		bufferedReader.read( buffer );
-	//		bufferedReader.close();
-	//
-	//		return buffer.toString();
-	//	}
-
-	public static String readFromFile( String filePath ) throws IOException
+	public static Observable<String> readFromFile( String filePath ) throws IOException
 	{
 		File file = new File( filePath );
 		return readFromFile( file );
 	}
 
-	public static String readFromFile( File file ) throws IOException
+	public static Observable<String> readFromFile( File file ) throws IOException
 	{
-		//Read text from file
-		StringBuilder text = new StringBuilder();
-
-		BufferedReader br = new BufferedReader( new FileReader( file ) );
-		String line;
-
-		while ( ( line = br.readLine() ) != null )
+		return Observable.just( file ).flatMap( o ->
 		{
-			text.append( line );
-			text.append( '\n' );
-		}
-		br.close();
-		return text.toString();
+			StringBuilder text = new StringBuilder();
+			BufferedReader br = null;
+			try
+			{
+				br = new BufferedReader( new FileReader( file ) );
+				String line;
+
+				while ( ( line = br.readLine() ) != null )
+				{
+					text.append( line );
+					text.append( '\n' );
+				}
+				br.close();
+				return Observable.just( text.toString() );
+			}
+			catch ( IOException e )
+			{
+				return Observable.error( e );
+			}
+		} ).compose( RxUtils.applySchedulers() );
+
 	}
 
 	public static void deleteRecursive( File fileOrDirectory )
