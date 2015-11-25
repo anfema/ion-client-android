@@ -381,7 +381,7 @@ public class AmpClient implements AmpClientApi
 	 */
 	private Observable<Page> getPageFromServer( String collectionIdentifier, String pageIdentifier, boolean cacheAsBackup )
 	{
-		return ampApi.getPage( ampClientConfig.getCollectionIdentifier( appContext ), pageIdentifier, authHeaderValue )
+		return ampApi.getPage( collectionIdentifier, pageIdentifier, authHeaderValue )
 				.map( PageResponse::getPage )
 				.doOnNext( savePageMeta() )
 				.compose( RxUtils.applySchedulers() )
