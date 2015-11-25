@@ -4,8 +4,8 @@ import java.io.IOException;
 
 public class ReadFromCacheException extends IOException
 {
-	public ReadFromCacheException( String url )
+	public ReadFromCacheException( String url, Throwable cause )
 	{
-		super( "Unable to read from local storage. URL: " + url );
+		super( "Failure on cache request " + url, cause );
 	}
 }

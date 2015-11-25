@@ -7,6 +7,7 @@ import com.anfema.ampclient.caching.CacheUtils;
 import com.anfema.ampclient.caching.CollectionCacheMeta;
 import com.anfema.ampclient.caching.PageCacheMeta;
 import com.anfema.ampclient.exceptions.AmpClientConfigInstantiateException;
+import com.anfema.ampclient.exceptions.NetworkRequestException;
 import com.anfema.ampclient.exceptions.ReadFromCacheException;
 import com.anfema.ampclient.models.Collection;
 import com.anfema.ampclient.models.Page;
@@ -22,6 +23,7 @@ import com.anfema.ampclient.service.CachingInterceptor;
 import com.anfema.ampclient.utils.DateTimeUtils;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.Log;
+import com.anfema.ampclient.utils.NetworkUtils;
 import com.anfema.ampclient.utils.RxUtils;
 import com.squareup.okhttp.Interceptor;
 
@@ -90,14 +92,14 @@ public class AmpClient implements AmpClientApi
 	private Observable<AmpClient> getInstanceWithAuthToken( Context appContext )
 	{
 		Observable<AmpClient> clientObservable;
-		if ( authHeaderValue != null /* || TODO offline mode */ )
+		if ( authHeaderValue != null || !NetworkUtils.isConnected( appContext ) )
 		{
-			// authHeaderValue is available
+			// authHeaderValue is available or offline mode where no request are fired and, thus, no API token is required
 			clientObservable = Observable.just( this );
 		}
 		else
 		{
-			// need to retrieve API token
+			// retrieve API token
 			final AmpClient finalClient = this;
 			clientObservable = ampClientConfig.retrieveApiToken( appContext )
 					.doOnNext( this::updateApiToken )
@@ -127,7 +129,7 @@ public class AmpClient implements AmpClientApi
 		{
 			ampClientConfig = configClass.newInstance();
 			List<Interceptor> interceptors = new ArrayList<>();
-			interceptors.add( new AmpRequestLogger( "Retrofit Request" ) );
+			interceptors.add( new AmpRequestLogger( "Network Request" ) );
 			interceptors.add( new CachingInterceptor( appContext ) );
 			ampApi = AmpApiFactory.newInstance( ampClientConfig.getBaseUrl( appContext ), interceptors, AmpApiRx.class );
 
@@ -161,7 +163,11 @@ public class AmpClient implements AmpClientApi
 		String collectionUrl = getCollectionUrl( collectionIdentifier );
 		CollectionCacheMeta cacheMeta = CollectionCacheMeta.retrieve( collectionUrl, appContext );
 
-		if ( cacheMeta == null || cacheMeta.isOutdated() )
+		if ( !NetworkUtils.isConnected( appContext ) )
+		{
+			return getCollectionFromCache( collectionIdentifier, false );
+		}
+		else if ( cacheMeta == null || cacheMeta.isOutdated() )
 		{
 			return getCollectionFromServer( collectionIdentifier, true );
 		}
@@ -201,7 +207,11 @@ public class AmpClient implements AmpClientApi
 						// compare last_changed date of cached page with that of collection
 				.map( pageCacheMeta::isOutdated )
 				.flatMap( isOutdated -> {
-					if ( isOutdated )
+					if ( !NetworkUtils.isConnected( appContext ) )
+					{
+						return getPageFromCache( collectionIdentifier, pageIdentifier, false );
+					}
+					else if ( isOutdated )
 					{
 						return getPageFromServer( collectionIdentifier, pageIdentifier, true );
 					}
@@ -272,10 +282,10 @@ public class AmpClient implements AmpClientApi
 
 	private Observable<Collection> getCollectionFromCache( String collectionIdentifier, boolean serverCallAsBackup )
 	{
+		String collectionUrl = getCollectionUrl( collectionIdentifier );
+		Log.i( "Cache Request", collectionUrl );
 		try
 		{
-			String collectionUrl = getCollectionUrl( collectionIdentifier );
-			Log.i( "Cache Request", collectionUrl );
 			String filePath = CacheUtils.getFilePath( collectionUrl, appContext );
 			return FileUtils
 					.readFromFile( filePath )
@@ -283,25 +293,26 @@ public class AmpClient implements AmpClientApi
 					.map( CollectionResponse::getCollection )
 					.compose( RxUtils.applySchedulers() )
 					.onErrorResumeNext( throwable -> {
-						return handleUnsuccessfulCollectionCacheReading( collectionIdentifier, serverCallAsBackup, throwable );
+						return handleUnsuccessfulCollectionCacheReading( collectionIdentifier, collectionUrl, serverCallAsBackup, throwable );
 					} );
 		}
 		catch ( IOException e )
 		{
-			return handleUnsuccessfulCollectionCacheReading( collectionIdentifier, serverCallAsBackup, e );
+			return handleUnsuccessfulCollectionCacheReading( collectionIdentifier, collectionUrl, serverCallAsBackup, e );
 		}
 	}
 
-	private Observable<Collection> handleUnsuccessfulCollectionCacheReading( String collectionIdentifier, boolean serverCallAsBackup, Throwable e )
+	private Observable<Collection> handleUnsuccessfulCollectionCacheReading( String collectionIdentifier, String collectionUrl, boolean serverCallAsBackup, Throwable e )
 	{
-		Log.ex( e );
 		if ( serverCallAsBackup )
 		{
+			Log.w( "Backup Request", "Cache request " + collectionUrl + " failed. Trying network request instead..." );
 			return getCollectionFromServer( collectionIdentifier, false );
 		}
 		else
 		{
-			return Observable.error( e );
+			Log.e( "Failed Request", "Cache request " + collectionUrl + " failed." );
+			return Observable.error( new ReadFromCacheException( collectionUrl, e ) );
 		}
 	}
 
@@ -312,12 +323,14 @@ public class AmpClient implements AmpClientApi
 				.doOnNext( saveCollectionMeta() )
 				.compose( RxUtils.applySchedulers() )
 				.onErrorResumeNext( throwable -> {
-					Log.ex( throwable );
+					String collectionUrl = getCollectionUrl( collectionIdentifier );
 					if ( cacheAsBackup )
 					{
+						Log.w( "Backup Request", "Network request " + collectionUrl + " failed. Trying cache request instead..." );
 						return getCollectionFromCache( collectionIdentifier, false );
 					}
-					return Observable.error( new ReadFromCacheException( getCollectionUrl( collectionIdentifier ) ) );
+					Log.e( "Failed Request", "Network request " + collectionUrl + " failed." );
+					return Observable.error( new NetworkRequestException( collectionUrl, throwable ) );
 				} );
 	}
 
@@ -354,12 +367,13 @@ public class AmpClient implements AmpClientApi
 
 	private Observable<Page> handleUnsuccessfulPageCacheReading( String collectionIdentifier, String pageIdentifier, boolean serverCallAsBackup, String pageUrl, Throwable e )
 	{
-		Log.ex( e );
 		if ( serverCallAsBackup )
 		{
+			Log.w( "Backup Request", "Cache request " + pageUrl + " failed. Trying network request instead..." );
 			return getPageFromServer( collectionIdentifier, pageIdentifier, false );
 		}
-		return Observable.error( new ReadFromCacheException( pageUrl ) );
+		Log.e( "Failed Request", "Cache request " + pageUrl + " failed." );
+		return Observable.error( new ReadFromCacheException( pageUrl, e ) );
 	}
 
 	/**
@@ -372,12 +386,14 @@ public class AmpClient implements AmpClientApi
 				.doOnNext( savePageMeta() )
 				.compose( RxUtils.applySchedulers() )
 				.onErrorResumeNext( throwable -> {
-					Log.ex( throwable );
+					String pageUrl = getPageUrl( collectionIdentifier, pageIdentifier );
 					if ( cacheAsBackup )
 					{
+						Log.w( "Backup Request", "Network request " + pageUrl + " failed. Trying cache request instead..." );
 						return getPageFromCache( collectionIdentifier, pageIdentifier, false );
 					}
-					return Observable.error( throwable );
+					Log.e( "Failed Request", "Network request " + pageUrl + " failed." );
+					return Observable.error( new NetworkRequestException( pageUrl, throwable ) );
 				} );
 	}
 
