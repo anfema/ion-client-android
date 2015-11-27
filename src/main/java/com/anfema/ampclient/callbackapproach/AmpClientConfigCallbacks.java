@@ -15,25 +15,25 @@ public class AmpClientConfigCallbacks
 	public static final String PREFS_API_TOKEN             = "prefs_api_token";
 	public static final String PREFS_COLLECTION_IDENTIFIER = "prefs_collection_identifier";
 
-	private Context         appContext;
+	private Context         context;
 	private AmpApiCallbacks ampApi;
 	private String          baseUrl;
 	private String          apiToken;
 	private String          collectionIdentifier;
 	// TODO add Locale, add variation, add caching strategy ?
 
-	public AmpClientConfigCallbacks( Context appContext, String baseUrl, String apiToken, String collectionIdentifier )
+	AmpClientConfigCallbacks( Context context, String baseUrl, String apiToken, String collectionIdentifier )
 	{
-		this.appContext = appContext;
+		this.context = context;
 		ampApi = AmpApiFactory.newInstance( baseUrl, AmpApiCallbacks.class );
 		setBaseUrl( baseUrl );
 		setApiToken( apiToken );
 		setCollectionIdentifier( collectionIdentifier );
 	}
 
-	public AmpClientConfigCallbacks( Context appContext )
+	public AmpClientConfigCallbacks( Context context )
 	{
-		this.appContext = appContext;
+		this.context = context;
 	}
 
 	public AmpApiCallbacks getAmpApi()
@@ -103,11 +103,11 @@ public class AmpClientConfigCallbacks
 
 	Editor getEditor()
 	{
-		return appContext.getSharedPreferences( PREFS_NAME, 0 ).edit();
+		return context.getSharedPreferences( PREFS_NAME, 0 ).edit();
 	}
 
 	SharedPreferences getPrefs()
 	{
-		return appContext.getSharedPreferences( PREFS_NAME, 0 );
+		return context.getSharedPreferences( PREFS_NAME, 0 );
 	}
 }

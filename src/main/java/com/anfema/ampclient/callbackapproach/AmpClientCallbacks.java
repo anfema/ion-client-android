@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.anfema.ampclient.models.responses.CollectionResponse;
 import com.anfema.ampclient.models.responses.PageResponse;
+import com.anfema.ampclient.utils.ContextUtils;
 
 import retrofit.Call;
 
@@ -13,19 +14,22 @@ public class AmpClientCallbacks implements AmpClientApiCallbacks
 
 	private static AmpClientCallbacks instance;
 
-	public static AmpClientCallbacks getInstance( Context appContext )
+	public static AmpClientCallbacks getInstance( Context context )
 	{
+		context = ContextUtils.getApplicationContext( context );
+
 		if ( instance == null )
 		{
-			instance = new AmpClientCallbacks( appContext );
+			instance = new AmpClientCallbacks( context );
 		}
 		// application context can become null
-		if ( instance.appContext == null )
+		if ( instance.context == null )
 		{
-			instance.appContext = appContext;
+			instance.context = context;
 		}
 		return instance;
 	}
+
 	/// Singleton END
 
 
@@ -37,7 +41,7 @@ public class AmpClientCallbacks implements AmpClientApiCallbacks
 
 	public AmpClientCallbacks init( String baseUrl, String apiToken, String collectionIdentifier )
 	{
-		config = new AmpClientConfigCallbacks( appContext, baseUrl, apiToken, collectionIdentifier );
+		config = new AmpClientConfigCallbacks( context, baseUrl, apiToken, collectionIdentifier );
 		return this;
 	}
 
@@ -76,19 +80,19 @@ public class AmpClientCallbacks implements AmpClientApiCallbacks
 	/// API Interface END
 
 
-	private Context                  appContext;
+	private Context                  context;
 	private AmpClientConfigCallbacks config;
 
-	private AmpClientCallbacks( Context appContext )
+	private AmpClientCallbacks( Context context )
 	{
-		this.appContext = appContext;
+		this.context = context;
 	}
 
 	public AmpClientConfigCallbacks getConfig()
 	{
 		if ( config == null )
 		{
-			config = new AmpClientConfigCallbacks( appContext );
+			config = new AmpClientConfigCallbacks( context );
 		}
 		return config;
 	}

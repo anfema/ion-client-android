@@ -3,6 +3,7 @@ package com.anfema.ampclient.service;
 import android.content.Context;
 
 import com.anfema.ampclient.caching.CacheUtils;
+import com.anfema.ampclient.utils.ContextUtils;
 import com.anfema.ampclient.utils.FileUtils;
 import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.Interceptor;
@@ -21,11 +22,11 @@ public class CachingInterceptor implements Interceptor
 {
 	private static final String LOG_TAG = "AMP Caching";
 
-	private Context appContext;
+	private Context context;
 
-	public CachingInterceptor( Context appContext )
+	public CachingInterceptor( Context context )
 	{
-		this.appContext = appContext;
+		this.context = ContextUtils.getApplicationContext( context );
 	}
 
 	@Override
@@ -40,7 +41,7 @@ public class CachingInterceptor implements Interceptor
 		//		{
 		//			return chain.proceed( request );
 		//		}
-		String filePath = CacheUtils.getFilePath( url.toString(), appContext );
+		String filePath = CacheUtils.getFilePath( url.toString(), context );
 		Response response = chain.proceed( request );
 
 		// write response to cache

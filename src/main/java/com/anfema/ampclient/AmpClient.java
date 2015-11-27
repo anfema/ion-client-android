@@ -20,6 +20,7 @@ import com.anfema.ampclient.service.AmpApiRx;
 import com.anfema.ampclient.service.AmpCall;
 import com.anfema.ampclient.service.AmpRequestLogger;
 import com.anfema.ampclient.service.CachingInterceptor;
+import com.anfema.ampclient.utils.ContextUtils;
 import com.anfema.ampclient.utils.DateTimeUtils;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.Log;
@@ -47,8 +48,10 @@ public class AmpClient implements AmpClientApi
 	 * @param configClass implementation of AmpClientConfig interface
 	 * @return client instance, ready to go (with API token set)
 	 */
-	public static Observable<AmpClient> getInstance( Class<? extends AmpClientConfig> configClass, Context appContext )
+	public static Observable<AmpClient> getInstance( Class<? extends AmpClientConfig> configClass, Context context )
 	{
+		context = ContextUtils.getApplicationContext( context );
+
 		if ( instances == null )
 		{
 			instances = new HashMap<>();
@@ -60,27 +63,27 @@ public class AmpClient implements AmpClientApi
 		{
 			try
 			{
-				client = new AmpClient( configClass, appContext );
+				client = new AmpClient( configClass, context );
 			}
 			catch ( AmpClientConfigInstantiateException e )
 			{
 				return Observable.error( e );
 			}
 		}
-		else if ( client.appContext == null )
+		else if ( client.context == null )
 		{
 			// fail early if app context is null
-			if ( appContext == null )
+			if ( context == null )
 			{
 				return Observable.error( new NullPointerException( "App context is null" ) );
 			}
-			// update appContext for existing clients if it became null
-			client.appContext = appContext;
+			// update context for existing clients if it became null
+			client.context = context;
 		}
 
 		// At this point the client is initialized, but might not have an API token yet.
 
-		return client.getInstanceWithAuthToken( appContext );
+		return client.getInstanceWithAuthToken( context );
 	}
 
 	/**
@@ -89,10 +92,10 @@ public class AmpClient implements AmpClientApi
 	 * @return Observable emitting initialized client having an API token
 	 */
 	@NonNull
-	private Observable<AmpClient> getInstanceWithAuthToken( Context appContext )
+	private Observable<AmpClient> getInstanceWithAuthToken( Context context )
 	{
 		Observable<AmpClient> clientObservable;
-		if ( authHeaderValue != null || !NetworkUtils.isConnected( appContext ) )
+		if ( authHeaderValue != null || !NetworkUtils.isConnected( context ) )
 		{
 			// authHeaderValue is available or offline mode where no request are fired and, thus, no API token is required
 			clientObservable = Observable.just( this );
@@ -101,7 +104,7 @@ public class AmpClient implements AmpClientApi
 		{
 			// retrieve API token
 			final AmpClient finalClient = this;
-			clientObservable = ampClientConfig.retrieveApiToken( appContext )
+			clientObservable = ampClientConfig.requestApiToken( context )
 					.doOnNext( this::updateApiToken )
 					.doOnNext( apiToken -> Log.i( "received API token: " + apiToken ) )
 					.map( apiToken -> finalClient );
@@ -115,14 +118,14 @@ public class AmpClient implements AmpClientApi
 
 	/// configuration
 
-	private Context         appContext;
+	private Context         context;
 	private AmpClientConfig ampClientConfig;
 	private AmpApiRx        ampApi;
 	private String          authHeaderValue;
 
-	private AmpClient( Class<? extends AmpClientConfig> configClass, Context appContext ) throws AmpClientConfigInstantiateException
+	private AmpClient( Class<? extends AmpClientConfig> configClass, Context context ) throws AmpClientConfigInstantiateException
 	{
-		this.appContext = appContext;
+		this.context = context;
 
 		//noinspection TryWithIdenticalCatches
 		try
@@ -130,8 +133,8 @@ public class AmpClient implements AmpClientApi
 			ampClientConfig = configClass.newInstance();
 			List<Interceptor> interceptors = new ArrayList<>();
 			interceptors.add( new AmpRequestLogger( "Network Request" ) );
-			interceptors.add( new CachingInterceptor( appContext ) );
-			ampApi = AmpApiFactory.newInstance( ampClientConfig.getBaseUrl( appContext ), interceptors, AmpApiRx.class );
+			interceptors.add( new CachingInterceptor( context ) );
+			ampApi = AmpApiFactory.newInstance( ampClientConfig.getBaseUrl( context ), interceptors, AmpApiRx.class );
 
 			instances.put( configClass, this );
 		}
@@ -161,9 +164,9 @@ public class AmpClient implements AmpClientApi
 	public Observable<Collection> getCollection( String collectionIdentifier )
 	{
 		String collectionUrl = getCollectionUrl( collectionIdentifier );
-		CollectionCacheMeta cacheMeta = CollectionCacheMeta.retrieve( collectionUrl, appContext );
+		CollectionCacheMeta cacheMeta = CollectionCacheMeta.retrieve( collectionUrl, context );
 
-		if ( !NetworkUtils.isConnected( appContext ) )
+		if ( !NetworkUtils.isConnected( context ) )
 		{
 			return getCollectionFromCache( collectionIdentifier, false );
 		}
@@ -184,7 +187,7 @@ public class AmpClient implements AmpClientApi
 	@Override
 	public Observable<Collection> getCollection()
 	{
-		return getCollection( ampClientConfig.getCollectionIdentifier( appContext ) );
+		return getCollection( ampClientConfig.getCollectionIdentifier( context ) );
 	}
 
 	/**
@@ -194,7 +197,7 @@ public class AmpClient implements AmpClientApi
 	public Observable<Page> getPage( String collectionIdentifier, String pageIdentifier )
 	{
 		String pageUrl = getPageUrl( collectionIdentifier, pageIdentifier );
-		PageCacheMeta pageCacheMeta = PageCacheMeta.retrieve( pageUrl, appContext );
+		PageCacheMeta pageCacheMeta = PageCacheMeta.retrieve( pageUrl, context );
 
 		if ( pageCacheMeta == null )
 		{
@@ -207,7 +210,7 @@ public class AmpClient implements AmpClientApi
 						// compare last_changed date of cached page with that of collection
 				.map( pageCacheMeta::isOutdated )
 				.flatMap( isOutdated -> {
-					if ( !NetworkUtils.isConnected( appContext ) )
+					if ( !NetworkUtils.isConnected( context ) )
 					{
 						return getPageFromCache( collectionIdentifier, pageIdentifier, false );
 					}
@@ -229,7 +232,7 @@ public class AmpClient implements AmpClientApi
 	@Override
 	public Observable<Page> getPage( String pageIdentifier )
 	{
-		return getPage( ampClientConfig.getCollectionIdentifier( appContext ), pageIdentifier );
+		return getPage( ampClientConfig.getCollectionIdentifier( context ), pageIdentifier );
 	}
 
 	/**
@@ -252,7 +255,7 @@ public class AmpClient implements AmpClientApi
 	@Override
 	public Observable<Page> getAllPages()
 	{
-		return getAllPages( ampClientConfig.getCollectionIdentifier( appContext ) );
+		return getAllPages( ampClientConfig.getCollectionIdentifier( context ) );
 	}
 
 	public Observable<Page> getSomePages( String collectionIdentifier, Func1<PagePreview, Boolean> pagesFilter )
@@ -273,7 +276,7 @@ public class AmpClient implements AmpClientApi
 	 */
 	public Observable<Page> getSomePages( Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return getSomePages( ampClientConfig.getCollectionIdentifier( appContext ), pagesFilter );
+		return getSomePages( ampClientConfig.getCollectionIdentifier( context ), pagesFilter );
 	}
 
 
@@ -288,7 +291,7 @@ public class AmpClient implements AmpClientApi
 		Log.i( "Cache Request", collectionUrl );
 		try
 		{
-			String filePath = CacheUtils.getFilePath( collectionUrl, appContext );
+			String filePath = CacheUtils.getFilePath( collectionUrl, context );
 			return FileUtils
 					.readFromFile( filePath )
 					.map( collectionsString -> GsonFactory.newInstance().fromJson( collectionsString, CollectionResponse.class ) )
@@ -351,7 +354,7 @@ public class AmpClient implements AmpClientApi
 		Log.i( "Cache Request", pageUrl );
 		try
 		{
-			String filePath = CacheUtils.getFilePath( pageUrl, appContext );
+			String filePath = CacheUtils.getFilePath( pageUrl, context );
 			return FileUtils
 					.readFromFile( filePath )
 					.map( pagesString -> GsonFactory.newInstance().fromJson( pagesString, PageResponse.class ) )
@@ -408,7 +411,7 @@ public class AmpClient implements AmpClientApi
 		return collection -> {
 			String url = getCollectionUrl( collection.identifier );
 			CollectionCacheMeta cacheMeta = new CollectionCacheMeta( url, DateTimeUtils.now() );
-			CollectionCacheMeta.save( url, cacheMeta, appContext );
+			CollectionCacheMeta.save( url, cacheMeta, context );
 		};
 	}
 
@@ -418,19 +421,19 @@ public class AmpClient implements AmpClientApi
 		return page -> {
 			String url = getPageUrl( page.collection, page.identifier );
 			PageCacheMeta cacheMeta = new PageCacheMeta( url, page.last_changed );
-			PageCacheMeta.save( url, cacheMeta, appContext );
+			PageCacheMeta.save( url, cacheMeta, context );
 		};
 	}
 
 	private String getCollectionUrl( String collectionId )
 	{
-		String baseUrl = ampClientConfig.getBaseUrl( appContext );
+		String baseUrl = ampClientConfig.getBaseUrl( context );
 		return baseUrl + AmpCall.COLLECTIONS.toString() + FileUtils.SLASH + collectionId;
 	}
 
 	private String getPageUrl( String collectionId, String pageId )
 	{
-		String baseUrl = ampClientConfig.getBaseUrl( appContext );
+		String baseUrl = ampClientConfig.getBaseUrl( context );
 		return baseUrl + AmpCall.PAGES.toString() + FileUtils.SLASH + collectionId + FileUtils.SLASH + pageId;
 	}
 }
