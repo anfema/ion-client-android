@@ -263,9 +263,7 @@ public class AmpClient implements AmpClientApi
 		return getCollection( collectionIdentifier )
 				.map( collection -> collection.pages )
 				.flatMap( Observable::from )
-				.doOnNext( pagePreview -> Log.d( "******Get Some Pages1*****", pagePreview.toString() ) )
 				.filter( pagesFilter )
-				.doOnNext( pagePreview -> Log.d( "******Get Some Pages2*****", pagePreview.toString() ) )
 				.map( page -> page.identifier )
 				.flatMap( pageIdentifier -> getPage( collectionIdentifier, pageIdentifier ) );
 	}
@@ -435,5 +433,11 @@ public class AmpClient implements AmpClientApi
 	{
 		String baseUrl = ampClientConfig.getBaseUrl( context );
 		return baseUrl + AmpCall.PAGES.toString() + FileUtils.SLASH + collectionId + FileUtils.SLASH + pageId;
+	}
+
+	// FIXME this is only a hack
+	public static AmpClient getInstanceHack( Class<? extends AmpClientConfig> configClass, Context appContext )
+	{
+		return instances.get( configClass );
 	}
 }
