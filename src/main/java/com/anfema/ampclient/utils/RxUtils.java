@@ -12,14 +12,17 @@ public class RxUtils
 	/**
 	 * If an exception is thrown during a network call, it will be logged by default using this action.
 	 */
-	public static final Action1<Throwable> DEFAULT_EXCEPTION_HANDLER = exception -> {
+	public static final Action1<Throwable> DEFAULT_EXCEPTION_HANDLER = RxUtils::logException;
+
+	public static void logException( Throwable exception )
+	{
 		if ( exception instanceof HttpException )
 		{
 			HttpException httpException = ( HttpException ) exception;
 			Log.e( "HTTP request failed and returned status " + httpException.code() + "." );
 		}
 		Log.ex( exception );
-	};
+	}
 
 	/**
 	 * Convenience action for on error:
