@@ -8,6 +8,8 @@ public abstract class AContent
 
 	public String outlet;
 
+	public int position;
+
 	public boolean is_searchable; // not used by container outlet
 
 	@Override

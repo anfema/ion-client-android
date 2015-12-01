@@ -4,7 +4,5 @@ import java.util.ArrayList;
 
 public class ContainerContent extends AContent
 {
-	public String position;
-
 	public ArrayList<AContent> children;
 }
