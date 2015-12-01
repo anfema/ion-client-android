@@ -104,7 +104,7 @@ public class AmpClient implements AmpClientApi
 		{
 			// retrieve API token
 			final AmpClient finalClient = this;
-			clientObservable = ampClientConfig.requestApiToken( context )
+			clientObservable = TokenHolder.getToken( ampClientConfig.getClass(), context )
 					.doOnNext( this::updateApiToken )
 					.doOnNext( apiToken -> Log.i( "received API token: " + apiToken ) )
 					.map( apiToken -> finalClient );
