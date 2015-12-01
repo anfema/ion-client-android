@@ -2,6 +2,7 @@ package com.anfema.ampclient;
 
 import android.content.Context;
 
+import com.anfema.ampclient.service.RequestLogger;
 import com.squareup.okhttp.Interceptor.Chain;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -39,7 +40,8 @@ public class AmpPicasso
 	public static Picasso createPicassoInstance( Context context, String apiToken )
 	{
 		OkHttpClient picassoClient = new OkHttpClient();
-		picassoClient.networkInterceptors().add( chain -> requestWithAuthHeader( apiToken, chain ) );
+		picassoClient.interceptors().add( chain -> requestWithAuthHeader( apiToken, chain ) );
+		picassoClient.interceptors().add( new RequestLogger( "Picasso Request" ) );
 
 		return new Picasso.Builder( context ).downloader( new OkHttpDownloader( picassoClient ) ).build();
 	}

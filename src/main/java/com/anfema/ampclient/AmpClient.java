@@ -18,7 +18,7 @@ import com.anfema.ampclient.serialization.GsonFactory;
 import com.anfema.ampclient.service.AmpApiFactory;
 import com.anfema.ampclient.service.AmpApiRx;
 import com.anfema.ampclient.service.AmpCall;
-import com.anfema.ampclient.service.AmpRequestLogger;
+import com.anfema.ampclient.service.RequestLogger;
 import com.anfema.ampclient.service.CachingInterceptor;
 import com.anfema.ampclient.utils.ContextUtils;
 import com.anfema.ampclient.utils.DateTimeUtils;
@@ -132,7 +132,7 @@ public class AmpClient implements AmpClientApi
 		{
 			ampClientConfig = configClass.newInstance();
 			List<Interceptor> interceptors = new ArrayList<>();
-			interceptors.add( new AmpRequestLogger( "Network Request" ) );
+			interceptors.add( new RequestLogger( "Network Request" ) );
 			interceptors.add( new CachingInterceptor( context ) );
 			ampApi = AmpApiFactory.newInstance( ampClientConfig.getBaseUrl( context ), interceptors, AmpApiRx.class );
 
