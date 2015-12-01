@@ -1,12 +1,13 @@
 package com.anfema.ampclient.serialization;
 
 import com.anfema.ampclient.models.contents.ColorContent;
+import com.anfema.ampclient.models.contents.ContainerContent;
 import com.anfema.ampclient.models.contents.DatetimeContent;
 import com.anfema.ampclient.models.contents.FileContent;
 import com.anfema.ampclient.models.contents.FlagContent;
 import com.anfema.ampclient.models.contents.ImageContent;
 import com.anfema.ampclient.models.contents.MediaContent;
-import com.anfema.ampclient.models.contents.ContainerContent;
+import com.anfema.ampclient.models.contents.NumberContent;
 import com.anfema.ampclient.models.contents.OptionContent;
 import com.anfema.ampclient.models.contents.TextContent;
 
@@ -36,5 +37,6 @@ public class ContentDeserializerFactory
 		deserializer.registerContentType( "mediacontent", MediaContent.class );
 		deserializer.registerContentType( "optioncontent", OptionContent.class );
 		deserializer.registerContentType( "textcontent", TextContent.class );
+		deserializer.registerContentType( "numbercontent", NumberContent.class );
 	}
 }
