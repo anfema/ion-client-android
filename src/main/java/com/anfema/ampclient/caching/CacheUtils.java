@@ -62,15 +62,14 @@ public class CacheUtils
 		}
 
 		String folderPath = StringUtils.concatStrings( fileNamePathSegments, FileUtils.SLASH );
-
 		// append file name, which is MD5 hash of url
 		String filename = FileUtils.calcMD5( url );
+		String filePath = folderPath + FileUtils.SLASH + filename;
 
 		// create directories if not existing
-		FileUtils.createFolders( folderPath + FileUtils.SLASH + filename );
+		FileUtils.createFolders( filePath );
 
-
-		return folderPath + FileUtils.SLASH + filename;
+		return filePath;
 	}
 
 	/**

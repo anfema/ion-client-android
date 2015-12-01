@@ -17,7 +17,7 @@ public class FileUtils
 {
 	public static final String SLASH = "/";
 
-	public static void createFolders( String pageFilePath )
+	public static synchronized void createFolders( String pageFilePath )
 	{
 		File pageFolder = new File( pageFilePath );
 		if ( !pageFolder.exists() )
@@ -47,6 +47,7 @@ public class FileUtils
 			file.delete();
 		}
 		file.createNewFile();
+
 		OutputStream outputStream = new FileOutputStream( file, false );
 		BufferedWriter bufferedWriter = new BufferedWriter( new OutputStreamWriter( outputStream ) );
 		bufferedWriter.write( content );
