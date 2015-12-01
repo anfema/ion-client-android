@@ -12,8 +12,6 @@ import rx.Observable;
 
 public class TokenHolder
 {
-	/// Multiton
-
 	private static Map<Class<? extends AmpClientConfig>, String> tokens = new HashMap<>();
 
 	public static Observable<String> getToken( Class<? extends AmpClientConfig> configClass, Context context )
