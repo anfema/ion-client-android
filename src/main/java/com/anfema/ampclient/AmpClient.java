@@ -7,8 +7,11 @@ import com.anfema.ampclient.caching.CacheUtils;
 import com.anfema.ampclient.caching.CollectionCacheMeta;
 import com.anfema.ampclient.caching.PageCacheMeta;
 import com.anfema.ampclient.exceptions.AmpClientConfigInstantiateException;
+import com.anfema.ampclient.exceptions.ContextNullPointerException;
 import com.anfema.ampclient.exceptions.NetworkRequestException;
 import com.anfema.ampclient.exceptions.ReadFromCacheException;
+import com.anfema.ampclient.interceptors.CachingInterceptor;
+import com.anfema.ampclient.interceptors.RequestLogger;
 import com.anfema.ampclient.models.Collection;
 import com.anfema.ampclient.models.Page;
 import com.anfema.ampclient.models.PagePreview;
@@ -18,8 +21,6 @@ import com.anfema.ampclient.serialization.GsonFactory;
 import com.anfema.ampclient.service.AmpApiFactory;
 import com.anfema.ampclient.service.AmpApiRx;
 import com.anfema.ampclient.service.AmpCall;
-import com.anfema.ampclient.service.RequestLogger;
-import com.anfema.ampclient.service.CachingInterceptor;
 import com.anfema.ampclient.utils.ContextUtils;
 import com.anfema.ampclient.utils.DateTimeUtils;
 import com.anfema.ampclient.utils.FileUtils;
@@ -75,7 +76,7 @@ public class AmpClient implements AmpClientApi
 			// fail early if app context is null
 			if ( context == null )
 			{
-				return Observable.error( new NullPointerException( "App context is null" ) );
+				return Observable.error( new ContextNullPointerException() );
 			}
 			// update context for existing clients if it became null
 			client.context = context;
@@ -310,6 +311,7 @@ public class AmpClient implements AmpClientApi
 		if ( serverCallAsBackup )
 		{
 			Log.w( "Backup Request", "Cache request " + collectionUrl + " failed. Trying network request instead..." );
+			Log.ex( "Cache Request", e );
 			return getCollectionFromServer( collectionIdentifier, false );
 		}
 		else
@@ -330,6 +332,7 @@ public class AmpClient implements AmpClientApi
 					if ( cacheAsBackup )
 					{
 						Log.w( "Backup Request", "Network request " + collectionUrl + " failed. Trying cache request instead..." );
+						Log.ex( "Network Request", throwable );
 						return getCollectionFromCache( collectionIdentifier, false );
 					}
 					Log.e( "Failed Request", "Network request " + collectionUrl + " failed." );
@@ -373,6 +376,7 @@ public class AmpClient implements AmpClientApi
 		if ( serverCallAsBackup )
 		{
 			Log.w( "Backup Request", "Cache request " + pageUrl + " failed. Trying network request instead..." );
+			Log.ex( "Cache Request", e );
 			return getPageFromServer( collectionIdentifier, pageIdentifier, false );
 		}
 		Log.e( "Failed Request", "Cache request " + pageUrl + " failed." );
@@ -393,6 +397,7 @@ public class AmpClient implements AmpClientApi
 					if ( cacheAsBackup )
 					{
 						Log.w( "Backup Request", "Network request " + pageUrl + " failed. Trying cache request instead..." );
+						Log.ex( "Network Request", throwable );
 						return getPageFromCache( collectionIdentifier, pageIdentifier, false );
 					}
 					Log.e( "Failed Request", "Network request " + pageUrl + " failed." );

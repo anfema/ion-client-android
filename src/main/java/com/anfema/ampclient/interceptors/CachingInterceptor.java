@@ -1,4 +1,4 @@
-package com.anfema.ampclient.service;
+package com.anfema.ampclient.interceptors;
 
 import android.content.Context;
 
@@ -20,8 +20,6 @@ import okio.BufferedSource;
 
 public class CachingInterceptor implements Interceptor
 {
-	private static final String LOG_TAG = "AMP Caching";
-
 	private Context context;
 
 	public CachingInterceptor( Context context )

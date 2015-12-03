@@ -1,4 +1,4 @@
-package com.anfema.ampclient.service;
+package com.anfema.ampclient.interceptors;
 
 import com.anfema.ampclient.utils.Log;
 import com.squareup.okhttp.HttpUrl;
