@@ -21,6 +21,10 @@ public class Translation
 
 	public AContent getContent()
 	{
+		if ( content == null )
+		{
+			return null;
+		}
 		return content.get( 0 );
 	}
 
