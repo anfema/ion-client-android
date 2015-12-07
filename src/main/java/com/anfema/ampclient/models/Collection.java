@@ -33,6 +33,17 @@ public class Collection
 	 */
 	public String default_locale;
 
+
+	/**
+	 * Path to sqlite database, which can be used for a locally performed full text search.
+	 */
+	public String fts_db;
+
+	/**
+	 * Zip file containing all pages and files of collection.
+	 */
+	public String archive;
+
 	/**
 	 * page previews and meta information about them
 	 */
@@ -55,6 +66,7 @@ public class Collection
 	@Override
 	public String toString()
 	{
-		return "Collection [id = " + id + ", pages = " + pages + ", default_locale = " + default_locale + ", name = " + name + ", identifier = " + identifier + "]";
+		return "Collection [id = " + id + ", identifier = " + identifier + ", name = " + name + ", default_locale = " + default_locale
+				+ ", fts_db " + fts_db + ", archive " + archive + ", pages = " + pages + "]";
 	}
 }
