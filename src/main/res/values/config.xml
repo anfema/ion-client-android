@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="file_provider_authority">com.anfema.ampclient.fileprovider</string>
+    <string name="files_dir">files/</string>
+</resources>

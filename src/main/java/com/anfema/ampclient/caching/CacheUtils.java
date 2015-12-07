@@ -2,6 +2,7 @@ package com.anfema.ampclient.caching;
 
 import android.content.Context;
 
+import com.anfema.ampclient.R;
 import com.anfema.ampclient.exceptions.AmpClientUnknownRequest;
 import com.anfema.ampclient.service.AmpCall;
 import com.anfema.ampclient.utils.FileUtils;
@@ -41,6 +42,28 @@ public class CacheUtils
 	}
 
 	/**
+	 * Find appropriate file path for media files.
+	 * <p>
+	 * Do not use for collections and pages – use {@link CacheUtils#getFilePath(String, Context)} instead
+	 * Creates folders if the do not exist yet.
+	 */
+	public static String getMediaFilePath( String url, Context context )
+	{
+		String filename = FileUtils.calcMD5( url );
+		String filePath = context.getFilesDir() + FileUtils.SLASH + context.getString( R.string.files_dir ) + filename;
+		return filePath;
+	}
+
+	public static String getMediaFilePathExt( String url, Context context )
+	{
+		String filename = FileUtils.calcMD5( url );
+		return context.getExternalFilesDir( null ) + FileUtils.SLASH + context.getString( R.string.files_dir ) + filename;
+	}
+
+	/**
+	 * Find appropriate file path for collections and pages.
+	 * <p>
+	 * Do not use for media files – use {@link CacheUtils#getMediaFilePath(String, Context)} instead
 	 * Creates folders if the do not exist yet.
 	 */
 	public static String getFilePath( String url, Context context ) throws AmpClientUnknownRequest
@@ -62,14 +85,13 @@ public class CacheUtils
 		}
 
 		String folderPath = StringUtils.concatStrings( fileNamePathSegments, FileUtils.SLASH );
-		// append file name, which is MD5 hash of url
-		String filename = FileUtils.calcMD5( url );
-		String filePath = folderPath + FileUtils.SLASH + filename;
 
 		// create directories if not existing
-		FileUtils.createFolders( filePath );
+		//		FileUtils.createFolders( folderPath );
 
-		return filePath;
+		// append file name, which is MD5 hash of url
+		String filename = FileUtils.calcMD5( url );
+		return folderPath + FileUtils.SLASH + filename;
 	}
 
 	/**

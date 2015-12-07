@@ -39,11 +39,11 @@ public class CachingInterceptor implements Interceptor
 		//		{
 		//			return chain.proceed( request );
 		//		}
-		String filePath = CacheUtils.getFilePath( url.toString(), context );
 		Response response = chain.proceed( request );
 
 		// write response to cache
 		String responseBody = getResponseBody( response );
+		String filePath = CacheUtils.getFilePath( url.toString(), context );
 		FileUtils.writeToFile( responseBody, filePath );
 
 		return response;
