@@ -10,41 +10,55 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 
 import rx.Observable;
 
 public class FileUtils
 {
+	public static volatile Map<String, Object> ioLocks = new HashMap<>();
+
 	public static final String SLASH = "/";
 
-	public static synchronized void createFolders( String pageFilePath )
+	public static synchronized void createFolders( String dirPath )
 	{
-		File pageFolder = new File( pageFilePath );
-		if ( !pageFolder.exists() )
+		createFolders( new File( dirPath ) );
+	}
+
+	public static synchronized void createFolders( File dir )
+	{
+		if ( !dir.exists() )
 		{
-			Log.d( "FileUtil", "create dirs for: " + pageFilePath );
-			pageFolder.mkdirs();
+			Log.d( "FileUtil", "create dirs for: " + dir );
+			dir.mkdirs();
 		}
 	}
 
-	public static void writeToFile( String content, String filePath ) throws IOException
+	public static synchronized void writeToFile( String content, String filePath ) throws IOException
 	{
 		File file = new File( filePath );
 		writeToFile( content, file );
 	}
 
 	/**
-	 * Helper function to write content String to a file
+	 * Helper function to write content String to a file.
+	 * <p>
+	 * Should not be called from main thread.
 	 *
 	 * @param content content String to save
 	 * @param file    File to save object(s) to
 	 */
-	public static void writeToFile( String content, File file ) throws IOException
+	public static synchronized void writeToFile( String content, File file ) throws IOException
 	{
 		Log.d( "FileUtil", "write to file: " + file.getPath() );
 		if ( file.exists() )
 		{
 			file.delete();
+		}
+		else
+		{
+			createFolders( file.getParentFile() );
 		}
 		file.createNewFile();
 
@@ -60,7 +74,7 @@ public class FileUtils
 		return readFromFile( file );
 	}
 
-	public static Observable<String> readFromFile( File file ) throws IOException
+	public static synchronized Observable<String> readFromFile( File file ) throws IOException
 	{
 		return Observable.just( file ).flatMap( o ->
 		{
