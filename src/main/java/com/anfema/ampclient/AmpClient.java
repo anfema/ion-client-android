@@ -259,7 +259,7 @@ public class AmpClient implements AmpClientApi
 		return getAllPages( ampClientConfig.getCollectionIdentifier( context ) );
 	}
 
-	public Observable<Page> getSomePages( String collectionIdentifier, Func1<PagePreview, Boolean> pagesFilter )
+	public Observable<Page> getPages( String collectionIdentifier, Func1<PagePreview, Boolean> pagesFilter )
 	{
 		return getCollection( collectionIdentifier )
 				.map( collection -> collection.pages )
@@ -273,9 +273,28 @@ public class AmpClient implements AmpClientApi
 	 * A set of pages is "returned" by emitting multiple events.<br/>
 	 * Use default collection identifier as specified in {@link AmpClientConfig#getCollectionIdentifier(Context)}
 	 */
-	public Observable<Page> getSomePages( Func1<PagePreview, Boolean> pagesFilter )
+	public Observable<Page> getPages( Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return getSomePages( ampClientConfig.getCollectionIdentifier( context ), pagesFilter );
+		return getPages( ampClientConfig.getCollectionIdentifier( context ), pagesFilter );
+	}
+
+	public Observable<Page> getPagesOrdered( String collectionIdentifier, Func1<PagePreview, Boolean> pagesFilter )
+	{
+		return getCollection( collectionIdentifier )
+				.map( collection -> collection.pages )
+				.concatMap( Observable::from )
+				.filter( pagesFilter )
+				.map( page -> page.identifier )
+				.concatMap( pageIdentifier -> getPage( collectionIdentifier, pageIdentifier ) );
+	}
+
+	/**
+	 * A set of pages is "returned" by emitting multiple events.<br/>
+	 * Use default collection identifier as specified in {@link AmpClientConfig#getCollectionIdentifier(Context)}
+	 */
+	public Observable<Page> getPagesOrdered( Func1<PagePreview, Boolean> pagesFilter )
+	{
+		return getPagesOrdered( ampClientConfig.getCollectionIdentifier( context ), pagesFilter );
 	}
 
 
