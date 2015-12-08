@@ -19,7 +19,7 @@ public interface AmpApiRx
 {
 	@FormUrlEncoded
 	@POST("login")
-	Observable<LoginResponse> authenticate( @Field("username") String username, @Field("password") String password );
+	Observable<LoginResponse> login( @Field("username") String username, @Field("password") String password );
 
 	@GET("collections/{collection_identifier}")
 	Observable<CollectionResponse> getCollection( @Path("collection_identifier") String collectionIdentifier, @Header("Authorization") String authorizationToken );

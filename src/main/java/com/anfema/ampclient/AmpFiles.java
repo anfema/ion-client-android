@@ -2,6 +2,7 @@ package com.anfema.ampclient;
 
 import android.content.Context;
 
+import com.anfema.ampclient.authorization.AuthorizationHolder;
 import com.anfema.ampclient.caching.CacheUtils;
 import com.anfema.ampclient.exceptions.ContextNullPointerException;
 import com.anfema.ampclient.interceptors.AuthorizationHeaderInterceptor;
@@ -30,6 +31,13 @@ import okio.Buffer;
 import okio.BufferedSource;
 import rx.Observable;
 
+/**
+ * Does not perform calls against a specific API, but takes complete URLs as parameter to perform a GET call to.
+ * <p/>
+ * Downloads the response body and stores it into a file.
+ * <p/>
+ * However, the AMP authorization header is added (in case the URL points to protected media).
+ */
 public class AmpFiles
 {
 	/// Multiton
@@ -58,7 +66,7 @@ public class AmpFiles
 			}
 			return Observable.just( storedFileClient );
 		}
-		return TokenHolder.getToken( configClass, appContext )
+		return AuthorizationHolder.getToken( configClass, appContext )
 				.map( token -> new AmpFiles( token, appContext ) )
 				.doOnNext( okHttpClient -> fileClientInstances.put( configClass, okHttpClient ) );
 	}
@@ -68,11 +76,11 @@ public class AmpFiles
 	private       Context      context;
 	private final OkHttpClient client;
 
-	private AmpFiles( String apiToken, Context context )
+	private AmpFiles( String authHeaderValue, Context context )
 	{
 		this.context = context;
 		client = new OkHttpClient();
-		client.interceptors().add( new AuthorizationHeaderInterceptor( apiToken ) );
+		client.interceptors().add( new AuthorizationHeaderInterceptor( authHeaderValue ) );
 		client.interceptors().add( new RequestLogger( "Network Request" ) );
 	}
 

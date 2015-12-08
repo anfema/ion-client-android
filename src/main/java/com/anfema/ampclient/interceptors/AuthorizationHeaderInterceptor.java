@@ -8,23 +8,23 @@ import java.io.IOException;
 
 public class AuthorizationHeaderInterceptor implements Interceptor
 {
-	private final String apiToken;
+	private final String authHeaderValue;
 
-	public AuthorizationHeaderInterceptor( String apiToken )
+	public AuthorizationHeaderInterceptor( String authHeaderValue )
 	{
-		this.apiToken = apiToken;
+		this.authHeaderValue = authHeaderValue;
 	}
 
 	@Override
 	public Response intercept( Chain chain ) throws IOException
 	{
-		return requestWithAuthHeader( apiToken, chain );
+		return requestWithAuthHeader( authHeaderValue, chain );
 	}
 
-	public static Response requestWithAuthHeader( String apiToken, Chain chain ) throws IOException
+	public static Response requestWithAuthHeader( String authHeaderValue, Chain chain ) throws IOException
 	{
 		Request newRequest = chain.request().newBuilder()
-				.addHeader( "Authorization", "token " + apiToken )
+				.addHeader( "Authorization", authHeaderValue )
 				.build();
 		return chain.proceed( newRequest );
 	}

@@ -3,6 +3,7 @@ package com.anfema.ampclient;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import com.anfema.ampclient.authorization.AuthorizationHolder;
 import com.anfema.ampclient.caching.CacheUtils;
 import com.anfema.ampclient.caching.CollectionCacheMeta;
 import com.anfema.ampclient.caching.PageCacheMeta;
@@ -105,9 +106,9 @@ public class AmpClient implements AmpClientApi
 		{
 			// retrieve API token
 			final AmpClient finalClient = this;
-			clientObservable = TokenHolder.getToken( ampClientConfig.getClass(), context )
-					.doOnNext( this::updateApiToken )
-					.doOnNext( apiToken -> Log.i( "received API token: " + apiToken ) )
+			clientObservable = AuthorizationHolder.getToken( ampClientConfig.getClass(), context )
+					.doOnNext( this::updateAuthHeaderValue )
+					.doOnNext( authHeaderValue -> Log.i( "received authorization header value: " + authHeaderValue ) )
 					.map( apiToken -> finalClient );
 		}
 		return clientObservable
@@ -149,9 +150,9 @@ public class AmpClient implements AmpClientApi
 		}
 	}
 
-	private void updateApiToken( String apiToken )
+	private void updateAuthHeaderValue( String authHeaderValue )
 	{
-		authHeaderValue = "token " + apiToken;
+		this.authHeaderValue = authHeaderValue;
 	}
 
 	/// configuration END
@@ -159,7 +160,7 @@ public class AmpClient implements AmpClientApi
 	/// API Interface
 
 	/**
-	 * Add collection identifier and authorization token to request.
+	 * Add collection identifier and authorization header to request.
 	 */
 	@Override
 	public Observable<Collection> getCollection( String collectionIdentifier )

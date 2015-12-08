@@ -2,6 +2,7 @@ package com.anfema.ampclient;
 
 import android.content.Context;
 
+import com.anfema.ampclient.authorization.AuthorizationHolder;
 import com.anfema.ampclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ampclient.interceptors.RequestLogger;
 import com.squareup.okhttp.OkHttpClient;
@@ -29,15 +30,15 @@ public class AmpPicasso
 		{
 			return Observable.just( storedPicasso );
 		}
-		return TokenHolder.getToken( configClass, context )
-				.map( token -> createPicassoInstance( context, token ) )
+		return AuthorizationHolder.getToken( configClass, context )
+				.map( authHeaderValue -> createPicassoInstance( context, authHeaderValue ) )
 				.doOnNext( picasso -> picassoInstances.put( configClass, picasso ) );
 	}
 
-	public static Picasso createPicassoInstance( Context context, String apiToken )
+	public static Picasso createPicassoInstance( Context context, String authHeaderValue )
 	{
 		OkHttpClient picassoClient = new OkHttpClient();
-		picassoClient.interceptors().add( new AuthorizationHeaderInterceptor( apiToken ) );
+		picassoClient.interceptors().add( new AuthorizationHeaderInterceptor( authHeaderValue ) );
 		picassoClient.interceptors().add( new RequestLogger( "Picasso Request" ) );
 
 		return new Picasso.Builder( context ).downloader( new OkHttpDownloader( picassoClient ) ).build();

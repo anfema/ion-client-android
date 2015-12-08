@@ -17,7 +17,7 @@ public class AmpTokenAuthenticator
 		AmpApiRx ampApi = AmpApiFactory.newInstance( baseUrl, AmpApiRx.class );
 		return ampApi.login( username, password )
 				.map( LoginResponse::getToken )
-				.map( token -> "token " + token )
+				.map( TokenAuth::getAuthHeaderValue )
 				.doOnError( RxUtils.DEFAULT_EXCEPTION_HANDLER )
 				.compose( RxUtils.applySchedulers() );
 	}
