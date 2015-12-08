@@ -18,11 +18,8 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.ResponseBody;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -120,24 +117,7 @@ public class AmpFiles
 	{
 		String filePath = CacheUtils.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
 		File targetFile = new File( filePath );
-		FileUtils.createFolders( targetFile.getParentFile() );
-		OutputStream stream = new BufferedOutputStream( new FileOutputStream( targetFile ) );
-		try
-		{
-			int bufferSize = 1024;
-			byte[] buffer = new byte[ bufferSize ];
-
-			int len;
-			while ( ( len = response.body().byteStream().read( buffer ) ) != -1 )
-			{
-				stream.write( buffer, 0, len );
-			}
-		}
-		finally
-		{
-			stream.close();
-		}
-
+		FileUtils.writeBytesToFile( response, targetFile );
 		return targetFile;
 	}
 
@@ -169,7 +149,7 @@ public class AmpFiles
 		String responseBody = getResponseBody( response );
 		String filePath = CacheUtils.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
 		File file = new File( filePath );
-		FileUtils.writeToFile( responseBody, file );
+		FileUtils.writeTextToFile( responseBody, file );
 		return file;
 	}
 

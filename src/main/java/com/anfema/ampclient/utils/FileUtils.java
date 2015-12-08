@@ -1,5 +1,8 @@
 package com.anfema.ampclient.utils;
 
+import com.squareup.okhttp.Response;
+
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -35,21 +38,21 @@ public class FileUtils
 		}
 	}
 
-	public static synchronized void writeToFile( String content, String filePath ) throws IOException
+	public static synchronized void writeTextToFile( String content, String filePath ) throws IOException
 	{
 		File file = new File( filePath );
-		writeToFile( content, file );
+		writeTextToFile( content, file );
 	}
 
 	/**
 	 * Helper function to write content String to a file.
-	 * <p>
+	 * <p/>
 	 * Should not be called from main thread.
 	 *
 	 * @param content content String to save
 	 * @param file    File to save object(s) to
 	 */
-	public static synchronized void writeToFile( String content, File file ) throws IOException
+	public static synchronized void writeTextToFile( String content, File file ) throws IOException
 	{
 		Log.d( "FileUtil", "write to file: " + file.getPath() );
 		if ( file.exists() )
@@ -66,6 +69,43 @@ public class FileUtils
 		BufferedWriter bufferedWriter = new BufferedWriter( new OutputStreamWriter( outputStream ) );
 		bufferedWriter.write( content );
 		bufferedWriter.close();
+	}
+
+	/**
+	 * Be aware: using this method empties the response body byte stream. It is not possible to read the response a second time.
+	 *
+	 * @param file target file
+	 * @throws IOException
+	 */
+	public static synchronized void writeBytesToFile( Response response, File file ) throws IOException
+	{
+		Log.d( "FileUtil", "write to file: " + file.getPath() );
+		if ( file.exists() )
+		{
+			file.delete();
+		}
+		else
+		{
+			createFolders( file.getParentFile() );
+		}
+		file.createNewFile();
+
+		OutputStream stream = new BufferedOutputStream( new FileOutputStream( file ) );
+		try
+		{
+			int bufferSize = 1024;
+			byte[] buffer = new byte[ bufferSize ];
+
+			int len;
+			while ( ( len = response.body().byteStream().read( buffer ) ) != -1 )
+			{
+				stream.write( buffer, 0, len );
+			}
+		}
+		finally
+		{
+			stream.close();
+		}
 	}
 
 	public static Observable<String> readFromFile( String filePath ) throws IOException

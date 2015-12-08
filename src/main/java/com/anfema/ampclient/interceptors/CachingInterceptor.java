@@ -44,7 +44,7 @@ public class CachingInterceptor implements Interceptor
 		// write response to cache
 		String responseBody = getResponseBody( response );
 		String filePath = CacheUtils.getFilePath( url.toString(), context );
-		FileUtils.writeToFile( responseBody, filePath );
+		FileUtils.writeTextToFile( responseBody, filePath );
 
 		return response;
 	}
