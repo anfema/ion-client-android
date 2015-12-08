@@ -1,7 +1,8 @@
-package com.anfema.ampclient;
+package com.anfema.ampclient.authorization;
 
 import android.content.Context;
 
+import com.anfema.ampclient.AmpClientConfig;
 import com.anfema.ampclient.utils.ContextUtils;
 import com.anfema.ampclient.utils.RxUtils;
 
@@ -10,20 +11,20 @@ import java.util.Map;
 
 import rx.Observable;
 
-public class TokenHolder
+public class AuthorizationHolder
 {
-	private static Map<Class<? extends AmpClientConfig>, String> tokens = new HashMap<>();
+	private static Map<Class<? extends AmpClientConfig>, String> authHeaderValues = new HashMap<>();
 
 	public static Observable<String> getToken( Class<? extends AmpClientConfig> configClass, Context context )
 	{
 		context = ContextUtils.getApplicationContext( context );
 
-		if ( tokens == null )
+		if ( authHeaderValues == null )
 		{
-			tokens = new HashMap<>();
+			authHeaderValues = new HashMap<>();
 		}
 
-		String storedToken = tokens.get( configClass );
+		String storedToken = authHeaderValues.get( configClass );
 		if ( storedToken != null )
 		{
 			return Observable.just( storedToken );
@@ -32,8 +33,8 @@ public class TokenHolder
 		try
 		{
 			AmpClientConfig ampClientConfig = configClass.newInstance();
-			return ampClientConfig.requestApiToken( context )
-					.doOnNext( token -> tokens.put( configClass, token ) )
+			return ampClientConfig.requestAuthorizationHeaderValue( context )
+					.doOnNext( authHeaderValue -> authHeaderValues.put( configClass, authHeaderValue ) )
 					.compose( RxUtils.applySchedulers() );
 		}
 		catch ( InstantiationException e )

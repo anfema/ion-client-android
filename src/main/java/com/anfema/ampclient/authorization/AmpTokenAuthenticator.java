@@ -1,4 +1,4 @@
-package com.anfema.ampclient;
+package com.anfema.ampclient.authorization;
 
 import com.anfema.ampclient.models.responses.LoginResponse;
 import com.anfema.ampclient.service.AmpApiFactory;
@@ -10,13 +10,14 @@ import rx.Observable;
 /**
  * Use AMPs internal login request and retrieve API token.
  */
-public class AmpAuthenticator
+public class AmpTokenAuthenticator
 {
-	public static Observable<String> requestApiToken( String baseUrl, String username, String password )
+	public static Observable<String> requestAuthHeaderValue( String baseUrl, String username, String password )
 	{
 		AmpApiRx ampApi = AmpApiFactory.newInstance( baseUrl, AmpApiRx.class );
-		return ampApi.authenticate( username, password )
+		return ampApi.login( username, password )
 				.map( LoginResponse::getToken )
+				.map( token -> "token " + token )
 				.doOnError( RxUtils.DEFAULT_EXCEPTION_HANDLER )
 				.compose( RxUtils.applySchedulers() );
 	}
