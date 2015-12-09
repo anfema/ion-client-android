@@ -30,7 +30,7 @@ public class AmpPicasso
 		{
 			return Observable.just( storedPicasso );
 		}
-		return AuthorizationHolder.getToken( configClass, context )
+		return AuthorizationHolder.getAuthHeaderValue( configClass, context )
 				.map( authHeaderValue -> createPicassoInstance( context, authHeaderValue ) )
 				.doOnNext( picasso -> picassoInstances.put( configClass, picasso ) );
 	}

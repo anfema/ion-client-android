@@ -15,7 +15,7 @@ public class AuthorizationHolder
 {
 	private static Map<Class<? extends AmpClientConfig>, String> authHeaderValues = new HashMap<>();
 
-	public static Observable<String> getToken( Class<? extends AmpClientConfig> configClass, Context context )
+	public static Observable<String> getAuthHeaderValue( Class<? extends AmpClientConfig> configClass, Context context )
 	{
 		context = ContextUtils.getApplicationContext( context );
 

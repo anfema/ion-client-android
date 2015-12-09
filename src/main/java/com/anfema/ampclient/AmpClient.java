@@ -107,7 +107,7 @@ public class AmpClient implements AmpClientApi
 		{
 			// retrieve API token
 			final AmpClient finalClient = this;
-			clientObservable = AuthorizationHolder.getToken( ampClientConfig.getClass(), context )
+			clientObservable = AuthorizationHolder.getAuthHeaderValue( ampClientConfig.getClass(), context )
 					.doOnNext( this::updateAuthHeaderValue )
 					.doOnNext( authHeaderValue -> Log.i( "received authorization header value: " + authHeaderValue ) )
 					.map( apiToken -> finalClient );

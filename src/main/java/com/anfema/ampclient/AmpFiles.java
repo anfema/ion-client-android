@@ -63,7 +63,7 @@ public class AmpFiles
 			}
 			return Observable.just( storedFileClient );
 		}
-		return AuthorizationHolder.getToken( configClass, appContext )
+		return AuthorizationHolder.getAuthHeaderValue( configClass, appContext )
 				.map( token -> new AmpFiles( token, appContext ) )
 				.doOnNext( okHttpClient -> fileClientInstances.put( configClass, okHttpClient ) );
 	}
