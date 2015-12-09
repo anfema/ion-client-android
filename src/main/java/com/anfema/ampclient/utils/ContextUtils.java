@@ -2,7 +2,7 @@ package com.anfema.ampclient.utils;
 
 import android.content.Context;
 
-import com.anfema.ampclient.exceptions.ContextNullPointerException;
+import com.anfema.ampclient.exceptions.ContextIsNullException;
 
 public class ContextUtils
 {
@@ -11,7 +11,7 @@ public class ContextUtils
 		// get application context
 		if ( context == null )
 		{
-			throw new ContextNullPointerException();
+			throw new ContextIsNullException();
 		}
 		return context.getApplicationContext();
 	}

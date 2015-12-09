@@ -14,17 +14,17 @@ public interface AmpClientApi
 	Observable<Page> getAllPages( String collectionIdentifier );
 
 	/**
-	 * assume there is one collection identifier, specified in {@link AmpClientConfig#getCollectionIdentifier}
+	 * assume there is one collection identifier, specified in {@link AmpClientConfigMethods#getCollectionIdentifier}
 	 */
 	Observable<Collection> getCollection();
 
 	/**
-	 * assume there is one collection identifier, specified in {@link AmpClientConfig#getCollectionIdentifier}
+	 * assume there is one collection identifier, specified in {@link AmpClientConfigMethods#getCollectionIdentifier}
 	 */
 	Observable<Page> getPage( String pageIdentifier );
 
 	/**
-	 * assume there is one collection identifier, specified in {@link AmpClientConfig#getCollectionIdentifier}
+	 * assume there is one collection identifier, specified in {@link AmpClientConfigMethods#getCollectionIdentifier}
 	 */
 	Observable<Page> getAllPages();
 }

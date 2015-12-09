@@ -2,7 +2,7 @@ package com.anfema.ampclient.authorization;
 
 import android.content.Context;
 
-import com.anfema.ampclient.AmpClientConfig;
+import com.anfema.ampclient.AmpClientConfigMethods;
 import com.anfema.ampclient.utils.ContextUtils;
 import com.anfema.ampclient.utils.RxUtils;
 
@@ -13,9 +13,9 @@ import rx.Observable;
 
 public class AuthorizationHolder
 {
-	private static Map<Class<? extends AmpClientConfig>, String> authHeaderValues = new HashMap<>();
+	private static Map<Class<? extends AmpClientConfigMethods>, String> authHeaderValues = new HashMap<>();
 
-	public static Observable<String> getAuthHeaderValue( Class<? extends AmpClientConfig> configClass, Context context )
+	public static Observable<String> getAuthHeaderValue( Class<? extends AmpClientConfigMethods> configClass, Context context )
 	{
 		context = ContextUtils.getApplicationContext( context );
 
@@ -32,8 +32,8 @@ public class AuthorizationHolder
 
 		try
 		{
-			AmpClientConfig ampClientConfig = configClass.newInstance();
-			return ampClientConfig.requestAuthorizationHeaderValue( context )
+			AmpClientConfigMethods ampClientConfigMethods = configClass.newInstance();
+			return ampClientConfigMethods.requestAuthorizationHeaderValue( context )
 					.doOnNext( authHeaderValue -> authHeaderValues.put( configClass, authHeaderValue ) )
 					.compose( RxUtils.applySchedulers() );
 		}

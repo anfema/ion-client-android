@@ -4,7 +4,7 @@ import android.content.Context;
 
 import rx.Observable;
 
-public abstract class AmpClientConfig
+public abstract class AmpClientConfigMethods
 {
 	/**
 	 * Implement to provide the base URL for the AMP endpoint.

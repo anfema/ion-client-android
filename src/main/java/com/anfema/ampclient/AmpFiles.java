@@ -2,9 +2,9 @@ package com.anfema.ampclient;
 
 import android.content.Context;
 
-import com.anfema.ampclient.authorization.AuthorizationHolder;
 import com.anfema.ampclient.caching.CacheUtils;
-import com.anfema.ampclient.exceptions.ContextNullPointerException;
+import com.anfema.ampclient.exceptions.AuthorizationHeaderValueIsNullException;
+import com.anfema.ampclient.exceptions.ContextIsNullException;
 import com.anfema.ampclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ampclient.interceptors.RequestLogger;
 import com.anfema.ampclient.utils.ContextUtils;
@@ -39,9 +39,10 @@ public class AmpFiles
 {
 	/// Multiton
 
-	private static Map<Class<? extends AmpClientConfig>, AmpFiles> fileClientInstances = new HashMap<>();
+	// key: authorization header value
+	private static Map<String, AmpFiles> fileClientInstances = new HashMap<>();
 
-	public static Observable<AmpFiles> getInstance( Class<? extends AmpClientConfig> configClass, Context context )
+	public static AmpFiles getInstance( String authorizationHeaderValue, Context context )
 	{
 		Context appContext = ContextUtils.getApplicationContext( context );
 
@@ -49,23 +50,27 @@ public class AmpFiles
 		{
 			fileClientInstances = new HashMap<>();
 		}
+		if ( authorizationHeaderValue == null )
+		{
+			throw new AuthorizationHeaderValueIsNullException();
+		}
 
-		AmpFiles storedFileClient = fileClientInstances.get( configClass );
+		AmpFiles storedFileClient = fileClientInstances.get( authorizationHeaderValue );
 		if ( storedFileClient != null )
 		{
 			if ( storedFileClient.context == null )
 			{
 				if ( appContext == null )
 				{
-					Observable.error( new ContextNullPointerException() );
+					throw new ContextIsNullException();
 				}
 				storedFileClient.context = appContext;
 			}
-			return Observable.just( storedFileClient );
+			return storedFileClient;
 		}
-		return AuthorizationHolder.getAuthHeaderValue( configClass, appContext )
-				.map( token -> new AmpFiles( token, appContext ) )
-				.doOnNext( okHttpClient -> fileClientInstances.put( configClass, okHttpClient ) );
+		AmpFiles ampFiles = new AmpFiles( authorizationHeaderValue, appContext );
+		fileClientInstances.put( authorizationHeaderValue, ampFiles );
+		return ampFiles;
 	}
 
 	/// Multiton END
