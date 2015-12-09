@@ -3,7 +3,7 @@ package com.anfema.ampclient.caching;
 import android.content.Context;
 
 import com.anfema.ampclient.R;
-import com.anfema.ampclient.exceptions.AmpClientUnknownRequest;
+import com.anfema.ampclient.exceptions.UnknownAmpRequest;
 import com.anfema.ampclient.service.AmpCall;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.StringUtils;
@@ -66,7 +66,7 @@ public class CacheUtils
 	 * Do not use for media files – use {@link CacheUtils#getMediaFilePath(String, Context)} instead
 	 * Creates folders if the do not exist yet.
 	 */
-	public static String getFilePath( String url, Context context ) throws AmpClientUnknownRequest
+	public static String getFilePath( String url, Context context ) throws UnknownAmpRequest
 	{
 		HttpUrl httpUrl = HttpUrl.parse( url );
 		List<String> urlPathSegments = httpUrl.pathSegments();
@@ -76,7 +76,7 @@ public class CacheUtils
 		int index = findEndpointPathSegment( urlPathSegments );
 		if ( index == -1 )
 		{
-			throw new AmpClientUnknownRequest();
+			throw new UnknownAmpRequest();
 		}
 
 		for ( int i = index; i < urlPathSegments.size(); i++ )

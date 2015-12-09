@@ -3,11 +3,10 @@ package com.anfema.ampclient;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.anfema.ampclient.authorization.AuthorizationHolder;
 import com.anfema.ampclient.caching.CacheUtils;
 import com.anfema.ampclient.caching.CollectionCacheMeta;
 import com.anfema.ampclient.caching.PageCacheMeta;
-import com.anfema.ampclient.exceptions.AmpClientConfigInstantiateException;
+import com.anfema.ampclient.exceptions.AmpConfigInvalidException;
 import com.anfema.ampclient.exceptions.ContextIsNullException;
 import com.anfema.ampclient.exceptions.NetworkRequestException;
 import com.anfema.ampclient.exceptions.ReadFromCacheException;
@@ -45,13 +44,13 @@ public class AmpClient implements AmpClientApi
 {
 	/// Multiton
 
-	private static Map<Class<? extends AmpClientConfigMethods>, AmpClient> instances = new HashMap<>();
+	private static Map<AmpConfig, AmpClient> instances = new HashMap<>();
 
 	/**
-	 * @param configClass implementation of AmpClientConfig interface
+	 * @param config configuration for AMP client
 	 * @return client instance, ready to go (with API token set)
 	 */
-	public static Observable<AmpClient> getInstance( Class<? extends AmpClientConfigMethods> configClass, Context context )
+	public static AmpClient getInstance( AmpConfig config, Context context )
 	{
 		context = ContextUtils.getApplicationContext( context );
 
@@ -60,60 +59,31 @@ public class AmpClient implements AmpClientApi
 			instances = new HashMap<>();
 		}
 
-		// check if client for this configuration already exists, otherwise create an instance
-		AmpClient client = instances.get( configClass );
-		if ( client == null )
+		if ( !config.isValid() )
 		{
-			try
-			{
-				client = new AmpClient( configClass, context );
-			}
-			catch ( AmpClientConfigInstantiateException e )
-			{
-				return Observable.error( e );
-			}
+			throw new AmpConfigInvalidException();
 		}
-		else if ( client.context == null )
+
+		// check if client for this configuration already exists, otherwise create an instance
+		AmpClient storedClient = instances.get( config );
+		if ( storedClient == null )
+		{
+			AmpClient ampClient = new AmpClient( config, context );
+			instances.put( config, ampClient );
+			return ampClient;
+		}
+
+		if ( storedClient.context == null )
 		{
 			// fail early if app context is null
 			if ( context == null )
 			{
-				return Observable.error( new ContextIsNullException() );
+				throw new ContextIsNullException();
 			}
 			// update context for existing clients if it became null
-			client.context = context;
+			storedClient.context = context;
 		}
-
-		// At this point the client is initialized, but might not have an API token yet.
-
-		return client.getInstanceWithAuthToken( context );
-	}
-
-	/**
-	 * Asynchronously equests API token if not available yet.
-	 *
-	 * @return Observable emitting initialized client having an API token
-	 */
-	@NonNull
-	private Observable<AmpClient> getInstanceWithAuthToken( Context context )
-	{
-		Observable<AmpClient> clientObservable;
-		if ( authHeaderValue != null || !NetworkUtils.isConnected( context ) )
-		{
-			// authHeaderValue is available or offline mode where no request are fired and, thus, no API token is required
-			clientObservable = Observable.just( this );
-		}
-		else
-		{
-			// retrieve API token
-			final AmpClient finalClient = this;
-			clientObservable = AuthorizationHolder.getAuthHeaderValue( ampClientConfigMethods.getClass(), context )
-					.doOnNext( this::updateAuthHeaderValue )
-					.doOnNext( authHeaderValue -> Log.i( "received authorization header value: " + authHeaderValue ) )
-					.map( apiToken -> finalClient );
-		}
-		return clientObservable
-				.doOnError( RxUtils.DEFAULT_EXCEPTION_HANDLER );
+		return storedClient;
 	}
 
 	/// Multiton END
@@ -121,40 +91,22 @@ public class AmpClient implements AmpClientApi
 
 	/// configuration
 
-	private Context         context;
-	private AmpClientConfigMethods ampClientConfigMethods;
-	private AmpApiRx               ampApi;
-	private String                 authHeaderValue;
+	private Context   context;
+	private AmpConfig config;
+	private AmpApiRx  ampApi;
 
-	private AmpClient( Class<? extends AmpClientConfigMethods> configClass, Context context ) throws AmpClientConfigInstantiateException
+	private AmpClient( AmpConfig config, Context context )
 	{
 		this.context = context;
+		this.config = config;
 
-		//noinspection TryWithIdenticalCatches
-		try
-		{
-			ampClientConfigMethods = configClass.newInstance();
-			List<Interceptor> interceptors = new ArrayList<>();
-			interceptors.add( new DeviceIdHeaderInterceptor( context ) );
-			interceptors.add( new RequestLogger( "Network Request" ) );
-			interceptors.add( new CachingInterceptor( context ) );
-			ampApi = AmpApiFactory.newInstance( ampClientConfigMethods.getBaseUrl( context ), interceptors, AmpApiRx.class );
+		List<Interceptor> interceptors = new ArrayList<>();
+		interceptors.add( new DeviceIdHeaderInterceptor( context ) );
+		interceptors.add( new RequestLogger( "Network Request" ) );
+		interceptors.add( new CachingInterceptor( context ) );
+		ampApi = AmpApiFactory.newInstance( config.baseUrl, interceptors, AmpApiRx.class );
 
-			instances.put( configClass, this );
-		}
-		catch ( InstantiationException e )
-		{
-			throw new AmpClientConfigInstantiateException();
-		}
-		catch ( IllegalAccessException e )
-		{
-			throw new AmpClientConfigInstantiateException();
-		}
-	}
-
-	private void updateAuthHeaderValue( String authHeaderValue )
-	{
-		this.authHeaderValue = authHeaderValue;
+		instances.put( config, this );
 	}
 
 	/// configuration END
@@ -186,12 +138,12 @@ public class AmpClient implements AmpClientApi
 
 	/**
 	 * Add collection identifier and authorization token to request.<br/>
-	 * Use default collection identifier as specified in {@link AmpClientConfigMethods#getCollectionIdentifier(Context)}
+	 * Use default collection identifier as specified in {@link this#config}
 	 */
 	@Override
 	public Observable<Collection> getCollection()
 	{
-		return getCollection( ampClientConfigMethods.getCollectionIdentifier( context ) );
+		return getCollection( config.defaultCollectionIdentifier );
 	}
 
 	/**
@@ -231,12 +183,12 @@ public class AmpClient implements AmpClientApi
 
 	/**
 	 * Add collection identifier and authorization token to request.<br/>
-	 * Use default collection identifier as specified in {@link AmpClientConfigMethods#getCollectionIdentifier(Context)}
+	 * Use default collection identifier as specified in {@link this#config}
 	 */
 	@Override
 	public Observable<Page> getPage( String pageIdentifier )
 	{
-		return getPage( ampClientConfigMethods.getCollectionIdentifier( context ), pageIdentifier );
+		return getPage( config.defaultCollectionIdentifier, pageIdentifier );
 	}
 
 	/**
@@ -254,12 +206,12 @@ public class AmpClient implements AmpClientApi
 
 	/**
 	 * A set of pages is "returned" by emitting multiple events.<br/>
-	 * Use default collection identifier as specified in {@link AmpClientConfigMethods#getCollectionIdentifier(Context)}
+	 * Use default collection identifier as specified in {@link this#config}
 	 */
 	@Override
 	public Observable<Page> getAllPages()
 	{
-		return getAllPages( ampClientConfigMethods.getCollectionIdentifier( context ) );
+		return getAllPages( config.defaultCollectionIdentifier );
 	}
 
 	public Observable<Page> getPages( String collectionIdentifier, Func1<PagePreview, Boolean> pagesFilter )
@@ -274,11 +226,11 @@ public class AmpClient implements AmpClientApi
 
 	/**
 	 * A set of pages is "returned" by emitting multiple events.<br/>
-	 * Use default collection identifier as specified in {@link AmpClientConfigMethods#getCollectionIdentifier(Context)}
+	 * Use default collection identifier as specified in {@link this#config}
 	 */
 	public Observable<Page> getPages( Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return getPages( ampClientConfigMethods.getCollectionIdentifier( context ), pagesFilter );
+		return getPages( config.defaultCollectionIdentifier, pagesFilter );
 	}
 
 	public Observable<Page> getPagesOrdered( String collectionIdentifier, Func1<PagePreview, Boolean> pagesFilter )
@@ -293,11 +245,11 @@ public class AmpClient implements AmpClientApi
 
 	/**
 	 * A set of pages is "returned" by emitting multiple events.<br/>
-	 * Use default collection identifier as specified in {@link AmpClientConfigMethods#getCollectionIdentifier(Context)}
+	 * Use default collection identifier as specified in {@link this#config}
 	 */
 	public Observable<Page> getPagesOrdered( Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return getPagesOrdered( ampClientConfigMethods.getCollectionIdentifier( context ), pagesFilter );
+		return getPagesOrdered( config.defaultCollectionIdentifier, pagesFilter );
 	}
 
 
@@ -345,7 +297,7 @@ public class AmpClient implements AmpClientApi
 
 	private Observable<Collection> getCollectionFromServer( String collectionIdentifier, boolean cacheAsBackup )
 	{
-		return ampApi.getCollection( collectionIdentifier, authHeaderValue )
+		return ampApi.getCollection( collectionIdentifier, config.authorizationHeaderValue )
 				.map( CollectionResponse::getCollection )
 				.doOnNext( saveCollectionMeta() )
 				.compose( RxUtils.applySchedulers() )
@@ -410,7 +362,7 @@ public class AmpClient implements AmpClientApi
 	 */
 	private Observable<Page> getPageFromServer( String collectionIdentifier, String pageIdentifier, boolean cacheAsBackup )
 	{
-		return ampApi.getPage( collectionIdentifier, pageIdentifier, authHeaderValue )
+		return ampApi.getPage( collectionIdentifier, pageIdentifier, config.authorizationHeaderValue )
 				.map( PageResponse::getPage )
 				.doOnNext( savePageMeta() )
 				.compose( RxUtils.applySchedulers() )
@@ -452,19 +404,13 @@ public class AmpClient implements AmpClientApi
 
 	private String getCollectionUrl( String collectionId )
 	{
-		String baseUrl = ampClientConfigMethods.getBaseUrl( context );
+		String baseUrl = config.baseUrl;
 		return baseUrl + AmpCall.COLLECTIONS.toString() + FileUtils.SLASH + collectionId;
 	}
 
 	private String getPageUrl( String collectionId, String pageId )
 	{
-		String baseUrl = ampClientConfigMethods.getBaseUrl( context );
+		String baseUrl = config.baseUrl;
 		return baseUrl + AmpCall.PAGES.toString() + FileUtils.SLASH + collectionId + FileUtils.SLASH + pageId;
-	}
-
-	// FIXME this is only a hack
-	public static AmpClient getInstanceHack( Class<? extends AmpClientConfigMethods> configClass, Context appContext )
-	{
-		return instances.get( configClass );
 	}
 }

@@ -2,14 +2,14 @@ package com.anfema.ampclient.exceptions;
 
 import java.io.IOException;
 
-public class AmpClientUnknownRequest extends IOException
+public class UnknownAmpRequest extends IOException
 {
-	public AmpClientUnknownRequest( String url )
+	public UnknownAmpRequest( String url )
 	{
 		super( "Unknown request: " + url );
 	}
 
-	public AmpClientUnknownRequest()
+	public UnknownAmpRequest()
 	{
 		super();
 	}

@@ -1,6 +1,6 @@
 package com.anfema.ampclient;
 
-public abstract class AmpConfig
+public class AmpConfig
 {
 	/**
 	 * base URL pointing to the AMP endpoint
@@ -29,5 +29,12 @@ public abstract class AmpConfig
 		this.baseUrl = otherConfig.baseUrl;
 		this.defaultCollectionIdentifier = otherConfig.defaultCollectionIdentifier;
 		this.authorizationHeaderValue = otherConfig.authorizationHeaderValue;
+	}
+
+	public boolean isValid()
+	{
+		return baseUrl != null && baseUrl.contains( "://" )
+				&& defaultCollectionIdentifier != null
+				&& authorizationHeaderValue != null && authorizationHeaderValue.length() > 0;
 	}
 }
