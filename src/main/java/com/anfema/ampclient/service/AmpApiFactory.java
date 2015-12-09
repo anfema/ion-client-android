@@ -2,7 +2,7 @@ package com.anfema.ampclient.service;
 
 import android.support.annotation.NonNull;
 
-import com.anfema.ampclient.serialization.GsonFactory;
+import com.anfema.ampclient.serialization.GsonHolder;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.Log;
 import com.squareup.okhttp.Interceptor;
@@ -23,7 +23,7 @@ public class AmpApiFactory
 		// configure retrofit
 		final Builder retrofitBuilder = new Builder();
 		retrofitBuilder.addCallAdapterFactory( RxJavaCallAdapterFactory.create() ); // enable returning Observables
-		retrofitBuilder.addConverterFactory( GsonConverterFactory.create( GsonFactory.newInstance() ) );
+		retrofitBuilder.addConverterFactory( GsonConverterFactory.create( GsonHolder.getInstance() ) );
 		retrofitBuilder.baseUrl( baseUrl );
 		Retrofit retrofit = retrofitBuilder.build();
 

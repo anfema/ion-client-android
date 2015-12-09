@@ -19,7 +19,7 @@ import com.anfema.ampclient.models.Page;
 import com.anfema.ampclient.models.PagePreview;
 import com.anfema.ampclient.models.responses.CollectionResponse;
 import com.anfema.ampclient.models.responses.PageResponse;
-import com.anfema.ampclient.serialization.GsonFactory;
+import com.anfema.ampclient.serialization.GsonHolder;
 import com.anfema.ampclient.service.AmpApiFactory;
 import com.anfema.ampclient.service.AmpApiRx;
 import com.anfema.ampclient.service.AmpCall;
@@ -315,7 +315,7 @@ public class AmpClient implements AmpClientApi
 			String filePath = CacheUtils.getFilePath( collectionUrl, context );
 			return FileUtils
 					.readFromFile( filePath )
-					.map( collectionsString -> GsonFactory.newInstance().fromJson( collectionsString, CollectionResponse.class ) )
+					.map( collectionsString -> GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class ) )
 					.map( CollectionResponse::getCollection )
 					.compose( RxUtils.applySchedulers() )
 					.onErrorResumeNext( throwable -> {
@@ -380,7 +380,7 @@ public class AmpClient implements AmpClientApi
 			String filePath = CacheUtils.getFilePath( pageUrl, context );
 			return FileUtils
 					.readFromFile( filePath )
-					.map( pagesString -> GsonFactory.newInstance().fromJson( pagesString, PageResponse.class ) )
+					.map( pagesString -> GsonHolder.getInstance().fromJson( pagesString, PageResponse.class ) )
 					.map( PageResponse::getPage )
 					.compose( RxUtils.applySchedulers() )
 					.onErrorResumeNext( throwable -> {
