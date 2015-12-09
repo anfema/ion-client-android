@@ -6,6 +6,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 
 import java.text.ParseException;
+import java.util.TimeZone;
 
 public class DateTimeUtils extends org.joda.time.DateTimeUtils
 {
@@ -50,6 +51,15 @@ public class DateTimeUtils extends org.joda.time.DateTimeUtils
 	public static String toString( DateTime dateTime )
 	{
 		return FORMATTER.print( dateTime );
+	}
+
+	/**
+	 * Return string respresentatin according to {@link DateTimeUtils#DATETIME_PATTERN}
+	 */
+	public static String format( DateTime dateTime, String pattern )
+	{
+		DateTimeFormatter dtf = new DateTimeFormatterBuilder().appendPattern( pattern ).toFormatter().withZone( DateTimeZone.forTimeZone( TimeZone.getDefault() ) );
+		return dtf.print( dateTime );
 	}
 
 	/**
