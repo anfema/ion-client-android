@@ -54,15 +54,6 @@ public class DateTimeUtils extends org.joda.time.DateTimeUtils
 	}
 
 	/**
-	 * Return string respresentatin according to {@link DateTimeUtils#DATETIME_PATTERN}
-	 */
-	public static String format( DateTime dateTime, String pattern )
-	{
-		DateTimeFormatter dtf = new DateTimeFormatterBuilder().appendPattern( pattern ).toFormatter().withZone( DateTimeZone.forTimeZone( TimeZone.getDefault() ) );
-		return dtf.print( dateTime );
-	}
-
-	/**
 	 * Use this now method instead of {@link DateTime#now()} ensuring that timezone is UTC and milliseconds
 	 * to allow isEqual comparisons with DateTime objects originating from server.
 	 */
