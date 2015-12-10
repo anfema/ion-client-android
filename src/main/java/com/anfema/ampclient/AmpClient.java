@@ -129,7 +129,7 @@ public class AmpClient implements AmpClientApi
 		}
 		else if ( cacheMeta == null || cacheMeta.isOutdated() )
 		{
-			return getCollectionFromServer( true );
+			return getCollectionFromServer( false );
 		}
 		else
 		{
@@ -164,7 +164,7 @@ public class AmpClient implements AmpClientApi
 					}
 					else if ( isOutdated )
 					{
-						return getPageFromServer( pageIdentifier, true );
+						return getPageFromServer( pageIdentifier, false );
 					}
 					else
 					{
