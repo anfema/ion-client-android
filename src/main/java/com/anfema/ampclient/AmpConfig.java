@@ -8,33 +8,33 @@ public class AmpConfig
 	public String baseUrl;
 
 	/**
-	 * the (default) collection identifier, which is defined for this app in AMP
+	 * the collection identifier, {@link AmpClient} will use for its calls
 	 */
-	public String defaultCollectionIdentifier;
+	public String collectionIdentifier;
 
 	/**
 	 * authorization header value which is required to use the AMP API
 	 */
 	public String authorizationHeaderValue;
 
-	public AmpConfig( String baseUrl, String defaultCollectionIdentifier, String authorizationHeaderValue )
+	public AmpConfig( String baseUrl, String collectionIdentifier, String authorizationHeaderValue )
 	{
 		this.baseUrl = baseUrl;
-		this.defaultCollectionIdentifier = defaultCollectionIdentifier;
+		this.collectionIdentifier = collectionIdentifier;
 		this.authorizationHeaderValue = authorizationHeaderValue;
 	}
 
 	public AmpConfig( AmpConfig otherConfig )
 	{
 		this.baseUrl = otherConfig.baseUrl;
-		this.defaultCollectionIdentifier = otherConfig.defaultCollectionIdentifier;
+		this.collectionIdentifier = otherConfig.collectionIdentifier;
 		this.authorizationHeaderValue = otherConfig.authorizationHeaderValue;
 	}
 
 	public boolean isValid()
 	{
 		return baseUrl != null && baseUrl.contains( "://" )
-				&& defaultCollectionIdentifier != null
+				&& collectionIdentifier != null
 				&& authorizationHeaderValue != null && authorizationHeaderValue.length() > 0;
 	}
 }

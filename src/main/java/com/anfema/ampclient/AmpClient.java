@@ -114,71 +114,27 @@ public class AmpClient implements AmpClientApi
 	/// API Interface
 
 	/**
-	 * Add collection identifier and authorization header to request.
-	 */
-	@Override
-	public Observable<Collection> getCollection( String collectionIdentifier )
-	{
-		String collectionUrl = getCollectionUrl( collectionIdentifier );
-		CollectionCacheMeta cacheMeta = CollectionCacheMeta.retrieve( collectionUrl, context );
-
-		if ( !NetworkUtils.isConnected( context ) )
-		{
-			return getCollectionFromCache( collectionIdentifier, false );
-		}
-		else if ( cacheMeta == null || cacheMeta.isOutdated() )
-		{
-			return getCollectionFromServer( collectionIdentifier, true );
-		}
-		else
-		{
-			return getCollectionFromCache( collectionIdentifier, true );
-		}
-	}
-
-	/**
 	 * Add collection identifier and authorization token to request.<br/>
 	 * Use default collection identifier as specified in {@link this#config}
 	 */
 	@Override
 	public Observable<Collection> getCollection()
 	{
-		return getCollection( config.defaultCollectionIdentifier );
-	}
+		String collectionUrl = getCollectionUrl();
+		CollectionCacheMeta cacheMeta = CollectionCacheMeta.retrieve( collectionUrl, context );
 
-	/**
-	 * Add collection identifier and authorization token to request
-	 */
-	@Override
-	public Observable<Page> getPage( String collectionIdentifier, String pageIdentifier )
-	{
-		String pageUrl = getPageUrl( collectionIdentifier, pageIdentifier );
-		PageCacheMeta pageCacheMeta = PageCacheMeta.retrieve( pageUrl, context );
-
-		if ( pageCacheMeta == null )
+		if ( !NetworkUtils.isConnected( context ) )
 		{
-			return getPageFromServer( collectionIdentifier, pageIdentifier, false );
+			return getCollectionFromCache( false );
 		}
-
-		return getCollection( collectionIdentifier )
-				// get page's last_changed date from collection
-				.flatMap( collection -> collection.getPageLastChanged( pageIdentifier ) )
-						// compare last_changed date of cached page with that of collection
-				.map( pageCacheMeta::isOutdated )
-				.flatMap( isOutdated -> {
-					if ( !NetworkUtils.isConnected( context ) )
-					{
-						return getPageFromCache( collectionIdentifier, pageIdentifier, false );
-					}
-					else if ( isOutdated )
-					{
-						return getPageFromServer( collectionIdentifier, pageIdentifier, true );
-					}
-					else
-					{
-						return getPageFromCache( collectionIdentifier, pageIdentifier, true );
-					}
-				} );
+		else if ( cacheMeta == null || cacheMeta.isOutdated() )
+		{
+			return getCollectionFromServer( true );
+		}
+		else
+		{
+			return getCollectionFromCache( true );
+		}
 	}
 
 	/**
@@ -188,16 +144,43 @@ public class AmpClient implements AmpClientApi
 	@Override
 	public Observable<Page> getPage( String pageIdentifier )
 	{
-		return getPage( config.defaultCollectionIdentifier, pageIdentifier );
+		String pageUrl = getPageUrl( pageIdentifier );
+		PageCacheMeta pageCacheMeta = PageCacheMeta.retrieve( pageUrl, context );
+
+		if ( pageCacheMeta == null )
+		{
+			return getPageFromServer( pageIdentifier, false );
+		}
+
+		return getCollection()
+				// get page's last_changed date from collection
+				.flatMap( collection -> collection.getPageLastChanged( pageIdentifier ) )
+						// compare last_changed date of cached page with that of collection
+				.map( pageCacheMeta::isOutdated )
+				.flatMap( isOutdated -> {
+					if ( !NetworkUtils.isConnected( context ) )
+					{
+						return getPageFromCache( pageIdentifier, false );
+					}
+					else if ( isOutdated )
+					{
+						return getPageFromServer( pageIdentifier, true );
+					}
+					else
+					{
+						return getPageFromCache( pageIdentifier, true );
+					}
+				} );
 	}
 
 	/**
-	 * A set of pages is "returned" by emitting multiple events
+	 * A set of pages is "returned" by emitting multiple events.<br/>
+	 * Use collection identifier as specified in {@link this#config}
 	 */
 	@Override
-	public Observable<Page> getAllPages( String collectionIdentifier )
+	public Observable<Page> getAllPages()
 	{
-		return getCollection( collectionIdentifier )
+		return getCollection()
 				.map( collection -> collection.pages )
 				.flatMap( Observable::from )
 				.map( page -> page.identifier )
@@ -206,41 +189,16 @@ public class AmpClient implements AmpClientApi
 
 	/**
 	 * A set of pages is "returned" by emitting multiple events.<br/>
-	 * Use default collection identifier as specified in {@link this#config}
+	 * Use collection identifier as specified in {@link this#config}
 	 */
-	@Override
-	public Observable<Page> getAllPages()
+	public Observable<Page> getPages( Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return getAllPages( config.defaultCollectionIdentifier );
-	}
-
-	public Observable<Page> getPages( String collectionIdentifier, Func1<PagePreview, Boolean> pagesFilter )
-	{
-		return getCollection( collectionIdentifier )
+		return getCollection()
 				.map( collection -> collection.pages )
 				.flatMap( Observable::from )
 				.filter( pagesFilter )
 				.map( page -> page.identifier )
-				.flatMap( pageIdentifier -> getPage( collectionIdentifier, pageIdentifier ) );
-	}
-
-	/**
-	 * A set of pages is "returned" by emitting multiple events.<br/>
-	 * Use default collection identifier as specified in {@link this#config}
-	 */
-	public Observable<Page> getPages( Func1<PagePreview, Boolean> pagesFilter )
-	{
-		return getPages( config.defaultCollectionIdentifier, pagesFilter );
-	}
-
-	public Observable<Page> getPagesOrdered( String collectionIdentifier, Func1<PagePreview, Boolean> pagesFilter )
-	{
-		return getCollection( collectionIdentifier )
-				.map( collection -> collection.pages )
-				.concatMap( Observable::from )
-				.filter( pagesFilter )
-				.map( page -> page.identifier )
-				.concatMap( pageIdentifier -> getPage( collectionIdentifier, pageIdentifier ) );
+				.flatMap( this::getPage );
 	}
 
 	/**
@@ -249,7 +207,12 @@ public class AmpClient implements AmpClientApi
 	 */
 	public Observable<Page> getPagesOrdered( Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return getPagesOrdered( config.defaultCollectionIdentifier, pagesFilter );
+		return getCollection()
+				.map( collection -> collection.pages )
+				.concatMap( Observable::from )
+				.filter( pagesFilter )
+				.map( page -> page.identifier )
+				.concatMap( this::getPage );
 	}
 
 
@@ -258,9 +221,10 @@ public class AmpClient implements AmpClientApi
 
 	/// Get collection methods
 
-	private Observable<Collection> getCollectionFromCache( String collectionIdentifier, boolean serverCallAsBackup )
+	private Observable<Collection> getCollectionFromCache( boolean serverCallAsBackup )
 	{
-		String collectionUrl = getCollectionUrl( collectionIdentifier );
+		String identifier = config.collectionIdentifier;
+		String collectionUrl = getCollectionUrl();
 		Log.i( "Cache Request", collectionUrl );
 		try
 		{
@@ -271,22 +235,22 @@ public class AmpClient implements AmpClientApi
 					.map( CollectionResponse::getCollection )
 					.compose( RxUtils.applySchedulers() )
 					.onErrorResumeNext( throwable -> {
-						return handleUnsuccessfulCollectionCacheReading( collectionIdentifier, collectionUrl, serverCallAsBackup, throwable );
+						return handleUnsuccessfulCollectionCacheReading( collectionUrl, serverCallAsBackup, throwable );
 					} );
 		}
 		catch ( IOException e )
 		{
-			return handleUnsuccessfulCollectionCacheReading( collectionIdentifier, collectionUrl, serverCallAsBackup, e );
+			return handleUnsuccessfulCollectionCacheReading( collectionUrl, serverCallAsBackup, e );
 		}
 	}
 
-	private Observable<Collection> handleUnsuccessfulCollectionCacheReading( String collectionIdentifier, String collectionUrl, boolean serverCallAsBackup, Throwable e )
+	private Observable<Collection> handleUnsuccessfulCollectionCacheReading( String collectionUrl, boolean serverCallAsBackup, Throwable e )
 	{
 		if ( serverCallAsBackup )
 		{
 			Log.w( "Backup Request", "Cache request " + collectionUrl + " failed. Trying network request instead..." );
 			Log.ex( "Cache Request", e );
-			return getCollectionFromServer( collectionIdentifier, false );
+			return getCollectionFromServer( false );
 		}
 		else
 		{
@@ -295,19 +259,19 @@ public class AmpClient implements AmpClientApi
 		}
 	}
 
-	private Observable<Collection> getCollectionFromServer( String collectionIdentifier, boolean cacheAsBackup )
+	private Observable<Collection> getCollectionFromServer( boolean cacheAsBackup )
 	{
-		return ampApi.getCollection( collectionIdentifier, config.authorizationHeaderValue )
+		return ampApi.getCollection( config.collectionIdentifier, config.authorizationHeaderValue )
 				.map( CollectionResponse::getCollection )
 				.doOnNext( saveCollectionMeta() )
 				.compose( RxUtils.applySchedulers() )
 				.onErrorResumeNext( throwable -> {
-					String collectionUrl = getCollectionUrl( collectionIdentifier );
+					String collectionUrl = getCollectionUrl();
 					if ( cacheAsBackup )
 					{
 						Log.w( "Backup Request", "Network request " + collectionUrl + " failed. Trying cache request instead..." );
 						Log.ex( "Network Request", throwable );
-						return getCollectionFromCache( collectionIdentifier, false );
+						return getCollectionFromCache( false );
 					}
 					Log.e( "Failed Request", "Network request " + collectionUrl + " failed." );
 					return Observable.error( new NetworkRequestException( collectionUrl, throwable ) );
@@ -323,9 +287,9 @@ public class AmpClient implements AmpClientApi
 	/**
 	 * @param serverCallAsBackup If reading from cache is not successful, should a server call be made?
 	 */
-	private Observable<Page> getPageFromCache( String collectionIdentifier, String pageIdentifier, boolean serverCallAsBackup )
+	private Observable<Page> getPageFromCache( String pageIdentifier, boolean serverCallAsBackup )
 	{
-		String pageUrl = getPageUrl( collectionIdentifier, pageIdentifier );
+		String pageUrl = getPageUrl( pageIdentifier );
 		Log.i( "Cache Request", pageUrl );
 		try
 		{
@@ -336,22 +300,22 @@ public class AmpClient implements AmpClientApi
 					.map( PageResponse::getPage )
 					.compose( RxUtils.applySchedulers() )
 					.onErrorResumeNext( throwable -> {
-						return handleUnsuccessfulPageCacheReading( collectionIdentifier, pageIdentifier, serverCallAsBackup, pageUrl, throwable );
+						return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, throwable );
 					} );
 		}
 		catch ( IOException e )
 		{
-			return handleUnsuccessfulPageCacheReading( collectionIdentifier, pageIdentifier, serverCallAsBackup, pageUrl, e );
+			return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, e );
 		}
 	}
 
-	private Observable<Page> handleUnsuccessfulPageCacheReading( String collectionIdentifier, String pageIdentifier, boolean serverCallAsBackup, String pageUrl, Throwable e )
+	private Observable<Page> handleUnsuccessfulPageCacheReading( String pageIdentifier, boolean serverCallAsBackup, String pageUrl, Throwable e )
 	{
 		if ( serverCallAsBackup )
 		{
 			Log.w( "Backup Request", "Cache request " + pageUrl + " failed. Trying network request instead..." );
 			Log.ex( "Cache Request", e );
-			return getPageFromServer( collectionIdentifier, pageIdentifier, false );
+			return getPageFromServer( pageIdentifier, false );
 		}
 		Log.e( "Failed Request", "Cache request " + pageUrl + " failed." );
 		return Observable.error( new ReadFromCacheException( pageUrl, e ) );
@@ -360,19 +324,19 @@ public class AmpClient implements AmpClientApi
 	/**
 	 * @param cacheAsBackup If server call is not successful, should cached version be used (even if it might be old)?
 	 */
-	private Observable<Page> getPageFromServer( String collectionIdentifier, String pageIdentifier, boolean cacheAsBackup )
+	private Observable<Page> getPageFromServer( String pageIdentifier, boolean cacheAsBackup )
 	{
-		return ampApi.getPage( collectionIdentifier, pageIdentifier, config.authorizationHeaderValue )
+		return ampApi.getPage( config.collectionIdentifier, pageIdentifier, config.authorizationHeaderValue )
 				.map( PageResponse::getPage )
 				.doOnNext( savePageMeta() )
 				.compose( RxUtils.applySchedulers() )
 				.onErrorResumeNext( throwable -> {
-					String pageUrl = getPageUrl( collectionIdentifier, pageIdentifier );
+					String pageUrl = getPageUrl( pageIdentifier );
 					if ( cacheAsBackup )
 					{
 						Log.w( "Backup Request", "Network request " + pageUrl + " failed. Trying cache request instead..." );
 						Log.ex( "Network Request", throwable );
-						return getPageFromCache( collectionIdentifier, pageIdentifier, false );
+						return getPageFromCache( pageIdentifier, false );
 					}
 					Log.e( "Failed Request", "Network request " + pageUrl + " failed." );
 					return Observable.error( new NetworkRequestException( pageUrl, throwable ) );
@@ -386,7 +350,7 @@ public class AmpClient implements AmpClientApi
 	private Action1<Collection> saveCollectionMeta()
 	{
 		return collection -> {
-			String url = getCollectionUrl( collection.identifier );
+			String url = getCollectionUrl();
 			CollectionCacheMeta cacheMeta = new CollectionCacheMeta( url, DateTimeUtils.now() );
 			CollectionCacheMeta.save( url, cacheMeta, context );
 		};
@@ -396,21 +360,21 @@ public class AmpClient implements AmpClientApi
 	private Action1<Page> savePageMeta()
 	{
 		return page -> {
-			String url = getPageUrl( page.collection, page.identifier );
+			String url = getPageUrl( page.identifier );
 			PageCacheMeta cacheMeta = new PageCacheMeta( url, page.last_changed );
 			PageCacheMeta.save( url, cacheMeta, context );
 		};
 	}
 
-	private String getCollectionUrl( String collectionId )
+	private String getCollectionUrl()
 	{
 		String baseUrl = config.baseUrl;
-		return baseUrl + AmpCall.COLLECTIONS.toString() + FileUtils.SLASH + collectionId;
+		return baseUrl + AmpCall.COLLECTIONS.toString() + FileUtils.SLASH + config.collectionIdentifier;
 	}
 
-	private String getPageUrl( String collectionId, String pageId )
+	private String getPageUrl( String pageId )
 	{
 		String baseUrl = config.baseUrl;
-		return baseUrl + AmpCall.PAGES.toString() + FileUtils.SLASH + collectionId + FileUtils.SLASH + pageId;
+		return baseUrl + AmpCall.PAGES.toString() + FileUtils.SLASH + config.collectionIdentifier + FileUtils.SLASH + pageId;
 	}
 }
