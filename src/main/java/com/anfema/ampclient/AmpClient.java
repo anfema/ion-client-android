@@ -116,8 +116,7 @@ public class AmpClient implements AmpClientApi
 	/**
 	 * Add collection identifier and authorization header to request.
 	 */
-	@Override
-	public Observable<Collection> getCollection( String collectionIdentifier )
+	private Observable<Collection> getCollection( String collectionIdentifier )
 	{
 		String collectionUrl = getCollectionUrl( collectionIdentifier );
 		CollectionCacheMeta cacheMeta = CollectionCacheMeta.retrieve( collectionUrl, context );
@@ -143,14 +142,13 @@ public class AmpClient implements AmpClientApi
 	@Override
 	public Observable<Collection> getCollection()
 	{
-		return getCollection( config.defaultCollectionIdentifier );
+		return getCollection( config.collectionIdentifier );
 	}
 
 	/**
 	 * Add collection identifier and authorization token to request
 	 */
-	@Override
-	public Observable<Page> getPage( String collectionIdentifier, String pageIdentifier )
+	private Observable<Page> getPage( String collectionIdentifier, String pageIdentifier )
 	{
 		String pageUrl = getPageUrl( collectionIdentifier, pageIdentifier );
 		PageCacheMeta pageCacheMeta = PageCacheMeta.retrieve( pageUrl, context );
@@ -188,14 +186,13 @@ public class AmpClient implements AmpClientApi
 	@Override
 	public Observable<Page> getPage( String pageIdentifier )
 	{
-		return getPage( config.defaultCollectionIdentifier, pageIdentifier );
+		return getPage( config.collectionIdentifier, pageIdentifier );
 	}
 
 	/**
 	 * A set of pages is "returned" by emitting multiple events
 	 */
-	@Override
-	public Observable<Page> getAllPages( String collectionIdentifier )
+	private Observable<Page> getAllPages( String collectionIdentifier )
 	{
 		return getCollection( collectionIdentifier )
 				.map( collection -> collection.pages )
@@ -211,10 +208,10 @@ public class AmpClient implements AmpClientApi
 	@Override
 	public Observable<Page> getAllPages()
 	{
-		return getAllPages( config.defaultCollectionIdentifier );
+		return getAllPages( config.collectionIdentifier );
 	}
 
-	public Observable<Page> getPages( String collectionIdentifier, Func1<PagePreview, Boolean> pagesFilter )
+	private Observable<Page> getPages( String collectionIdentifier, Func1<PagePreview, Boolean> pagesFilter )
 	{
 		return getCollection( collectionIdentifier )
 				.map( collection -> collection.pages )
@@ -230,10 +227,10 @@ public class AmpClient implements AmpClientApi
 	 */
 	public Observable<Page> getPages( Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return getPages( config.defaultCollectionIdentifier, pagesFilter );
+		return getPages( config.collectionIdentifier, pagesFilter );
 	}
 
-	public Observable<Page> getPagesOrdered( String collectionIdentifier, Func1<PagePreview, Boolean> pagesFilter )
+	private Observable<Page> getPagesOrdered( String collectionIdentifier, Func1<PagePreview, Boolean> pagesFilter )
 	{
 		return getCollection( collectionIdentifier )
 				.map( collection -> collection.pages )
@@ -249,7 +246,7 @@ public class AmpClient implements AmpClientApi
 	 */
 	public Observable<Page> getPagesOrdered( Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return getPagesOrdered( config.defaultCollectionIdentifier, pagesFilter );
+		return getPagesOrdered( config.collectionIdentifier, pagesFilter );
 	}
 
 
