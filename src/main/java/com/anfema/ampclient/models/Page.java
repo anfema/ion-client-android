@@ -1,5 +1,7 @@
 package com.anfema.ampclient.models;
 
+import com.anfema.ampclient.models.contents.AContent;
+
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -66,6 +68,19 @@ public class Page
 		}
 		// if no translation was found for locale, then return first/"default" element
 		return translations.get( 0 );
+	}
+
+	/**
+	 * Convenience method to replace {@link Page#getTranslation(String)} appended by {@link Translation#getContent()}.
+	 */
+	public AContent getContent( String locale )
+	{
+		Translation translation = getTranslation( locale );
+		if ( translation == null )
+		{
+			return null;
+		}
+		return translation.getContent();
 	}
 
 	@Override
