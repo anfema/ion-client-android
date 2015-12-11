@@ -43,8 +43,17 @@ public class RxUtils
 	 * Use in compose operator to apply to every observable in the chain
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> Transformer<T, T> applySchedulers()
+	public static <T> Transformer<T, T> runOnIoThread()
 	{
 		return tObservable -> tObservable.subscribeOn( Schedulers.io() ).observeOn( AndroidSchedulers.mainThread() );
+	}
+
+	/**
+	 * Use in compose operator to apply to every observable in the chain
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> Transformer<T, T> runOnComputionThread()
+	{
+		return tObservable -> tObservable.subscribeOn( Schedulers.computation() ).observeOn( AndroidSchedulers.mainThread() );
 	}
 }

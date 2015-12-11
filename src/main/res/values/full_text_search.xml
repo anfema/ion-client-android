@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <string name="fts_query"
+            tools:ignore="TypographyEllipsis">
+        SELECT DISTINCT page, text, layout FROM (
+        SELECT c.page, c.layout,
+        snippet(s.search, \'<em>\', \'</em>\', \'[...]\') as text,
+        offsets(s.search) as off
+        FROM search s
+        JOIN contents c ON s.docid = c.rowid
+        WHERE
+        c.locale = ? %1$s
+        ) ORDER BY
+        length(text) ASC,
+        (length(off) - length(replace(off, \' \', \'\')) - 1) / 2 DESC
+    </string>
+
+    <string name="fts_search_term_filter">" AND s.search MATCH ? "</string>
+
+    <string name="fts_page_layout_filter">" AND c.layout = ? "</string>
+
+</resources>

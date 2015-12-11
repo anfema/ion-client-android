@@ -10,6 +10,7 @@ import com.anfema.ampclient.exceptions.AmpConfigInvalidException;
 import com.anfema.ampclient.exceptions.ContextIsNullException;
 import com.anfema.ampclient.exceptions.NetworkRequestException;
 import com.anfema.ampclient.exceptions.ReadFromCacheException;
+import com.anfema.ampclient.fulltextsearch.AmpFts;
 import com.anfema.ampclient.interceptors.CachingInterceptor;
 import com.anfema.ampclient.interceptors.DeviceIdHeaderInterceptor;
 import com.anfema.ampclient.interceptors.RequestLogger;
@@ -66,24 +67,24 @@ public class AmpClient implements AmpClientApi
 
 		// check if client for this configuration already exists, otherwise create an instance
 		AmpClient storedClient = instances.get( config );
-		if ( storedClient == null )
+		if ( storedClient != null )
 		{
-			AmpClient ampClient = new AmpClient( config, context );
-			instances.put( config, ampClient );
-			return ampClient;
+			if ( storedClient.context == null )
+			{
+				// fail early if app context is null
+				if ( context == null )
+				{
+					throw new ContextIsNullException();
+				}
+				// update context for existing clients if it became null
+				storedClient.context = context;
+			}
+			return storedClient;
 		}
 
-		if ( storedClient.context == null )
-		{
-			// fail early if app context is null
-			if ( context == null )
-			{
-				throw new ContextIsNullException();
-			}
-			// update context for existing clients if it became null
-			storedClient.context = context;
-		}
-		return storedClient;
+		AmpClient ampClient = new AmpClient( config, context );
+		instances.put( config, ampClient );
+		return ampClient;
 	}
 
 	/// Multiton END
@@ -105,6 +106,8 @@ public class AmpClient implements AmpClientApi
 		interceptors.add( new RequestLogger( "Network Request" ) );
 		interceptors.add( new CachingInterceptor( context ) );
 		ampApi = AmpApiFactory.newInstance( config.baseUrl, interceptors, AmpApiRx.class );
+
+		ampFts = new AmpFts( this, this.config, this.context );
 
 		instances.put( config, this );
 	}
@@ -223,7 +226,6 @@ public class AmpClient implements AmpClientApi
 
 	private Observable<Collection> getCollectionFromCache( boolean serverCallAsBackup )
 	{
-		String identifier = config.collectionIdentifier;
 		String collectionUrl = getCollectionUrl();
 		Log.i( "Cache Request", collectionUrl );
 		try
@@ -233,7 +235,7 @@ public class AmpClient implements AmpClientApi
 					.readFromFile( filePath )
 					.map( collectionsString -> GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class ) )
 					.map( CollectionResponse::getCollection )
-					.compose( RxUtils.applySchedulers() )
+					.compose( RxUtils.runOnIoThread() )
 					.onErrorResumeNext( throwable -> {
 						return handleUnsuccessfulCollectionCacheReading( collectionUrl, serverCallAsBackup, throwable );
 					} );
@@ -264,7 +266,7 @@ public class AmpClient implements AmpClientApi
 		return ampApi.getCollection( config.collectionIdentifier, config.authorizationHeaderValue )
 				.map( CollectionResponse::getCollection )
 				.doOnNext( saveCollectionMeta() )
-				.compose( RxUtils.applySchedulers() )
+				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
 					String collectionUrl = getCollectionUrl();
 					if ( cacheAsBackup )
@@ -298,7 +300,7 @@ public class AmpClient implements AmpClientApi
 					.readFromFile( filePath )
 					.map( pagesString -> GsonHolder.getInstance().fromJson( pagesString, PageResponse.class ) )
 					.map( PageResponse::getPage )
-					.compose( RxUtils.applySchedulers() )
+					.compose( RxUtils.runOnIoThread() )
 					.onErrorResumeNext( throwable -> {
 						return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, throwable );
 					} );
@@ -329,7 +331,7 @@ public class AmpClient implements AmpClientApi
 		return ampApi.getPage( config.collectionIdentifier, pageIdentifier, config.authorizationHeaderValue )
 				.map( PageResponse::getPage )
 				.doOnNext( savePageMeta() )
-				.compose( RxUtils.applySchedulers() )
+				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
 					String pageUrl = getPageUrl( pageIdentifier );
 					if ( cacheAsBackup )
@@ -377,4 +379,16 @@ public class AmpClient implements AmpClientApi
 		String baseUrl = config.baseUrl;
 		return baseUrl + AmpCall.PAGES.toString() + FileUtils.SLASH + config.collectionIdentifier + FileUtils.SLASH + pageId;
 	}
+
+
+	/// Full text search
+
+	private final AmpFts ampFts;
+
+	public AmpFts fts()
+	{
+		return ampFts;
+	}
+
+	/// Full text search END
 }

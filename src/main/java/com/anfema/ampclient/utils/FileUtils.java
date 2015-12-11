@@ -137,7 +137,7 @@ public class FileUtils
 			{
 				return Observable.error( e );
 			}
-		} ).compose( RxUtils.applySchedulers() );
+		} ).compose( RxUtils.runOnIoThread() );
 
 	}
 

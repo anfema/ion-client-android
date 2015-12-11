@@ -19,6 +19,6 @@ public class AmpTokenAuthenticator
 				.map( LoginResponse::getToken )
 				.map( TokenAuth::getAuthHeaderValue )
 				.doOnError( RxUtils.DEFAULT_EXCEPTION_HANDLER )
-				.compose( RxUtils.applySchedulers() );
+				.compose( RxUtils.runOnIoThread() );
 	}
 }

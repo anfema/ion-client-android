@@ -30,9 +30,9 @@ import rx.Observable;
 
 /**
  * Does not perform calls against a specific API, but takes complete URLs as parameter to perform a GET call to.
- * <p/>
+ * <p>
  * Downloads the response body and stores it into a file.
- * <p/>
+ * <p>
  * However, the AMP authorization header is added (in case the URL points to protected media).
  */
 public class AmpFiles
@@ -87,16 +87,31 @@ public class AmpFiles
 	}
 
 	/**
-	 * Wraps {@link this#performRequest(HttpUrl)} so that it runs completely async.
+	 * Wraps {@link this#performRequest(HttpUrl, File)} so that it runs completely async.
 	 */
 	public Observable<File> request( HttpUrl url )
 	{
-		return Observable.just( url )
-				.flatMap( this::performRequest )
-				.compose( RxUtils.applySchedulers() );
+		return request( url, null );
 	}
 
-	private Observable<File> performRequest( HttpUrl url )
+	/**
+	 * Wraps {@link this#performRequest(HttpUrl, File)} so that it runs completely async.
+	 */
+	public Observable<File> request( HttpUrl url, File targetFile )
+	{
+		return Observable.just( url )
+				.flatMap( ( url1 ) -> performRequest( url1, targetFile ) )
+				.compose( RxUtils.runOnIoThread() );
+	}
+
+	/**
+	 * Perform get request and store response body to local storage.
+	 *
+	 * @param url        source location of content
+	 * @param targetFile path, where file is going to be stored. if null, default "/files" directory is used
+	 * @return the file with content
+	 */
+	private Observable<File> performRequest( HttpUrl url, File targetFile )
 	{
 		Request request = new Request.Builder()
 				.url( url )
@@ -109,7 +124,13 @@ public class AmpFiles
 				throw new IOException( "Unexpected code " + response );
 			}
 
-			return Observable.just( getFile( response, url ) );
+			if ( targetFile != null )
+			{
+				// use custom target file path
+				return Observable.just( writeToLocalStorage( response, targetFile ) );
+			}
+			// use default target file path
+			return Observable.just( writeToLocalStorage( response, url ) );
 		}
 		catch ( IOException e )
 		{
@@ -118,10 +139,16 @@ public class AmpFiles
 	}
 
 	// directly from input stream to file
-	private File getFile( Response response, HttpUrl url ) throws IOException
+	private File writeToLocalStorage( Response response, HttpUrl url ) throws IOException
 	{
 		String filePath = CacheUtils.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
 		File targetFile = new File( filePath );
+		return writeToLocalStorage( response, targetFile );
+	}
+
+	// directly from input stream to file
+	private File writeToLocalStorage( Response response, File targetFile ) throws IOException
+	{
 		FileUtils.writeBytesToFile( response, targetFile );
 		return targetFile;
 	}
@@ -139,7 +166,6 @@ public class AmpFiles
 			return null;
 		}
 
-		// TODO empty buffer? work on a copy or original?
 		byte[] bytes = buffer/*.clone()*/.readByteArray();
 		String filePath = CacheUtils.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
 		File targetFile = new File( filePath );
