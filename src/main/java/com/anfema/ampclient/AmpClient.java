@@ -29,8 +29,10 @@ import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.NetworkUtils;
 import com.anfema.ampclient.utils.RxUtils;
+import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.Interceptor;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -230,7 +232,7 @@ public class AmpClient implements AmpClientApi
 		Log.i( "Cache Request", collectionUrl );
 		try
 		{
-			String filePath = CacheUtils.getFilePath( collectionUrl, context );
+			File filePath = CacheUtils.getFilePath( collectionUrl, context );
 			return FileUtils
 					.readFromFile( filePath )
 					.map( collectionsString -> GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class ) )
@@ -295,7 +297,7 @@ public class AmpClient implements AmpClientApi
 		Log.i( "Cache Request", pageUrl );
 		try
 		{
-			String filePath = CacheUtils.getFilePath( pageUrl, context );
+			File filePath = CacheUtils.getFilePath( pageUrl, context );
 			return FileUtils
 					.readFromFile( filePath )
 					.map( pagesString -> GsonHolder.getInstance().fromJson( pagesString, PageResponse.class ) )

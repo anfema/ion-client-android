@@ -47,17 +47,17 @@ public class CacheUtils
 	 * Do not use for collections and pages – use {@link CacheUtils#getFilePath(String, Context)} instead
 	 * Creates folders if the do not exist yet.
 	 */
-	public static String getMediaFilePath( String url, Context context )
+	public static File getMediaFilePath( String url, Context context )
 	{
 		String filename = FileUtils.calcMD5( url );
 		String filePath = context.getFilesDir() + FileUtils.SLASH + context.getString( R.string.files_dir ) + filename;
-		return filePath;
+		return new File( filePath );
 	}
 
-	public static String getMediaFilePathExt( String url, Context context )
+	public static File getMediaFilePathExt( String url, Context context )
 	{
 		String filename = FileUtils.calcMD5( url );
-		return context.getExternalFilesDir( null ) + FileUtils.SLASH + context.getString( R.string.files_dir ) + filename;
+		return new File( context.getExternalFilesDir( null ) + FileUtils.SLASH + context.getString( R.string.files_dir ) + filename );
 	}
 
 	/**
@@ -66,7 +66,7 @@ public class CacheUtils
 	 * Do not use for media files – use {@link CacheUtils#getMediaFilePath(String, Context)} instead
 	 * Creates folders if the do not exist yet.
 	 */
-	public static String getFilePath( String url, Context context ) throws UnknownAmpRequest
+	public static File getFilePath( String url, Context context ) throws UnknownAmpRequest
 	{
 		HttpUrl httpUrl = HttpUrl.parse( url );
 		List<String> urlPathSegments = httpUrl.pathSegments();
@@ -86,12 +86,9 @@ public class CacheUtils
 
 		String folderPath = StringUtils.concatStrings( fileNamePathSegments, FileUtils.SLASH );
 
-		// create directories if not existing
-		//		FileUtils.createFolders( folderPath );
-
 		// append file name, which is MD5 hash of url
 		String filename = FileUtils.calcMD5( url );
-		return folderPath + FileUtils.SLASH + filename;
+		return new File( folderPath + FileUtils.SLASH + filename );
 	}
 
 	/**

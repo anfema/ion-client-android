@@ -61,7 +61,7 @@ public class AmpFts
 	 */
 	public Observable<List<SearchResult>> fullTextSearch( String searchTerm, String locale, String pageLayout )
 	{
-		return Observable.just( "" )
+		return Observable.just( null )
 				.map( o -> performFts( searchTerm, locale, pageLayout ) )
 				.compose( RxUtils.runOnComputionThread() );
 	}

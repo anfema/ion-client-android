@@ -24,29 +24,19 @@ public class FileUtils
 
 	public static final String SLASH = "/";
 
-	public static synchronized void createFolders( String dirPath )
+	public static synchronized boolean createFolders( File dir )
 	{
-		createFolders( new File( dirPath ) );
-	}
-
-	public static synchronized void createFolders( File dir )
-	{
-		if ( !dir.exists() )
+		if ( dir.exists() )
 		{
-			Log.d( "FileUtil", "create dirs for: " + dir );
-			dir.mkdirs();
+			return true;
 		}
-	}
-
-	public static synchronized void writeTextToFile( String content, String filePath ) throws IOException
-	{
-		File file = new File( filePath );
-		writeTextToFile( content, file );
+		Log.d( "FileUtil", "create dirs for: " + dir );
+		return dir.mkdirs();
 	}
 
 	/**
 	 * Helper function to write content String to a file.
-	 * <p/>
+	 * <p>
 	 * Should not be called from main thread.
 	 *
 	 * @param content content String to save
@@ -106,12 +96,6 @@ public class FileUtils
 		{
 			stream.close();
 		}
-	}
-
-	public static Observable<String> readFromFile( String filePath ) throws IOException
-	{
-		File file = new File( filePath );
-		return readFromFile( file );
 	}
 
 	public static synchronized Observable<String> readFromFile( File file ) throws IOException

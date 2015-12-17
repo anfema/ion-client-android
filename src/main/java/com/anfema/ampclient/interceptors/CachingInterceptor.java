@@ -12,6 +12,7 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.ResponseBody;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
@@ -43,7 +44,7 @@ public class CachingInterceptor implements Interceptor
 
 		// write response to cache
 		String responseBody = getResponseBody( response );
-		String filePath = CacheUtils.getFilePath( url.toString(), context );
+		File filePath = CacheUtils.getFilePath( url.toString(), context );
 		FileUtils.writeTextToFile( responseBody, filePath );
 
 		return response;

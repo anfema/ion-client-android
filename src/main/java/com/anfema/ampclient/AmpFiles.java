@@ -141,8 +141,7 @@ public class AmpFiles
 	// directly from input stream to file
 	private File writeToLocalStorage( Response response, HttpUrl url ) throws IOException
 	{
-		String filePath = CacheUtils.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
-		File targetFile = new File( filePath );
+		File targetFile = CacheUtils.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
 		return writeToLocalStorage( response, targetFile );
 	}
 
@@ -167,8 +166,7 @@ public class AmpFiles
 		}
 
 		byte[] bytes = buffer/*.clone()*/.readByteArray();
-		String filePath = CacheUtils.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
-		File targetFile = new File( filePath );
+		File targetFile = CacheUtils.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
 		FileUtils.createFolders( targetFile.getParentFile() );
 		Files.write( bytes, targetFile );
 		return targetFile;
@@ -178,8 +176,7 @@ public class AmpFiles
 	private File getFile3( Response response, HttpUrl url ) throws IOException
 	{
 		String responseBody = getResponseBody( response );
-		String filePath = CacheUtils.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
-		File file = new File( filePath );
+		File file = CacheUtils.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
 		FileUtils.writeTextToFile( responseBody, file );
 		return file;
 	}
