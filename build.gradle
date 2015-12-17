@@ -68,9 +68,10 @@ dependencies {
     compile 'io.reactivex:rxjava:1.0.14' // RxAndroid releases are few and far between, so depend on latest version for bug fixes and new features.
     compile 'io.reactivex:rxjava-debug:1.0.3' // allows hooks to log intermediates steps
     // compile 'com.netflix.rxjava:rxjava-async-util:0.20.7' // support of Async.start()
-
+    compile 'org.apache.commons:commons-compress:1.2'
     compile 'com.squareup.picasso:picasso:2.5.2' // amp client provides a picasso wrapper adding an authorization header to requests
     compile 'joda-time:joda-time:2.9' // better DateTime handling
+
     compile 'com.google.guava:guava:18.0'
 }
 

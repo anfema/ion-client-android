@@ -382,6 +382,23 @@ public class AmpClient implements AmpClientApi
 		return baseUrl + AmpCall.PAGES.toString() + FileUtils.SLASH + config.collectionIdentifier + FileUtils.SLASH + pageId;
 	}
 
+	/// Zip download
+
+	/**
+	 * Download the archive file for current collection, which should make app usable in offline mode.
+	 */
+	public Observable<File> downloadArchive()
+	{
+		File archivePath = CacheUtils.getArchiveFilePath( config.collectionIdentifier, context );
+		File collectionFolder = CacheUtils.getCollectionFolder( config.collectionIdentifier, context );
+		Log.i( "FTS Database", "about to download FTS database for collection " + config.collectionIdentifier );
+		return getCollection()
+				.map( collection -> collection.archive )
+				.flatMap( zipUrl -> AmpFiles.getInstance( config.authorizationHeaderValue, context ).request( HttpUrl.parse( zipUrl ), archivePath ) )
+				.flatMap( archive -> FileUtils.unTar( archivePath, collectionFolder ) )
+				;
+	}
+
 
 	/// Full text search
 

@@ -31,14 +31,36 @@ public class CacheUtils
 		return potentialFile.exists();
 	}
 
-	public static Observable<Response> createCacheResponse( Request request, String filePath ) throws IOException
+	public static Observable<Response> createCacheResponse( Request request, File filePath )
 	{
-		return FileUtils.readFromFile( filePath ).map( responseBody -> new Response.Builder()
-				.protocol( Protocol.HTTP_1_1 )
-				.request( request )
-				.code( HttpURLConnection.HTTP_OK )
-				.body( ResponseBody.create( MediaType.parse( com.anfema.ampclient.utils.MediaType.JSON_UTF_8.toString() ), responseBody ) )
-				.build() );
+		try
+		{
+			return FileUtils.readFromFile( filePath ).map( responseBody -> new Response.Builder()
+					.protocol( Protocol.HTTP_1_1 )
+					.request( request )
+					.code( HttpURLConnection.HTTP_OK )
+					.body( ResponseBody.create( MediaType.parse( com.anfema.ampclient.utils.MediaType.JSON_UTF_8.toString() ), responseBody ) )
+					.build() );
+		}
+		catch ( IOException e )
+		{
+			return Observable.error( e );
+		}
+	}
+
+	public static File getCollectionFolder( String collectionIdentifier, Context context )
+	{
+		File folder = new File( context.getFilesDir() + FileUtils.SLASH + collectionIdentifier );
+		if ( !folder.exists() )
+		{
+			folder.mkdirs();
+		}
+		return folder;
+	}
+
+	public static File getArchiveFilePath( String collectionIdentifier, Context context )
+	{
+		return new File( context.getFilesDir() + FileUtils.SLASH + collectionIdentifier + ".archive" );
 	}
 
 	/**
