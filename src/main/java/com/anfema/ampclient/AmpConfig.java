@@ -1,7 +1,11 @@
 package com.anfema.ampclient;
 
+import com.anfema.ampclient.exceptions.AmpConfigInvalidException;
+
 public class AmpConfig
 {
+	// TODO add Locale, add variation?
+
 	/**
 	 * base URL pointing to the AMP endpoint
 	 */
@@ -36,5 +40,13 @@ public class AmpConfig
 		return baseUrl != null && baseUrl.contains( "://" )
 				&& collectionIdentifier != null
 				&& authorizationHeaderValue != null && authorizationHeaderValue.length() > 0;
+	}
+
+	public static void assertConfigIsValid( AmpConfig config )
+	{
+		if ( config == null || !config.isValid() )
+		{
+			throw new AmpConfigInvalidException();
+		}
 	}
 }

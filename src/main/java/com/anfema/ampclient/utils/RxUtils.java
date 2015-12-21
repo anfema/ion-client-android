@@ -3,7 +3,6 @@ package com.anfema.ampclient.utils;
 import retrofit.HttpException;
 import rx.Observable.Transformer;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
@@ -32,12 +31,15 @@ public class RxUtils
 	};
 
 	/**
-	 * Convenience action for on completed:
-	 * This is an action that receives no arguments and does nothing.
+	 * Convenience action for on next:
+	 * This is an action that receives one argument and does nothing.
 	 */
-	public static Action0 NOTHING = () -> {
-	};
+	public static Action1 NOTHING = o -> doNothing();
 
+	public static void doNothing()
+	{
+		// does what you would expect
+	}
 
 	/**
 	 * Use in compose operator to apply to every observable in the chain

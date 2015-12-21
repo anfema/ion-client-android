@@ -1,8 +1,7 @@
 package com.anfema.ampclient.authorization;
 
 import com.anfema.ampclient.models.responses.LoginResponse;
-import com.anfema.ampclient.service.AmpApiFactory;
-import com.anfema.ampclient.service.AmpApiRx;
+import com.anfema.ampclient.utils.ApiFactory;
 import com.anfema.ampclient.utils.RxUtils;
 
 import rx.Observable;
@@ -14,7 +13,7 @@ public class AmpTokenAuthenticator
 {
 	public static Observable<String> requestAuthHeaderValue( String baseUrl, String username, String password )
 	{
-		AmpApiRx ampApi = AmpApiFactory.newInstance( baseUrl, AmpApiRx.class );
+		AmpLoginApi ampApi = ApiFactory.newInstance( baseUrl, AmpLoginApi.class );
 		return ampApi.login( username, password )
 				.map( LoginResponse::getToken )
 				.map( TokenAuth::getAuthHeaderValue )

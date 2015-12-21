@@ -22,16 +22,16 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import rx.Observable;
 
 public class FileUtils
 {
-	public static volatile Map<String, Object> ioLocks = new HashMap<>();
+	public static volatile Set<String> ioLocks = new HashSet<>();
 
 	public static final String SLASH = "/";
 
@@ -44,6 +44,8 @@ public class FileUtils
 		Log.d( "FileUtil", "create dirs for: " + dir );
 		return dir.mkdirs();
 	}
+
+	// TODO use writeBytesToFile and/or with IOUtils#copy
 
 	/**
 	 * Helper function to write content String to a file.
@@ -91,22 +93,30 @@ public class FileUtils
 		}
 		file.createNewFile();
 
-		OutputStream stream = new BufferedOutputStream( new FileOutputStream( file ) );
-		try
-		{
-			int bufferSize = 1024;
-			byte[] buffer = new byte[ bufferSize ];
+		InputStream inputStream = response.body().byteStream();
+		OutputStream outputStream = new BufferedOutputStream( new FileOutputStream( file ) );
+		IOUtils.copy( inputStream, outputStream );
 
-			int len;
-			while ( ( len = response.body().byteStream().read( buffer ) ) != -1 )
-			{
-				stream.write( buffer, 0, len );
-			}
-		}
-		finally
-		{
-			stream.close();
-		}
+		// TODO create new method public static boolean move(File source, File target, boolean forceOverwrite)
+		// TODO and store to temp file first
+
+		// TODO synchronize operations on URL Strings
+
+		//		try
+		//		{
+		//			int bufferSize = 1024;
+		//			byte[] buffer = new byte[ bufferSize ];
+		//
+		//			int len;
+		//			while ( ( len = inputStream.read( buffer ) ) != -1 )
+		//			{
+		//				outputStream.write( buffer, 0, len );
+		//			}
+		//		}
+		//		finally
+		//		{
+		//			outputStream.close();
+		//		}
 	}
 
 	public static synchronized Observable<String> readFromFile( File file ) throws IOException
@@ -194,7 +204,8 @@ public class FileUtils
 					{
 						return Observable.error( e );
 					}
-				} );
+				} )
+				.compose( RxUtils.runOnComputionThread() );
 	}
 
 	/**

@@ -1,11 +1,11 @@
-package com.anfema.ampclient.service;
+package com.anfema.ampclient.pages;
 
 import com.anfema.ampclient.utils.FileUtils;
 import com.squareup.okhttp.HttpUrl;
 
 public enum AmpCall
 {
-	COLLECTIONS( "collections" ), PAGES( "pages" ), AUTHENTICATE( "login" );
+	COLLECTIONS( "collections" ), PAGES( "pages" );
 
 	private final String pathSegment;
 

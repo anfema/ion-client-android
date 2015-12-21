@@ -2,9 +2,8 @@ package com.anfema.ampclient;
 
 import android.content.Context;
 
-import com.anfema.ampclient.caching.CacheUtils;
+import com.anfema.ampclient.caching.FilePaths;
 import com.anfema.ampclient.exceptions.AuthorizationHeaderValueIsNullException;
-import com.anfema.ampclient.exceptions.ContextIsNullException;
 import com.anfema.ampclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ampclient.interceptors.RequestLogger;
 import com.anfema.ampclient.utils.ContextUtils;
@@ -44,30 +43,18 @@ public class AmpFiles
 
 	public static AmpFiles getInstance( String authorizationHeaderValue, Context context )
 	{
-		Context appContext = ContextUtils.getApplicationContext( context );
-
-		if ( fileClientInstances == null )
-		{
-			fileClientInstances = new HashMap<>();
-		}
 		if ( authorizationHeaderValue == null )
 		{
 			throw new AuthorizationHeaderValueIsNullException();
 		}
 
 		AmpFiles storedFileClient = fileClientInstances.get( authorizationHeaderValue );
-		if ( storedFileClient != null )
+		if ( storedFileClient != null && storedFileClient.context != null )
 		{
-			if ( storedFileClient.context == null )
-			{
-				if ( appContext == null )
-				{
-					throw new ContextIsNullException();
-				}
-				storedFileClient.context = appContext;
-			}
 			return storedFileClient;
 		}
+
+		Context appContext = ContextUtils.getApplicationContext( context );
 		AmpFiles ampFiles = new AmpFiles( authorizationHeaderValue, appContext );
 		fileClientInstances.put( authorizationHeaderValue, ampFiles );
 		return ampFiles;
@@ -99,8 +86,8 @@ public class AmpFiles
 	 */
 	public Observable<File> request( HttpUrl url, File targetFile )
 	{
-		return Observable.just( url )
-				.flatMap( ( url1 ) -> performRequest( url1, targetFile ) )
+		return Observable.just( null )
+				.flatMap( o -> performRequest( url, targetFile ) )
 				.compose( RxUtils.runOnIoThread() );
 	}
 
@@ -141,7 +128,7 @@ public class AmpFiles
 	// directly from input stream to file
 	private File writeToLocalStorage( Response response, HttpUrl url ) throws IOException
 	{
-		File targetFile = CacheUtils.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
+		File targetFile = FilePaths.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
 		return writeToLocalStorage( response, targetFile );
 	}
 
@@ -166,7 +153,7 @@ public class AmpFiles
 		}
 
 		byte[] bytes = buffer/*.clone()*/.readByteArray();
-		File targetFile = CacheUtils.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
+		File targetFile = FilePaths.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
 		FileUtils.createFolders( targetFile.getParentFile() );
 		Files.write( bytes, targetFile );
 		return targetFile;
@@ -176,7 +163,7 @@ public class AmpFiles
 	private File getFile3( Response response, HttpUrl url ) throws IOException
 	{
 		String responseBody = getResponseBody( response );
-		File file = CacheUtils.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
+		File file = FilePaths.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
 		FileUtils.writeTextToFile( responseBody, file );
 		return file;
 	}

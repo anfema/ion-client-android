@@ -40,7 +40,7 @@ public class PageCacheMeta extends CacheMeta
 		return lastChanged.isBefore( serverDate );
 	}
 
-	// ****** Store and retrieve from shared preferences ***********
+	// Persistence - shared preferences
 
 	public static PageCacheMeta retrieve( String requestUrl, Context context )
 	{

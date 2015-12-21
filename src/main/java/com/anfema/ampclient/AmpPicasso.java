@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * This class holds multiple {@link Picasso} instances.
- * <p/>
+ * <p>
  * Each instance intercepts the requests being performed by adding an authorization header – which is useful in case the link is referring to
  * the protected media repository of AMP.
  */
@@ -28,10 +28,6 @@ public class AmpPicasso
 
 	public static Picasso getInstance( String authorizationHeaderValue, Context context )
 	{
-		if ( picassoInstances == null )
-		{
-			picassoInstances = new HashMap<>();
-		}
 		if ( authorizationHeaderValue == null )
 		{
 			throw new AuthorizationHeaderValueIsNullException();
@@ -42,6 +38,7 @@ public class AmpPicasso
 		{
 			return storedPicasso;
 		}
+
 		Picasso newPicasso = createPicassoInstance( authorizationHeaderValue, context );
 		picassoInstances.put( authorizationHeaderValue, newPicasso );
 		return newPicasso;
@@ -63,9 +60,9 @@ public class AmpPicasso
 
 	/**
 	 * If you have a default picasso instance you want to use with default Picasso syntax, you can set the instance.
-	 * <p/>
+	 * <p>
 	 * Caution: if Picasso.with(this) has been called before an instance is already set and this method will throw an exception.
-	 * <p/>
+	 * <p>
 	 * Therefore, it is recommended to call this method in {@link Application#onCreate()}. (But do not perform any long-lasting operations there.)
 	 */
 	public static void setupDefaultPicasso( String authHeaderValue, Context context ) throws IllegalStateException

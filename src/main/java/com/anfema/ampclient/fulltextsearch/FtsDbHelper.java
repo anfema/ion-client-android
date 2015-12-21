@@ -4,8 +4,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.anfema.ampclient.utils.DatabaseUtils;
-
 /**
  * Provides access to downloaded full text search databases
  */
@@ -15,7 +13,7 @@ public class FtsDbHelper extends SQLiteOpenHelper
 
 	public FtsDbHelper( String collectionIdentifier, Context context )
 	{
-		super( context, DatabaseUtils.getName( collectionIdentifier ), null, DATABASE_VERSION );
+		super( context, FtsDbUtils.getName( collectionIdentifier ), null, DATABASE_VERSION );
 	}
 
 	@Override

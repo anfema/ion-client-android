@@ -4,50 +4,17 @@ import android.content.Context;
 
 import com.anfema.ampclient.R;
 import com.anfema.ampclient.exceptions.UnknownAmpRequest;
-import com.anfema.ampclient.service.AmpCall;
+import com.anfema.ampclient.pages.AmpCall;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.StringUtils;
 import com.squareup.okhttp.HttpUrl;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.Protocol;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-import rx.Observable;
-
-public class CacheUtils
+public class FilePaths
 {
-
-	public static boolean isInCache( String filePath )
-	{
-		File potentialFile = new File( filePath );
-		return potentialFile.exists();
-	}
-
-	public static Observable<Response> createCacheResponse( Request request, File filePath )
-	{
-		try
-		{
-			return FileUtils.readFromFile( filePath ).map( responseBody -> new Response.Builder()
-					.protocol( Protocol.HTTP_1_1 )
-					.request( request )
-					.code( HttpURLConnection.HTTP_OK )
-					.body( ResponseBody.create( MediaType.parse( com.anfema.ampclient.utils.MediaType.JSON_UTF_8.toString() ), responseBody ) )
-					.build() );
-		}
-		catch ( IOException e )
-		{
-			return Observable.error( e );
-		}
-	}
-
 	public static File getCollectionFolder( String collectionIdentifier, Context context )
 	{
 		File folder = new File( context.getFilesDir() + FileUtils.SLASH + collectionIdentifier );
@@ -66,7 +33,7 @@ public class CacheUtils
 	/**
 	 * Find appropriate file path for media files.
 	 * <p>
-	 * Do not use for collections and pages – use {@link CacheUtils#getFilePath(String, Context)} instead
+	 * Do not use for collections and pages – use {@link #getFilePath(String, Context)} instead
 	 * Creates folders if the do not exist yet.
 	 */
 	public static File getMediaFilePath( String url, Context context )
@@ -85,7 +52,7 @@ public class CacheUtils
 	/**
 	 * Find appropriate file path for collections and pages.
 	 * <p>
-	 * Do not use for media files – use {@link CacheUtils#getMediaFilePath(String, Context)} instead
+	 * Do not use for media files – use {@link #getMediaFilePath(String, Context)} instead
 	 * Creates folders if the do not exist yet.
 	 */
 	public static File getFilePath( String url, Context context ) throws UnknownAmpRequest
@@ -100,7 +67,7 @@ public class CacheUtils
 		{
 			throw new UnknownAmpRequest();
 		}
-
+		// TODO check if index++;
 		for ( int i = index; i < urlPathSegments.size(); i++ )
 		{
 			fileNamePathSegments.add( urlPathSegments.get( i ) );

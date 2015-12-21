@@ -1,13 +1,15 @@
-package com.anfema.ampclient.utils;
+package com.anfema.ampclient;
 
 import android.net.Uri;
 import android.widget.VideoView;
+
+import com.anfema.ampclient.utils.Log;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-public class VideoUtils
+public class VideoHeaderUtils
 {
 	/**
 	 * Setting headers for video URI in {@link VideoView} is possible with method {@link VideoView#setVideoURI(Uri, Map)} from API level 21.
@@ -28,8 +30,9 @@ public class VideoUtils
 	}
 
 	/**
-	 * Setting headers for video URI in {@link VideoView} is possible with method {@link VideoView#setVideoURI(Uri, Map)} from API level 21.
-	 * This method is a bit hacky. It enables setting headers by use reflection to access a private field.
+	 * Set authorization header for video URI in {@link VideoView}.
+	 *
+	 * @see #setHeaders(VideoView, Map)
 	 */
 	public static void setAuthorizationHeader( VideoView videoView, String authHeaderValue )
 	{

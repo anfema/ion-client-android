@@ -2,7 +2,7 @@ package com.anfema.ampclient.interceptors;
 
 import android.content.Context;
 
-import com.anfema.ampclient.caching.CacheUtils;
+import com.anfema.ampclient.caching.FilePaths;
 import com.anfema.ampclient.utils.ContextUtils;
 import com.anfema.ampclient.utils.FileUtils;
 import com.squareup.okhttp.HttpUrl;
@@ -44,7 +44,7 @@ public class CachingInterceptor implements Interceptor
 
 		// write response to cache
 		String responseBody = getResponseBody( response );
-		File filePath = CacheUtils.getFilePath( url.toString(), context );
+		File filePath = FilePaths.getFilePath( url.toString(), context );
 		FileUtils.writeTextToFile( responseBody, filePath );
 
 		return response;

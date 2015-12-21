@@ -35,7 +35,7 @@ public abstract class CacheMeta
 		this.filename = filename;
 	}
 
-	// ****** Store and retrieve from shared preferences ***********
+	// Persistence - shared preferences
 
 	private static final String PREFS_CACHING_META = "prefs_caching_meta";
 

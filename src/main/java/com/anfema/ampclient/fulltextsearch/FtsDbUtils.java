@@ -1,10 +1,10 @@
-package com.anfema.ampclient.utils;
+package com.anfema.ampclient.fulltextsearch;
 
 import android.content.Context;
 
 import java.io.File;
 
-public class DatabaseUtils
+public class FtsDbUtils
 {
 	public static File getPath( String collectionIdentifier, Context context )
 	{

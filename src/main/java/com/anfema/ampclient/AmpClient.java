@@ -1,49 +1,28 @@
 package com.anfema.ampclient;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 
-import com.anfema.ampclient.caching.CacheUtils;
-import com.anfema.ampclient.caching.CollectionCacheMeta;
-import com.anfema.ampclient.caching.PageCacheMeta;
-import com.anfema.ampclient.exceptions.AmpConfigInvalidException;
-import com.anfema.ampclient.exceptions.ContextIsNullException;
-import com.anfema.ampclient.exceptions.NetworkRequestException;
-import com.anfema.ampclient.exceptions.ReadFromCacheException;
+import com.anfema.ampclient.archive.AmpArchive;
+import com.anfema.ampclient.archive.AmpArchiveFactory;
 import com.anfema.ampclient.fulltextsearch.AmpFts;
-import com.anfema.ampclient.interceptors.CachingInterceptor;
-import com.anfema.ampclient.interceptors.DeviceIdHeaderInterceptor;
-import com.anfema.ampclient.interceptors.RequestLogger;
+import com.anfema.ampclient.fulltextsearch.AmpFtsFactory;
+import com.anfema.ampclient.fulltextsearch.SearchResult;
 import com.anfema.ampclient.models.Collection;
 import com.anfema.ampclient.models.Page;
 import com.anfema.ampclient.models.PagePreview;
-import com.anfema.ampclient.models.responses.CollectionResponse;
-import com.anfema.ampclient.models.responses.PageResponse;
-import com.anfema.ampclient.serialization.GsonHolder;
-import com.anfema.ampclient.service.AmpApiFactory;
-import com.anfema.ampclient.service.AmpApiRx;
-import com.anfema.ampclient.service.AmpCall;
+import com.anfema.ampclient.pages.AmpPages;
+import com.anfema.ampclient.pages.AmpPagesFactory;
 import com.anfema.ampclient.utils.ContextUtils;
-import com.anfema.ampclient.utils.DateTimeUtils;
-import com.anfema.ampclient.utils.FileUtils;
-import com.anfema.ampclient.utils.Log;
-import com.anfema.ampclient.utils.NetworkUtils;
-import com.anfema.ampclient.utils.RxUtils;
-import com.squareup.okhttp.HttpUrl;
-import com.squareup.okhttp.Interceptor;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import rx.Observable;
-import rx.functions.Action1;
 import rx.functions.Func1;
 
-public class AmpClient implements AmpClientApi
+public class AmpClient implements AmpPages, AmpArchive, AmpFts
 {
 	/// Multiton
 
@@ -51,39 +30,20 @@ public class AmpClient implements AmpClientApi
 
 	/**
 	 * @param config configuration for AMP client
-	 * @return client instance, ready to go (with API token set)
+	 * @return client instance, ready to go
 	 */
 	public static AmpClient getInstance( AmpConfig config, Context context )
 	{
-		context = ContextUtils.getApplicationContext( context );
-
-		if ( instances == null )
-		{
-			instances = new HashMap<>();
-		}
-
-		if ( !config.isValid() )
-		{
-			throw new AmpConfigInvalidException();
-		}
+		AmpConfig.assertConfigIsValid( config );
 
 		// check if client for this configuration already exists, otherwise create an instance
 		AmpClient storedClient = instances.get( config );
-		if ( storedClient != null )
+		if ( storedClient != null && storedClient.context != null )
 		{
-			if ( storedClient.context == null )
-			{
-				// fail early if app context is null
-				if ( context == null )
-				{
-					throw new ContextIsNullException();
-				}
-				// update context for existing clients if it became null
-				storedClient.context = context;
-			}
 			return storedClient;
 		}
 
+		context = ContextUtils.getApplicationContext( context );
 		AmpClient ampClient = new AmpClient( config, context );
 		instances.put( config, ampClient );
 		return ampClient;
@@ -92,322 +52,101 @@ public class AmpClient implements AmpClientApi
 	/// Multiton END
 
 
-	/// configuration
+	// stored to verify on #getInstance(AmpConfig, Context) that context (which is passed to delegate classes) is not null.
+	private Context context;
 
-	private Context   context;
-	private AmpConfig config;
-	private AmpApiRx  ampApi;
+	// delegate classes
+	private final AmpPages   ampPages;
+	private final AmpArchive ampArchive;
+	private final AmpFts     ampFts;
 
 	private AmpClient( AmpConfig config, Context context )
 	{
 		this.context = context;
-		this.config = config;
-
-		List<Interceptor> interceptors = new ArrayList<>();
-		interceptors.add( new DeviceIdHeaderInterceptor( context ) );
-		interceptors.add( new RequestLogger( "Network Request" ) );
-		interceptors.add( new CachingInterceptor( context ) );
-		ampApi = AmpApiFactory.newInstance( config.baseUrl, interceptors, AmpApiRx.class );
-
-		ampFts = new AmpFts( this, this.config, this.context );
-
-		instances.put( config, this );
+		ampPages = AmpPagesFactory.newInstance( config, context );
+		ampArchive = AmpArchiveFactory.newInstance( ampPages, config, context );
+		ampFts = AmpFtsFactory.newInstance( ampPages, config, context );
 	}
 
-	/// configuration END
 
-	/// API Interface
+	/// Collection and page calls
 
 	/**
-	 * Add collection identifier and authorization token to request.<br/>
-	 * Use default collection identifier as specified in {@link this#config}
+	 * Call collections on Amp API.
+	 * Adds collection identifier and authorization token to request as retrieved via {@link AmpConfig}<br/>
 	 */
 	@Override
 	public Observable<Collection> getCollection()
 	{
-		String collectionUrl = getCollectionUrl();
-		CollectionCacheMeta cacheMeta = CollectionCacheMeta.retrieve( collectionUrl, context );
-
-		if ( !NetworkUtils.isConnected( context ) )
-		{
-			return getCollectionFromCache( false );
-		}
-		else if ( cacheMeta == null || cacheMeta.isOutdated() )
-		{
-			return getCollectionFromServer( false );
-		}
-		else
-		{
-			return getCollectionFromCache( true );
-		}
+		return ampPages.getCollection();
 	}
 
 	/**
 	 * Add collection identifier and authorization token to request.<br/>
-	 * Use default collection identifier as specified in {@link this#config}
 	 */
 	@Override
 	public Observable<Page> getPage( String pageIdentifier )
 	{
-		String pageUrl = getPageUrl( pageIdentifier );
-		PageCacheMeta pageCacheMeta = PageCacheMeta.retrieve( pageUrl, context );
-
-		if ( pageCacheMeta == null )
-		{
-			return getPageFromServer( pageIdentifier, false );
-		}
-
-		return getCollection()
-				// get page's last_changed date from collection
-				.flatMap( collection -> collection.getPageLastChanged( pageIdentifier ) )
-						// compare last_changed date of cached page with that of collection
-				.map( pageCacheMeta::isOutdated )
-				.flatMap( isOutdated -> {
-					if ( !NetworkUtils.isConnected( context ) )
-					{
-						return getPageFromCache( pageIdentifier, false );
-					}
-					else if ( isOutdated )
-					{
-						return getPageFromServer( pageIdentifier, false );
-					}
-					else
-					{
-						return getPageFromCache( pageIdentifier, true );
-					}
-				} );
+		return ampPages.getPage( pageIdentifier );
 	}
 
 	/**
 	 * A set of pages is "returned" by emitting multiple events.<br/>
-	 * Use collection identifier as specified in {@link this#config}
 	 */
 	@Override
 	public Observable<Page> getAllPages()
 	{
-		return getCollection()
-				.map( collection -> collection.pages )
-				.flatMap( Observable::from )
-				.map( page -> page.identifier )
-				.flatMap( this::getPage );
+		return ampPages.getAllPages();
 	}
 
 	/**
 	 * A set of pages is "returned" by emitting multiple events.<br/>
-	 * Use collection identifier as specified in {@link this#config}
 	 */
+	@Override
 	public Observable<Page> getPages( Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return getCollection()
-				.map( collection -> collection.pages )
-				.flatMap( Observable::from )
-				.filter( pagesFilter )
-				.map( page -> page.identifier )
-				.flatMap( this::getPage );
+		return ampPages.getPages( pagesFilter );
 	}
 
 	/**
 	 * A set of pages is "returned" by emitting multiple events.<br/>
-	 * Use default collection identifier as specified in {@link this#config}
 	 */
+	@Override
 	public Observable<Page> getPagesOrdered( Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return getCollection()
-				.map( collection -> collection.pages )
-				.concatMap( Observable::from )
-				.filter( pagesFilter )
-				.map( page -> page.identifier )
-				.concatMap( this::getPage );
+		return ampPages.getPagesOrdered( pagesFilter );
 	}
 
 
-	/// API Interface END
-
-
-	/// Get collection methods
-
-	private Observable<Collection> getCollectionFromCache( boolean serverCallAsBackup )
-	{
-		String collectionUrl = getCollectionUrl();
-		Log.i( "Cache Request", collectionUrl );
-		try
-		{
-			File filePath = CacheUtils.getFilePath( collectionUrl, context );
-			return FileUtils
-					.readFromFile( filePath )
-					.map( collectionsString -> GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class ) )
-					.map( CollectionResponse::getCollection )
-					.compose( RxUtils.runOnIoThread() )
-					.onErrorResumeNext( throwable -> {
-						return handleUnsuccessfulCollectionCacheReading( collectionUrl, serverCallAsBackup, throwable );
-					} );
-		}
-		catch ( IOException e )
-		{
-			return handleUnsuccessfulCollectionCacheReading( collectionUrl, serverCallAsBackup, e );
-		}
-	}
-
-	private Observable<Collection> handleUnsuccessfulCollectionCacheReading( String collectionUrl, boolean serverCallAsBackup, Throwable e )
-	{
-		if ( serverCallAsBackup )
-		{
-			Log.w( "Backup Request", "Cache request " + collectionUrl + " failed. Trying network request instead..." );
-			Log.ex( "Cache Request", e );
-			return getCollectionFromServer( false );
-		}
-		else
-		{
-			Log.e( "Failed Request", "Cache request " + collectionUrl + " failed." );
-			return Observable.error( new ReadFromCacheException( collectionUrl, e ) );
-		}
-	}
-
-	private Observable<Collection> getCollectionFromServer( boolean cacheAsBackup )
-	{
-		return ampApi.getCollection( config.collectionIdentifier, config.authorizationHeaderValue )
-				.map( CollectionResponse::getCollection )
-				.doOnNext( saveCollectionMeta() )
-				.compose( RxUtils.runOnIoThread() )
-				.onErrorResumeNext( throwable -> {
-					String collectionUrl = getCollectionUrl();
-					if ( cacheAsBackup )
-					{
-						Log.w( "Backup Request", "Network request " + collectionUrl + " failed. Trying cache request instead..." );
-						Log.ex( "Network Request", throwable );
-						return getCollectionFromCache( false );
-					}
-					Log.e( "Failed Request", "Network request " + collectionUrl + " failed." );
-					return Observable.error( new NetworkRequestException( collectionUrl, throwable ) );
-				} );
-	}
-
-
-	/// Get collection methods END
-
-
-	/// Get page methods
+	/// Archive download
 
 	/**
-	 * @param serverCallAsBackup If reading from cache is not successful, should a server call be made?
+	 * @see AmpArchive#downloadArchive()
 	 */
-	private Observable<Page> getPageFromCache( String pageIdentifier, boolean serverCallAsBackup )
-	{
-		String pageUrl = getPageUrl( pageIdentifier );
-		Log.i( "Cache Request", pageUrl );
-		try
-		{
-			File filePath = CacheUtils.getFilePath( pageUrl, context );
-			return FileUtils
-					.readFromFile( filePath )
-					.map( pagesString -> GsonHolder.getInstance().fromJson( pagesString, PageResponse.class ) )
-					.map( PageResponse::getPage )
-					.compose( RxUtils.runOnIoThread() )
-					.onErrorResumeNext( throwable -> {
-						return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, throwable );
-					} );
-		}
-		catch ( IOException e )
-		{
-			return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, e );
-		}
-	}
-
-	private Observable<Page> handleUnsuccessfulPageCacheReading( String pageIdentifier, boolean serverCallAsBackup, String pageUrl, Throwable e )
-	{
-		if ( serverCallAsBackup )
-		{
-			Log.w( "Backup Request", "Cache request " + pageUrl + " failed. Trying network request instead..." );
-			Log.ex( "Cache Request", e );
-			return getPageFromServer( pageIdentifier, false );
-		}
-		Log.e( "Failed Request", "Cache request " + pageUrl + " failed." );
-		return Observable.error( new ReadFromCacheException( pageUrl, e ) );
-	}
-
-	/**
-	 * @param cacheAsBackup If server call is not successful, should cached version be used (even if it might be old)?
-	 */
-	private Observable<Page> getPageFromServer( String pageIdentifier, boolean cacheAsBackup )
-	{
-		return ampApi.getPage( config.collectionIdentifier, pageIdentifier, config.authorizationHeaderValue )
-				.map( PageResponse::getPage )
-				.doOnNext( savePageMeta() )
-				.compose( RxUtils.runOnIoThread() )
-				.onErrorResumeNext( throwable -> {
-					String pageUrl = getPageUrl( pageIdentifier );
-					if ( cacheAsBackup )
-					{
-						Log.w( "Backup Request", "Network request " + pageUrl + " failed. Trying cache request instead..." );
-						Log.ex( "Network Request", throwable );
-						return getPageFromCache( pageIdentifier, false );
-					}
-					Log.e( "Failed Request", "Network request " + pageUrl + " failed." );
-					return Observable.error( new NetworkRequestException( pageUrl, throwable ) );
-				} );
-	}
-
-	/// Get page methods END
-
-
-	@NonNull
-	private Action1<Collection> saveCollectionMeta()
-	{
-		return collection -> {
-			String url = getCollectionUrl();
-			CollectionCacheMeta cacheMeta = new CollectionCacheMeta( url, DateTimeUtils.now() );
-			CollectionCacheMeta.save( url, cacheMeta, context );
-		};
-	}
-
-	@NonNull
-	private Action1<Page> savePageMeta()
-	{
-		return page -> {
-			String url = getPageUrl( page.identifier );
-			PageCacheMeta cacheMeta = new PageCacheMeta( url, page.last_changed );
-			PageCacheMeta.save( url, cacheMeta, context );
-		};
-	}
-
-	private String getCollectionUrl()
-	{
-		String baseUrl = config.baseUrl;
-		return baseUrl + AmpCall.COLLECTIONS.toString() + FileUtils.SLASH + config.collectionIdentifier;
-	}
-
-	private String getPageUrl( String pageId )
-	{
-		String baseUrl = config.baseUrl;
-		return baseUrl + AmpCall.PAGES.toString() + FileUtils.SLASH + config.collectionIdentifier + FileUtils.SLASH + pageId;
-	}
-
-	/// Zip download
-
-	/**
-	 * Download the archive file for current collection, which should make app usable in offline mode.
-	 */
+	@Override
 	public Observable<File> downloadArchive()
 	{
-		File archivePath = CacheUtils.getArchiveFilePath( config.collectionIdentifier, context );
-		File collectionFolder = CacheUtils.getCollectionFolder( config.collectionIdentifier, context );
-		Log.i( "FTS Database", "about to download FTS database for collection " + config.collectionIdentifier );
-		return getCollection()
-				.map( collection -> collection.archive )
-				.flatMap( zipUrl -> AmpFiles.getInstance( config.authorizationHeaderValue, context ).request( HttpUrl.parse( zipUrl ), archivePath ) )
-				.flatMap( archive -> FileUtils.unTar( archivePath, collectionFolder ) )
-				;
+		return ampArchive.downloadArchive();
 	}
 
 
 	/// Full text search
 
-	private final AmpFts ampFts;
-
-	public AmpFts fts()
+	/**
+	 * @see AmpFts#downloadSearchDatabase()
+	 */
+	@Override
+	public Observable<File> downloadSearchDatabase()
 	{
-		return ampFts;
+		return ampFts.downloadSearchDatabase();
 	}
 
-	/// Full text search END
+	/**
+	 * @see AmpFts#fullTextSearch(String, String, String)
+	 */
+	@Override
+	public Observable<List<SearchResult>> fullTextSearch( String searchTerm, String locale, String pageLayout )
+	{
+		return ampFts.fullTextSearch( searchTerm, locale, pageLayout );
+	}
 }

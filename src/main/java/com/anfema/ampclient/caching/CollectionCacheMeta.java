@@ -43,7 +43,7 @@ public class CollectionCacheMeta extends CacheMeta
 		return lastUpdated.isBefore( DateTimeUtils.now().minusMinutes( MINUTES_UNTIL_COLLECTION_REFETCH ) );
 	}
 
-	// ****** Store and retrieve from shared preferences ***********
+	// Persistence - shared preferences
 
 	public static CollectionCacheMeta retrieve( String requestUrl, Context context )
 	{

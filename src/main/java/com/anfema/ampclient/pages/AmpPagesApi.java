@@ -1,26 +1,18 @@
-package com.anfema.ampclient.service;
+package com.anfema.ampclient.pages;
 
 import com.anfema.ampclient.models.responses.CollectionResponse;
-import com.anfema.ampclient.models.responses.LoginResponse;
 import com.anfema.ampclient.models.responses.PageResponse;
 
-import retrofit.http.Field;
-import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
 import retrofit.http.Header;
-import retrofit.http.POST;
 import retrofit.http.Path;
 import rx.Observable;
 
 /**
  * methods using reactive X pattern returning {@link Observable}
  */
-public interface AmpApiRx
+public interface AmpPagesApi
 {
-	@FormUrlEncoded
-	@POST("login")
-	Observable<LoginResponse> login( @Field("username") String username, @Field("password") String password );
-
 	@GET("collections/{collection_identifier}")
 	Observable<CollectionResponse> getCollection( @Path("collection_identifier") String collectionIdentifier, @Header("Authorization") String authorizationToken );
 

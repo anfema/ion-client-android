@@ -40,7 +40,7 @@ public class FileCacheMeta extends CacheMeta
 		return !checksum.equals( serverChecksum );
 	}
 
-	// ****** Store and retrieve from shared preferences ***********
+	// Persistence - shared preferences
 
 	public static FileCacheMeta retrieve( String requestUrl, Context context )
 	{

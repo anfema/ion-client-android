@@ -1,4 +1,4 @@
-package com.anfema.ampclient.service;
+package com.anfema.ampclient.utils;
 
 import android.support.annotation.NonNull;
 
@@ -14,7 +14,7 @@ import retrofit.Retrofit;
 import retrofit.Retrofit.Builder;
 import retrofit.RxJavaCallAdapterFactory;
 
-public class AmpApiFactory
+public class ApiFactory
 {
 	public static <T> T newInstance( String baseUrl, Collection<Interceptor> interceptors, Class<T> serviceApi )
 	{
@@ -41,7 +41,7 @@ public class AmpApiFactory
 		if ( !baseUrl.endsWith( FileUtils.SLASH ) )
 		{
 			baseUrl = baseUrl + FileUtils.SLASH;
-			Log.i( "AmpClient", "slash was appended to base URL" );
+			Log.i( "API factory", "slash was appended to base URL" );
 		}
 		return baseUrl;
 	}
