@@ -1,6 +1,6 @@
 package com.anfema.ampclient.utils;
 
-import com.squareup.okhttp.Response;
+import android.support.annotation.NonNull;
 
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,21 +29,24 @@ import rx.Observable;
 
 public class FileUtils
 {
+	// TODO synchronize operations on file paths
 	public static volatile Set<String> ioLocks = new HashSet<>();
 
 	public static final String SLASH = "/";
 
-	public static synchronized boolean createFolders( File dir )
+	public static File writeToFile( InputStream inputStream, File file ) throws IOException
 	{
-		if ( dir.exists() )
-		{
-			return true;
-		}
-		Log.d( "FileUtil", "create dirs for: " + dir );
-		return dir.mkdirs();
-	}
+		Log.d( "FileUtil", "write to file: " + file.getPath() );
 
-	// TODO use writeBytesToFile and/or with IOUtils#copy
+		File fileTemp = createTempFile( file );
+
+		OutputStream outputStream = new BufferedOutputStream( new FileOutputStream( fileTemp ) );
+		IOUtils.copy( inputStream, outputStream );
+		outputStream.close();
+
+		boolean writeSuccess = move( fileTemp, file, true );
+		return writeSuccess ? file : null;
+	}
 
 	/**
 	 * Helper function to write content String to a file.
@@ -55,71 +56,22 @@ public class FileUtils
 	 * @param content content String to save
 	 * @param file    File to save object(s) to
 	 */
-	public static synchronized void writeTextToFile( String content, File file ) throws IOException
+	public static File writeTextToFile( String content, File file ) throws IOException
 	{
 		Log.d( "FileUtil", "write to file: " + file.getPath() );
-		if ( file.exists() )
-		{
-			file.delete();
-		}
-		else
-		{
-			createFolders( file.getParentFile() );
-		}
-		file.createNewFile();
 
-		OutputStream outputStream = new FileOutputStream( file, false );
+		File fileTemp = createTempFile( file );
+
+		OutputStream outputStream = new FileOutputStream( fileTemp, false );
 		BufferedWriter bufferedWriter = new BufferedWriter( new OutputStreamWriter( outputStream ) );
 		bufferedWriter.write( content );
 		bufferedWriter.close();
+
+		boolean writeSuccess = move( fileTemp, file, true );
+		return writeSuccess ? file : null;
 	}
 
-	/**
-	 * Be aware: using this method empties the response body byte stream. It is not possible to read the response a second time.
-	 *
-	 * @param file target file
-	 * @throws IOException
-	 */
-	public static synchronized void writeBytesToFile( Response response, File file ) throws IOException
-	{
-		Log.d( "FileUtil", "write to file: " + file.getPath() );
-		if ( file.exists() )
-		{
-			file.delete();
-		}
-		else
-		{
-			createFolders( file.getParentFile() );
-		}
-		file.createNewFile();
-
-		InputStream inputStream = response.body().byteStream();
-		OutputStream outputStream = new BufferedOutputStream( new FileOutputStream( file ) );
-		IOUtils.copy( inputStream, outputStream );
-
-		// TODO create new method public static boolean move(File source, File target, boolean forceOverwrite)
-		// TODO and store to temp file first
-
-		// TODO synchronize operations on URL Strings
-
-		//		try
-		//		{
-		//			int bufferSize = 1024;
-		//			byte[] buffer = new byte[ bufferSize ];
-		//
-		//			int len;
-		//			while ( ( len = inputStream.read( buffer ) ) != -1 )
-		//			{
-		//				outputStream.write( buffer, 0, len );
-		//			}
-		//		}
-		//		finally
-		//		{
-		//			outputStream.close();
-		//		}
-	}
-
-	public static synchronized Observable<String> readFromFile( File file ) throws IOException
+	public static Observable<String> readFromFile( File file ) throws IOException
 	{
 		return Observable.just( file ).flatMap( o ->
 		{
@@ -143,49 +95,6 @@ public class FileUtils
 				return Observable.error( e );
 			}
 		} ).compose( RxUtils.runOnIoThread() );
-
-	}
-
-	public static void deleteRecursive( File fileOrDirectory )
-	{
-		if ( fileOrDirectory.isDirectory() )
-		{
-			for ( File child : fileOrDirectory.listFiles() )
-			{
-				deleteRecursive( child );
-			}
-		}
-		fileOrDirectory.delete();
-	}
-
-	public static String calcMD5( String input )
-	{
-		MessageDigest md;
-		try
-		{
-			md = MessageDigest.getInstance( "MD5" );
-		}
-		catch ( NoSuchAlgorithmException e )
-		{
-			Log.ex( e );
-			return "-1";
-		}
-		md.update( input.getBytes() );
-
-		byte byteData[] = md.digest();
-
-		//convert the byte to hex format
-		StringBuffer hexString = new StringBuffer();
-		for ( byte aByte : byteData )
-		{
-			String hex = Integer.toHexString( 0xff & aByte );
-			if ( hex.length() == 1 )
-			{
-				hexString.append( '0' );
-			}
-			hexString.append( hex );
-		}
-		return hexString.toString();
 	}
 
 	public static Observable<File> unTar( final File inputFile, final File outputDir )
@@ -237,36 +146,92 @@ public class FileUtils
 			if ( entry.isDirectory() )
 			{
 				Log.d( TAG, String.format( "Attempting to write output directory %s.", outputFile.getAbsolutePath() ) );
-				if ( !createFolders( outputFile ) )
+				if ( !createDir( outputFile ) )
 				{
 					throw new IllegalStateException( String.format( "Couldn't create directory %s.", outputFile.getAbsolutePath() ) );
 				}
 			}
 			else
 			{
-				File outputFileTemp = new File( outputFile.getPath() + ".temp" );
 				Log.d( String.format( "Creating output file %s.", outputFile.getAbsolutePath() ) );
-				if ( !createFolders( outputFile.getParentFile() ) )
+				if ( !createDir( outputFile.getParentFile() ) )
 				{
 					throw new IllegalStateException( String.format( "Couldn't create directory %s.", outputFile.getParentFile().getAbsolutePath() ) );
 				}
 
-				final OutputStream outputFileStream = new FileOutputStream( outputFile );
-				IOUtils.copy( debInputStream, outputFileStream );
-				outputFileStream.close();
-				if ( outputFile.exists() )
+
+				File targetFile = writeToFile( debInputStream, outputFile );
+
+				if ( targetFile != null )
 				{
-					outputFile.delete();
-				}
-				boolean writeSuccess = outputFileTemp.renameTo( outputFile );
-				if ( writeSuccess )
-				{
-					untaredFiles.add( outputFile );
+					untaredFiles.add( targetFile );
 				}
 			}
 		}
 		debInputStream.close();
 
 		return untaredFiles;
+	}
+
+	public static boolean move( File source, File target, boolean forceOverwrite )
+	{
+		if ( !forceOverwrite && target.exists() )
+		{
+			return false;
+		}
+
+		reset( target );
+		return source.renameTo( target );
+	}
+
+	/**
+	 * Reset file if exists and create directory path so it is ready for i/o operations.
+	 */
+	public static void reset( File file )
+	{
+		if ( file.exists() )
+		{
+			file.delete();
+		}
+		else
+		{
+			createDir( file.getParentFile() );
+		}
+	}
+
+	/**
+	 * create all missing directories that exist in this path
+	 *
+	 * @return {@code true} if the directory was created,
+	 * {@code false} on failure or if the directory already existed.
+	 */
+	public static synchronized boolean createDir( File dir )
+	{
+		if ( dir.exists() )
+		{
+			return false;
+		}
+		Log.d( "FileUtil", "create dirs for: " + dir );
+		return dir.mkdirs();
+	}
+
+	@NonNull
+	public static File createTempFile( File file )
+	{
+		File fileTemp = new File( file.getPath() + ".temp" );
+		reset( fileTemp );
+		return fileTemp;
+	}
+
+	public static void deleteRecursive( File fileOrDirectory )
+	{
+		if ( fileOrDirectory.isDirectory() )
+		{
+			for ( File child : fileOrDirectory.listFiles() )
+			{
+				deleteRecursive( child );
+			}
+		}
+		fileOrDirectory.delete();
 	}
 }

@@ -34,7 +34,7 @@ public class AmpArchiveDownloader implements AmpArchive
 	public Observable<File> downloadArchive()
 	{
 		File archivePath = FilePaths.getArchiveFilePath( config.collectionIdentifier, context );
-		File collectionFolder = FilePaths.getCollectionFolder( config.collectionIdentifier, context );
+		File collectionFolder = FilePaths.getCollectionFolderPath( config.collectionIdentifier, context );
 		Log.i( "FTS Database", "about to download FTS database for collection " + config.collectionIdentifier );
 		return ampPages.getCollection()
 				.map( collection -> collection.archive )

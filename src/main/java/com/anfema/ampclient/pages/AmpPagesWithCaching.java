@@ -35,6 +35,8 @@ import rx.functions.Func1;
  * A wrapper of "collections" and "pages" call of AMP API.
  * <p>
  * Adds collection identifier and authorization token to request as retrieved via {@link AmpConfig}<br/>
+ * <p>
+ * Uses a file and a memory cache.
  */
 public class AmpPagesWithCaching implements AmpPages
 {
@@ -166,7 +168,7 @@ public class AmpPagesWithCaching implements AmpPages
 		Log.i( "Cache Request", collectionUrl );
 		try
 		{
-			File filePath = FilePaths.getFilePath( collectionUrl, context );
+			File filePath = FilePaths.getJsonFilePath( collectionUrl, context );
 			return FileUtils
 					.readFromFile( filePath )
 					.map( collectionsString -> GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class ) )
@@ -231,7 +233,7 @@ public class AmpPagesWithCaching implements AmpPages
 		Log.i( "Cache Request", pageUrl );
 		try
 		{
-			File filePath = FilePaths.getFilePath( pageUrl, context );
+			File filePath = FilePaths.getJsonFilePath( pageUrl, context );
 			return FileUtils
 					.readFromFile( filePath )
 					.map( pagesString -> GsonHolder.getInstance().fromJson( pagesString, PageResponse.class ) )
@@ -307,12 +309,12 @@ public class AmpPagesWithCaching implements AmpPages
 	private String getCollectionUrl()
 	{
 		String baseUrl = config.baseUrl;
-		return baseUrl + AmpCall.COLLECTIONS.toString() + FileUtils.SLASH + config.collectionIdentifier;
+		return baseUrl + AmpCallType.COLLECTIONS.toString() + FileUtils.SLASH + config.collectionIdentifier;
 	}
 
 	private String getPageUrl( String pageId )
 	{
 		String baseUrl = config.baseUrl;
-		return baseUrl + AmpCall.PAGES.toString() + FileUtils.SLASH + config.collectionIdentifier + FileUtils.SLASH + pageId;
+		return baseUrl + AmpCallType.PAGES.toString() + FileUtils.SLASH + config.collectionIdentifier + FileUtils.SLASH + pageId;
 	}
 }

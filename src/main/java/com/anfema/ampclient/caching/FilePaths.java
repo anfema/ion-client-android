@@ -4,8 +4,9 @@ import android.content.Context;
 
 import com.anfema.ampclient.R;
 import com.anfema.ampclient.exceptions.UnknownAmpRequest;
-import com.anfema.ampclient.pages.AmpCall;
+import com.anfema.ampclient.pages.AmpCallType;
 import com.anfema.ampclient.utils.FileUtils;
+import com.anfema.ampclient.utils.HashUtils;
 import com.anfema.ampclient.utils.StringUtils;
 import com.squareup.okhttp.HttpUrl;
 
@@ -15,7 +16,7 @@ import java.util.List;
 
 public class FilePaths
 {
-	public static File getCollectionFolder( String collectionIdentifier, Context context )
+	public static File getCollectionFolderPath( String collectionIdentifier, Context context )
 	{
 		File folder = new File( context.getFilesDir() + FileUtils.SLASH + collectionIdentifier );
 		if ( !folder.exists() )
@@ -33,19 +34,19 @@ public class FilePaths
 	/**
 	 * Find appropriate file path for media files.
 	 * <p>
-	 * Do not use for collections and pages – use {@link #getFilePath(String, Context)} instead
+	 * Do not use for collections and pages – use {@link #getJsonFilePath(String, Context)} instead
 	 * Creates folders if the do not exist yet.
 	 */
 	public static File getMediaFilePath( String url, Context context )
 	{
-		String filename = FileUtils.calcMD5( url );
+		String filename = HashUtils.calcMD5( url );
 		String filePath = context.getFilesDir() + FileUtils.SLASH + context.getString( R.string.files_dir ) + filename;
 		return new File( filePath );
 	}
 
 	public static File getMediaFilePathExt( String url, Context context )
 	{
-		String filename = FileUtils.calcMD5( url );
+		String filename = HashUtils.calcMD5( url );
 		return new File( context.getExternalFilesDir( null ) + FileUtils.SLASH + context.getString( R.string.files_dir ) + filename );
 	}
 
@@ -55,7 +56,7 @@ public class FilePaths
 	 * Do not use for media files – use {@link #getMediaFilePath(String, Context)} instead
 	 * Creates folders if the do not exist yet.
 	 */
-	public static File getFilePath( String url, Context context ) throws UnknownAmpRequest
+	public static File getJsonFilePath( String url, Context context ) throws UnknownAmpRequest
 	{
 		HttpUrl httpUrl = HttpUrl.parse( url );
 		List<String> urlPathSegments = httpUrl.pathSegments();
@@ -67,7 +68,6 @@ public class FilePaths
 		{
 			throw new UnknownAmpRequest();
 		}
-		// TODO check if index++;
 		for ( int i = index; i < urlPathSegments.size(); i++ )
 		{
 			fileNamePathSegments.add( urlPathSegments.get( i ) );
@@ -76,7 +76,7 @@ public class FilePaths
 		String folderPath = StringUtils.concatStrings( fileNamePathSegments, FileUtils.SLASH );
 
 		// append file name, which is MD5 hash of url
-		String filename = FileUtils.calcMD5( url );
+		String filename = HashUtils.calcMD5( url );
 		return new File( folderPath + FileUtils.SLASH + filename );
 	}
 
@@ -101,7 +101,7 @@ public class FilePaths
 	}
 
 	/**
-	 * endpoints are defined in enum {@link AmpCall}
+	 * endpoints are defined in enum {@link AmpCallType}
 	 *
 	 * @param pathSegment
 	 * @return
@@ -110,7 +110,7 @@ public class FilePaths
 	{
 		try
 		{
-			AmpCall.fromPathSegment( pathSegment );
+			AmpCallType.determineCall( pathSegment );
 			return true;
 		}
 		catch ( IllegalArgumentException e )

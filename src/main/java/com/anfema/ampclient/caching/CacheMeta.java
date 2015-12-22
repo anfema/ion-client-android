@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
 import com.anfema.ampclient.serialization.GsonHolder;
-import com.anfema.ampclient.utils.FileUtils;
+import com.anfema.ampclient.utils.HashUtils;
 import com.squareup.okhttp.HttpUrl;
 
 public abstract class CacheMeta
@@ -22,7 +22,7 @@ public abstract class CacheMeta
 	 */
 	public CacheMeta( HttpUrl requestUrl )
 	{
-		this.filename = FileUtils.calcMD5( requestUrl.toString() );
+		this.filename = HashUtils.calcMD5( requestUrl.toString() );
 	}
 
 	public String getFilename()

@@ -9,22 +9,18 @@ import com.anfema.ampclient.interceptors.RequestLogger;
 import com.anfema.ampclient.utils.ContextUtils;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.RxUtils;
-import com.google.common.io.Files;
 import com.squareup.okhttp.HttpUrl;
-import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-import okio.Buffer;
-import okio.BufferedSource;
 import rx.Observable;
 
 /**
@@ -135,59 +131,10 @@ public class AmpFiles
 	// directly from input stream to file
 	private File writeToLocalStorage( Response response, File targetFile ) throws IOException
 	{
-		FileUtils.writeBytesToFile( response, targetFile );
-		return targetFile;
-	}
-
-	// intermediate: byte array
-	private File getFile2( Response response, HttpUrl url ) throws IOException
-	{
-		ResponseBody responseBody = response.body();
-		BufferedSource source = responseBody.source();
-		source.request( Long.MAX_VALUE ); // Buffer the entire body.
-		Buffer buffer = source.buffer();
-
-		if ( responseBody.contentLength() == 0 )
-		{
-			return null;
-		}
-
-		byte[] bytes = buffer/*.clone()*/.readByteArray();
-		File targetFile = FilePaths.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
-		FileUtils.createFolders( targetFile.getParentFile() );
-		Files.write( bytes, targetFile );
-		return targetFile;
-	}
-
-	// intermediate: String – approach copied from CachingInterceptor
-	private File getFile3( Response response, HttpUrl url ) throws IOException
-	{
-		String responseBody = getResponseBody( response );
-		File file = FilePaths.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
-		FileUtils.writeTextToFile( responseBody, file );
+		// Be aware: using this method empties the response body byte stream. It is not possible to read the response a second time.
+		InputStream inputStream = response.body().byteStream();
+		File file = FileUtils.writeToFile( inputStream, targetFile );
+		inputStream.close();
 		return file;
-	}
-
-	private String getResponseBody( Response response ) throws IOException
-	{
-		ResponseBody responseBody = response.body();
-		BufferedSource source = responseBody.source();
-		source.request( Long.MAX_VALUE ); // Buffer the entire body.
-		Buffer buffer = source.buffer();
-
-		Charset UTF8 = Charset.forName( "UTF-8" );
-		Charset charset = UTF8;
-		MediaType contentType = responseBody.contentType();
-		if ( contentType != null )
-		{
-			charset = contentType.charset( UTF8 );
-		}
-
-		if ( responseBody.contentLength() == 0 )
-		{
-			return "";
-		}
-
-		return buffer.clone().readString( charset );
 	}
 }
