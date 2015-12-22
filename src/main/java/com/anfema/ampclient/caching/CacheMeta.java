@@ -22,7 +22,7 @@ public abstract class CacheMeta
 	 */
 	public CacheMeta( HttpUrl requestUrl )
 	{
-		this.filename = HashUtils.calcMD5( requestUrl.toString() );
+		this.filename = FilePaths.getFileName( requestUrl.toString() );
 	}
 
 	public String getFilename()

@@ -8,6 +8,7 @@ import com.anfema.ampclient.caching.CollectionCacheMeta;
 import com.anfema.ampclient.caching.FilePaths;
 import com.anfema.ampclient.caching.PageCacheMeta;
 import com.anfema.ampclient.exceptions.NetworkRequestException;
+import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
 import com.anfema.ampclient.exceptions.ReadFromCacheException;
 import com.anfema.ampclient.models.Collection;
 import com.anfema.ampclient.models.Page;
@@ -33,9 +34,9 @@ import rx.functions.Func1;
 
 /**
  * A wrapper of "collections" and "pages" call of AMP API.
- * <p>
+ * <p/>
  * Adds collection identifier and authorization token to request as retrieved via {@link AmpConfig}<br/>
- * <p>
+ * <p/>
  * Uses a file and a memory cache.
  */
 public class AmpPagesWithCaching implements AmpPages
@@ -66,7 +67,7 @@ public class AmpPagesWithCaching implements AmpPages
 	@Override
 	public Observable<Collection> getCollection()
 	{
-		String collectionUrl = getCollectionUrl();
+		String collectionUrl = PagesUrls.getCollectionUrl( config );
 		CollectionCacheMeta cacheMeta = CollectionCacheMeta.retrieve( collectionUrl, context );
 
 		if ( !NetworkUtils.isConnected( context ) )
@@ -90,7 +91,7 @@ public class AmpPagesWithCaching implements AmpPages
 	@Override
 	public Observable<Page> getPage( String pageIdentifier )
 	{
-		String pageUrl = getPageUrl( pageIdentifier );
+		String pageUrl = PagesUrls.getPageUrl( config, pageIdentifier );
 		PageCacheMeta pageCacheMeta = PageCacheMeta.retrieve( pageUrl, context );
 
 		if ( pageCacheMeta == null )
@@ -164,7 +165,7 @@ public class AmpPagesWithCaching implements AmpPages
 
 	private Observable<Collection> getCollectionFromCache( boolean serverCallAsBackup )
 	{
-		String collectionUrl = getCollectionUrl();
+		String collectionUrl = PagesUrls.getCollectionUrl( config );
 		Log.i( "Cache Request", collectionUrl );
 		try
 		{
@@ -178,7 +179,7 @@ public class AmpPagesWithCaching implements AmpPages
 						return handleUnsuccessfulCollectionCacheReading( collectionUrl, serverCallAsBackup, throwable );
 					} );
 		}
-		catch ( IOException e )
+		catch ( IOException | NoAmpPagesRequestException e )
 		{
 			return handleUnsuccessfulCollectionCacheReading( collectionUrl, serverCallAsBackup, e );
 		}
@@ -206,7 +207,7 @@ public class AmpPagesWithCaching implements AmpPages
 				.doOnNext( saveCollectionMeta() )
 				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
-					String collectionUrl = getCollectionUrl();
+					String collectionUrl = PagesUrls.getCollectionUrl( config );
 					if ( cacheAsBackup )
 					{
 						Log.w( "Backup Request", "Network request " + collectionUrl + " failed. Trying cache request instead..." );
@@ -229,7 +230,7 @@ public class AmpPagesWithCaching implements AmpPages
 	 */
 	private Observable<Page> getPageFromCache( String pageIdentifier, boolean serverCallAsBackup )
 	{
-		String pageUrl = getPageUrl( pageIdentifier );
+		String pageUrl = PagesUrls.getPageUrl( config, pageIdentifier );
 		Log.i( "Cache Request", pageUrl );
 		try
 		{
@@ -243,7 +244,7 @@ public class AmpPagesWithCaching implements AmpPages
 						return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, throwable );
 					} );
 		}
-		catch ( IOException e )
+		catch ( IOException | NoAmpPagesRequestException e )
 		{
 			return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, e );
 		}
@@ -271,7 +272,7 @@ public class AmpPagesWithCaching implements AmpPages
 				.doOnNext( savePageMeta() )
 				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
-					String pageUrl = getPageUrl( pageIdentifier );
+					String pageUrl = PagesUrls.getPageUrl( config, pageIdentifier );
 					if ( cacheAsBackup )
 					{
 						Log.w( "Backup Request", "Network request " + pageUrl + " failed. Trying cache request instead..." );
@@ -290,9 +291,21 @@ public class AmpPagesWithCaching implements AmpPages
 	private Action1<Collection> saveCollectionMeta()
 	{
 		return collection -> {
-			String url = getCollectionUrl();
-			CollectionCacheMeta cacheMeta = new CollectionCacheMeta( url, DateTimeUtils.now() );
-			CollectionCacheMeta.save( url, cacheMeta, context );
+			String url = PagesUrls.getCollectionUrl( config );
+
+			try
+			{
+				if ( FilePaths.getJsonFilePath( url, context ).exists() )
+				{
+					CollectionCacheMeta cacheMeta = new CollectionCacheMeta( url, DateTimeUtils.now() );
+					CollectionCacheMeta.save( url, cacheMeta, context );
+				}
+			}
+			catch ( NoAmpPagesRequestException e )
+			{
+				Log.e( "Cache Meta", "Could not save cache meta entry for " + url );
+				Log.ex( e );
+			}
 		};
 	}
 
@@ -300,21 +313,20 @@ public class AmpPagesWithCaching implements AmpPages
 	private Action1<Page> savePageMeta()
 	{
 		return page -> {
-			String url = getPageUrl( page.identifier );
-			PageCacheMeta cacheMeta = new PageCacheMeta( url, page.last_changed );
-			PageCacheMeta.save( url, cacheMeta, context );
+			String url = PagesUrls.getPageUrl( config, page.identifier );
+			try
+			{
+				if ( FilePaths.getJsonFilePath( url, context ).exists() )
+				{
+					PageCacheMeta cacheMeta = new PageCacheMeta( url, page.last_changed );
+					PageCacheMeta.save( url, cacheMeta, context );
+				}
+			}
+			catch ( NoAmpPagesRequestException e )
+			{
+				Log.e( "Cache Meta", "Could not save cache meta entry for " + url );
+				Log.ex( e );
+			}
 		};
-	}
-
-	private String getCollectionUrl()
-	{
-		String baseUrl = config.baseUrl;
-		return baseUrl + AmpCallType.COLLECTIONS.toString() + FileUtils.SLASH + config.collectionIdentifier;
-	}
-
-	private String getPageUrl( String pageId )
-	{
-		String baseUrl = config.baseUrl;
-		return baseUrl + AmpCallType.PAGES.toString() + FileUtils.SLASH + config.collectionIdentifier + FileUtils.SLASH + pageId;
 	}
 }

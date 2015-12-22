@@ -1,9 +1,10 @@
 package com.anfema.ampclient.caching;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import com.anfema.ampclient.R;
-import com.anfema.ampclient.exceptions.UnknownAmpRequest;
+import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
 import com.anfema.ampclient.pages.AmpCallType;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.HashUtils;
@@ -33,30 +34,30 @@ public class FilePaths
 
 	/**
 	 * Find appropriate file path for media files.
-	 * <p>
+	 * <p/>
 	 * Do not use for collections and pages – use {@link #getJsonFilePath(String, Context)} instead
 	 * Creates folders if the do not exist yet.
 	 */
 	public static File getMediaFilePath( String url, Context context )
 	{
-		String filename = HashUtils.calcMD5( url );
-		String filePath = context.getFilesDir() + FileUtils.SLASH + context.getString( R.string.files_dir ) + filename;
-		return new File( filePath );
+		File mediaFolderPath = getMediaFolderPath( context );
+		String filename = getFileName( url );
+		return new File( mediaFolderPath, filename );
 	}
 
-	public static File getMediaFilePathExt( String url, Context context )
+	@NonNull
+	public static File getMediaFolderPath( Context context )
 	{
-		String filename = HashUtils.calcMD5( url );
-		return new File( context.getExternalFilesDir( null ) + FileUtils.SLASH + context.getString( R.string.files_dir ) + filename );
+		return new File( context.getFilesDir() + FileUtils.SLASH + context.getString( R.string.files_dir ) );
 	}
 
 	/**
 	 * Find appropriate file path for collections and pages.
-	 * <p>
+	 * <p/>
 	 * Do not use for media files – use {@link #getMediaFilePath(String, Context)} instead
 	 * Creates folders if the do not exist yet.
 	 */
-	public static File getJsonFilePath( String url, Context context ) throws UnknownAmpRequest
+	public static File getJsonFilePath( String url, Context context ) throws NoAmpPagesRequestException
 	{
 		HttpUrl httpUrl = HttpUrl.parse( url );
 		List<String> urlPathSegments = httpUrl.pathSegments();
@@ -66,9 +67,9 @@ public class FilePaths
 		int index = findEndpointPathSegment( urlPathSegments );
 		if ( index == -1 )
 		{
-			throw new UnknownAmpRequest();
+			throw new NoAmpPagesRequestException();
 		}
-		for ( int i = index; i < urlPathSegments.size(); i++ )
+		for ( int i = index + 1; i < urlPathSegments.size(); i++ )
 		{
 			fileNamePathSegments.add( urlPathSegments.get( i ) );
 		}
@@ -76,8 +77,14 @@ public class FilePaths
 		String folderPath = StringUtils.concatStrings( fileNamePathSegments, FileUtils.SLASH );
 
 		// append file name, which is MD5 hash of url
-		String filename = HashUtils.calcMD5( url );
-		return new File( folderPath + FileUtils.SLASH + filename );
+		String filename = getFileName( url );
+		return new File( folderPath, filename );
+	}
+
+	@NonNull
+	public static String getFileName( String url )
+	{
+		return HashUtils.calcMD5( url );
 	}
 
 	/**
@@ -86,18 +93,16 @@ public class FilePaths
 	 * @param urlPathSegments
 	 * @return
 	 */
-	private static int findEndpointPathSegment( List<String> urlPathSegments )
+	public static int findEndpointPathSegment( List<String> urlPathSegments )
 	{
-		int index = -1;
 		for ( int i = 0; i < urlPathSegments.size(); i++ )
 		{
 			if ( isEndpoint( urlPathSegments.get( i ) ) )
 			{
-				index = i;
-				break;
+				return i;
 			}
 		}
-		return index;
+		return -1;
 	}
 
 	/**
@@ -113,9 +118,33 @@ public class FilePaths
 			AmpCallType.determineCall( pathSegment );
 			return true;
 		}
-		catch ( IllegalArgumentException e )
+		catch ( NoAmpPagesRequestException e )
 		{
 			return false;
 		}
+	}
+
+	@NonNull
+	public static File getTempFilePath( File file )
+	{
+		File fileTemp = getTempName( file );
+		FileUtils.createDir( file.getParentFile() );
+		return fileTemp;
+	}
+
+	@NonNull
+	public static File getTempFolderPath( File folder )
+	{
+		File folderTemp = getTempName( folder );
+		FileUtils.createDir( folder );
+		return folderTemp;
+	}
+
+	@NonNull
+	private static File getTempName( File file )
+	{
+		File folderTemp = new File( file.getPath() + "_temp" );
+		FileUtils.reset( folderTemp );
+		return folderTemp;
 	}
 }

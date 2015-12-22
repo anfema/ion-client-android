@@ -3,8 +3,10 @@ package com.anfema.ampclient.interceptors;
 import android.content.Context;
 
 import com.anfema.ampclient.caching.FilePaths;
+import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
 import com.anfema.ampclient.utils.ContextUtils;
 import com.anfema.ampclient.utils.FileUtils;
+import com.anfema.ampclient.utils.Log;
 import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.MediaType;
@@ -44,8 +46,15 @@ public class CachingInterceptor implements Interceptor
 
 		// write response to cache
 		String responseBody = getResponseBody( response );
-		File filePath = FilePaths.getJsonFilePath( url.toString(), context );
-		FileUtils.writeTextToFile( responseBody, filePath );
+		try
+		{
+			File filePath = FilePaths.getJsonFilePath( url.toString(), context );
+			FileUtils.writeTextToFile( responseBody, filePath );
+		}
+		catch ( NoAmpPagesRequestException e )
+		{
+			Log.ex( e );
+		}
 
 		return response;
 	}

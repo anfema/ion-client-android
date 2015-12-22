@@ -1,8 +1,6 @@
 package com.anfema.ampclient.exceptions;
 
-import android.content.res.Resources.NotFoundException;
-
-public class PageNotInCollectionException extends NotFoundException
+public class PageNotInCollectionException extends Exception
 {
 	public PageNotInCollectionException( String collectionIdentifier, String pageIdentifier )
 	{

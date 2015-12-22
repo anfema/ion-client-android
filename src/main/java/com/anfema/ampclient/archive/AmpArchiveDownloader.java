@@ -6,7 +6,6 @@ import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.AmpFiles;
 import com.anfema.ampclient.caching.FilePaths;
 import com.anfema.ampclient.pages.AmpPages;
-import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.Log;
 import com.squareup.okhttp.HttpUrl;
 
@@ -34,11 +33,10 @@ public class AmpArchiveDownloader implements AmpArchive
 	public Observable<File> downloadArchive()
 	{
 		File archivePath = FilePaths.getArchiveFilePath( config.collectionIdentifier, context );
-		File collectionFolder = FilePaths.getCollectionFolderPath( config.collectionIdentifier, context );
 		Log.i( "FTS Database", "about to download FTS database for collection " + config.collectionIdentifier );
 		return ampPages.getCollection()
 				.map( collection -> collection.archive )
 				.flatMap( zipUrl -> AmpFiles.getInstance( config.authorizationHeaderValue, context ).request( HttpUrl.parse( zipUrl ), archivePath ) )
-				.flatMap( archive -> FileUtils.unTar( archivePath, collectionFolder ) );
+				.flatMap( archive -> ArchiveUtils.unTar( archivePath, config, context ) );
 	}
 }
