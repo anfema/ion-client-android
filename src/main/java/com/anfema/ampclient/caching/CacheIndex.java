@@ -5,14 +5,13 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
 import com.anfema.ampclient.serialization.GsonHolder;
-import com.anfema.ampclient.utils.HashUtils;
 import com.squareup.okhttp.HttpUrl;
 
-public abstract class CacheMeta
+public abstract class CacheIndex
 {
 	private String filename;
 
-	public CacheMeta( String filename )
+	public CacheIndex( String filename )
 	{
 		this.filename = filename;
 	}
@@ -20,7 +19,7 @@ public abstract class CacheMeta
 	/**
 	 * Use MD5 of request URL as filename
 	 */
-	public CacheMeta( HttpUrl requestUrl )
+	public CacheIndex( HttpUrl requestUrl )
 	{
 		this.filename = FilePaths.getFileName( requestUrl.toString() );
 	}
@@ -37,16 +36,16 @@ public abstract class CacheMeta
 
 	// Persistence - shared preferences
 
-	private static final String PREFS_CACHING_META = "prefs_caching_meta";
+	private static final String PREFS_CACHING_INDEX = "prefs_caching_index";
 
-	public static <T extends CacheMeta> T retrieve( String requestUrl, Context context, Class<T> cacheMetaSubclass )
+	public static <T extends CacheIndex> T retrieve( String requestUrl, Context context, Class<T> cacheMetaSubclass )
 	{
 		SharedPreferences prefs = getPrefs( context );
 		String json = prefs.getString( requestUrl, null );
 		return GsonHolder.getInstance().fromJson( json, cacheMetaSubclass );
 	}
 
-	public static <T extends CacheMeta> void save( String requestUrl, T cacheMeta, Context context )
+	public static <T extends CacheIndex> void save( String requestUrl, T cacheMeta, Context context )
 	{
 		SharedPreferences prefs = getPrefs( context );
 		Editor editor = prefs.edit();
@@ -56,6 +55,6 @@ public abstract class CacheMeta
 
 	private static SharedPreferences getPrefs( Context context )
 	{
-		return context.getSharedPreferences( PREFS_CACHING_META, 0 );
+		return context.getSharedPreferences( PREFS_CACHING_INDEX, 0 );
 	}
 }

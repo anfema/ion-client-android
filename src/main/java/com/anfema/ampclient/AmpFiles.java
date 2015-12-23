@@ -19,15 +19,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
 
 /**
  * Does not perform calls against a specific API, but takes complete URLs as parameter to perform a GET call to.
- * <p>
+ * <p/>
  * Downloads the response body and stores it into a file.
- * <p>
+ * <p/>
  * However, the AMP authorization header is added (in case the URL points to protected media).
  */
 public class AmpFiles
@@ -96,6 +95,8 @@ public class AmpFiles
 	 */
 	private Observable<File> performRequest( HttpUrl url, File targetFile )
 	{
+		// client.setReadTimeout( 30, TimeUnit.SECONDS );
+
 		Request request = new Request.Builder()
 				.url( url )
 				.build();

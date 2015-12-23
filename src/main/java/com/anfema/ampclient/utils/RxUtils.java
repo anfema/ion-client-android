@@ -1,9 +1,11 @@
 package com.anfema.ampclient.utils;
 
 import retrofit.HttpException;
+import rx.Observable;
 import rx.Observable.Transformer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
+import rx.functions.Func2;
 import rx.schedulers.Schedulers;
 
 public class RxUtils
@@ -57,5 +59,19 @@ public class RxUtils
 	public static <T> Transformer<T, T> runOnComputionThread()
 	{
 		return tObservable -> tObservable.subscribeOn( Schedulers.computation() ).observeOn( AndroidSchedulers.mainThread() );
+	}
+
+	public static <A, B, C> Observable<C> flatZip( Observable<A> o1, Observable<B> o2, Func2<A, B, Observable<C>> func )
+	{
+		Observable<Observable<C>> obob = Observable.zip( o1, o2, func::call );
+		// flatten observable in observable
+		return obob.flatMap( x -> x );
+	}
+
+	public static <A, B, C> Observable<C> flatCombineLatest( Observable<A> o1, Observable<B> o2, Func2<A, B, Observable<C>> func )
+	{
+		Observable<Observable<C>> obob = Observable.combineLatest( o1, o2, func::call );
+		// flatten observable in observable
+		return obob.flatMap( x -> x );
 	}
 }

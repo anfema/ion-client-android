@@ -50,17 +50,29 @@ public class Collection
 	public ArrayList<PagePreview> pages;
 
 	@NonNull
-	public Observable<? extends DateTime> getPageLastChanged( String pageIdentifier )
+	public Observable<? extends DateTime> getPageLastChangedAsync( String pageIdentifier )
+	{
+		try
+		{
+			return Observable.just( getPageLastChanged( pageIdentifier ) );
+		}
+		catch ( PageNotInCollectionException e )
+		{
+			return Observable.error( e );
+		}
+	}
+
+	@NonNull
+	public DateTime getPageLastChanged( String pageIdentifier ) throws PageNotInCollectionException
 	{
 		for ( PagePreview pagePreview : pages )
 		{
 			if ( pageIdentifier.equals( pagePreview.identifier ) )
 			{
-				return Observable.just( pagePreview.last_changed );
+				return pagePreview.last_changed;
 			}
 		}
-		// return a date in the future
-		return Observable.error( new PageNotInCollectionException( identifier, pageIdentifier ) );
+		throw new PageNotInCollectionException( identifier, pageIdentifier );
 	}
 
 	@Override

@@ -4,11 +4,11 @@ import android.content.Context;
 
 import com.squareup.okhttp.HttpUrl;
 
-public class FileCacheMeta extends CacheMeta
+public class FileCacheIndex extends CacheIndex
 {
 	private String checksum;
 
-	public FileCacheMeta( String filename, String checksum )
+	public FileCacheIndex( String filename, String checksum )
 	{
 		super( filename );
 		this.checksum = checksum;
@@ -19,7 +19,7 @@ public class FileCacheMeta extends CacheMeta
 	 *
 	 * @param checksum
 	 */
-	public FileCacheMeta( HttpUrl requestUrl, String checksum )
+	public FileCacheIndex( HttpUrl requestUrl, String checksum )
 	{
 		super( requestUrl );
 		this.checksum = checksum;
@@ -42,8 +42,8 @@ public class FileCacheMeta extends CacheMeta
 
 	// Persistence - shared preferences
 
-	public static FileCacheMeta retrieve( String requestUrl, Context context )
+	public static FileCacheIndex retrieve( String requestUrl, Context context )
 	{
-		return CacheMeta.retrieve( requestUrl, context, FileCacheMeta.class );
+		return CacheIndex.retrieve( requestUrl, context, FileCacheIndex.class );
 	}
 }

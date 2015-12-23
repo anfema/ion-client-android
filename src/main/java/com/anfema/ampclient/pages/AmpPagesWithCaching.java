@@ -4,9 +4,9 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.anfema.ampclient.AmpConfig;
-import com.anfema.ampclient.caching.CollectionCacheMeta;
+import com.anfema.ampclient.caching.CollectionCacheIndex;
 import com.anfema.ampclient.caching.FilePaths;
-import com.anfema.ampclient.caching.PageCacheMeta;
+import com.anfema.ampclient.caching.PageCacheIndex;
 import com.anfema.ampclient.exceptions.NetworkRequestException;
 import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
 import com.anfema.ampclient.exceptions.ReadFromCacheException;
@@ -17,7 +17,6 @@ import com.anfema.ampclient.models.responses.CollectionResponse;
 import com.anfema.ampclient.models.responses.PageResponse;
 import com.anfema.ampclient.serialization.GsonHolder;
 import com.anfema.ampclient.utils.ApiFactory;
-import com.anfema.ampclient.utils.DateTimeUtils;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.NetworkUtils;
@@ -68,7 +67,7 @@ public class AmpPagesWithCaching implements AmpPages
 	public Observable<Collection> getCollection()
 	{
 		String collectionUrl = PagesUrls.getCollectionUrl( config );
-		CollectionCacheMeta cacheMeta = CollectionCacheMeta.retrieve( collectionUrl, context );
+		CollectionCacheIndex cacheMeta = CollectionCacheIndex.retrieve( collectionUrl, context );
 
 		if ( !NetworkUtils.isConnected( context ) )
 		{
@@ -92,7 +91,7 @@ public class AmpPagesWithCaching implements AmpPages
 	public Observable<Page> getPage( String pageIdentifier )
 	{
 		String pageUrl = PagesUrls.getPageUrl( config, pageIdentifier );
-		PageCacheMeta pageCacheMeta = PageCacheMeta.retrieve( pageUrl, context );
+		PageCacheIndex pageCacheMeta = PageCacheIndex.retrieve( pageUrl, context );
 
 		if ( pageCacheMeta == null )
 		{
@@ -101,7 +100,7 @@ public class AmpPagesWithCaching implements AmpPages
 
 		return getCollection()
 				// get page's last_changed date from collection
-				.flatMap( collection -> collection.getPageLastChanged( pageIdentifier ) )
+				.flatMap( collection -> collection.getPageLastChangedAsync( pageIdentifier ) )
 						// compare last_changed date of cached page with that of collection
 				.map( pageCacheMeta::isOutdated )
 				.flatMap( isOutdated -> {
@@ -204,7 +203,7 @@ public class AmpPagesWithCaching implements AmpPages
 	{
 		return ampApi.getCollection( config.collectionIdentifier, config.authorizationHeaderValue )
 				.map( CollectionResponse::getCollection )
-				.doOnNext( saveCollectionMeta() )
+				.doOnNext( saveCollectionCacheIndex() )
 				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
 					String collectionUrl = PagesUrls.getCollectionUrl( config );
@@ -269,7 +268,7 @@ public class AmpPagesWithCaching implements AmpPages
 	{
 		return ampApi.getPage( config.collectionIdentifier, pageIdentifier, config.authorizationHeaderValue )
 				.map( PageResponse::getPage )
-				.doOnNext( savePageMeta() )
+				.doOnNext( savePageCacheIndex() )
 				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
 					String pageUrl = PagesUrls.getPageUrl( config, pageIdentifier );
@@ -288,45 +287,15 @@ public class AmpPagesWithCaching implements AmpPages
 
 
 	@NonNull
-	private Action1<Collection> saveCollectionMeta()
+	private Action1<Collection> saveCollectionCacheIndex()
 	{
-		return collection -> {
-			String url = PagesUrls.getCollectionUrl( config );
-
-			try
-			{
-				if ( FilePaths.getJsonFilePath( url, context ).exists() )
-				{
-					CollectionCacheMeta cacheMeta = new CollectionCacheMeta( url, DateTimeUtils.now() );
-					CollectionCacheMeta.save( url, cacheMeta, context );
-				}
-			}
-			catch ( NoAmpPagesRequestException e )
-			{
-				Log.e( "Cache Meta", "Could not save cache meta entry for " + url );
-				Log.ex( e );
-			}
-		};
+		return collection -> CollectionCacheIndex.save( config, context );
 	}
 
 	@NonNull
-	private Action1<Page> savePageMeta()
+	private Action1<Page> savePageCacheIndex()
 	{
-		return page -> {
-			String url = PagesUrls.getPageUrl( config, page.identifier );
-			try
-			{
-				if ( FilePaths.getJsonFilePath( url, context ).exists() )
-				{
-					PageCacheMeta cacheMeta = new PageCacheMeta( url, page.last_changed );
-					PageCacheMeta.save( url, cacheMeta, context );
-				}
-			}
-			catch ( NoAmpPagesRequestException e )
-			{
-				Log.e( "Cache Meta", "Could not save cache meta entry for " + url );
-				Log.ex( e );
-			}
-		};
+		return page -> PageCacheIndex.save( page, config, context );
 	}
+
 }
