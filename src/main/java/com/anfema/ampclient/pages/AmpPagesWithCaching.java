@@ -67,7 +67,7 @@ public class AmpPagesWithCaching implements AmpPages
 	public Observable<Collection> getCollection()
 	{
 		String collectionUrl = PagesUrls.getCollectionUrl( config );
-		CollectionCacheIndex cacheMeta = CollectionCacheIndex.retrieve( collectionUrl, context );
+		CollectionCacheIndex cacheMeta = CollectionCacheIndex.retrieve( collectionUrl, config.collectionIdentifier, context );
 
 		if ( !NetworkUtils.isConnected( context ) )
 		{
@@ -91,7 +91,7 @@ public class AmpPagesWithCaching implements AmpPages
 	public Observable<Page> getPage( String pageIdentifier )
 	{
 		String pageUrl = PagesUrls.getPageUrl( config, pageIdentifier );
-		PageCacheIndex pageCacheMeta = PageCacheIndex.retrieve( pageUrl, context );
+		PageCacheIndex pageCacheMeta = PageCacheIndex.retrieve( pageUrl, config.collectionIdentifier, context );
 
 		if ( pageCacheMeta == null )
 		{

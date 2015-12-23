@@ -47,9 +47,9 @@ public class PageCacheIndex extends CacheIndex
 
 	// Persistence - shared preferences
 
-	public static PageCacheIndex retrieve( String requestUrl, Context context )
+	public static PageCacheIndex retrieve( String requestUrl, String collectionIdentifier, Context context )
 	{
-		return CacheIndex.retrieve( requestUrl, context, PageCacheIndex.class );
+		return CacheIndex.retrieve( requestUrl, PageCacheIndex.class, collectionIdentifier, context );
 	}
 
 	public static void save( Page page, AmpConfig config, Context context )
@@ -65,7 +65,7 @@ public class PageCacheIndex extends CacheIndex
 			if ( FilePaths.getJsonFilePath( url, context ).exists() )
 			{
 				PageCacheIndex cacheMeta = new PageCacheIndex( url, pageLastChanged );
-				save( url, cacheMeta, context );
+				save( url, cacheMeta, config.collectionIdentifier, context );
 			}
 		}
 		catch ( NoAmpPagesRequestException e )

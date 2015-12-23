@@ -36,25 +36,29 @@ public abstract class CacheIndex
 
 	// Persistence - shared preferences
 
-	private static final String PREFS_CACHING_INDEX = "prefs_caching_index";
-
-	public static <T extends CacheIndex> T retrieve( String requestUrl, Context context, Class<T> cacheMetaSubclass )
+	public static <T extends CacheIndex> T retrieve( String requestUrl, Class<T> cacheMetaSubclass, String collectionIdentifier, Context context )
 	{
-		SharedPreferences prefs = getPrefs( context );
+		SharedPreferences prefs = getPrefs( collectionIdentifier, context );
 		String json = prefs.getString( requestUrl, null );
 		return GsonHolder.getInstance().fromJson( json, cacheMetaSubclass );
 	}
 
-	public static <T extends CacheIndex> void save( String requestUrl, T cacheMeta, Context context )
+	public static <T extends CacheIndex> void save( String requestUrl, T cacheMeta, String collectionIdentifier, Context context )
 	{
-		SharedPreferences prefs = getPrefs( context );
+		SharedPreferences prefs = getPrefs( collectionIdentifier, context );
 		Editor editor = prefs.edit();
 		editor.putString( requestUrl, GsonHolder.getInstance().toJson( cacheMeta ) );
 		editor.apply();
 	}
 
-	private static SharedPreferences getPrefs( Context context )
+	public static void clear( String collectionIdentifier, Context context )
 	{
-		return context.getSharedPreferences( PREFS_CACHING_INDEX, 0 );
+		SharedPreferences prefs = getPrefs( collectionIdentifier, context );
+		prefs.edit().clear().commit();
+	}
+
+	private static SharedPreferences getPrefs( String collectionIdentifier, Context context )
+	{
+		return context.getSharedPreferences( "prefs_cache_index_" + collectionIdentifier, 0 );
 	}
 }

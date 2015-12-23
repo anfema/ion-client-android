@@ -42,8 +42,9 @@ public class FileCacheIndex extends CacheIndex
 
 	// Persistence - shared preferences
 
-	public static FileCacheIndex retrieve( String requestUrl, Context context )
+	// TODO save files in collection folder or remove parameter collectionIdentifier
+	public static FileCacheIndex retrieve( String requestUrl, String collectionIdentifier, Context context )
 	{
-		return CacheIndex.retrieve( requestUrl, context, FileCacheIndex.class );
+		return CacheIndex.retrieve( requestUrl, FileCacheIndex.class, collectionIdentifier, context );
 	}
 }

@@ -3,6 +3,7 @@ package com.anfema.ampclient.archive;
 import android.content.Context;
 
 import com.anfema.ampclient.AmpConfig;
+import com.anfema.ampclient.caching.CacheIndex;
 import com.anfema.ampclient.caching.CollectionCacheIndex;
 import com.anfema.ampclient.caching.FilePaths;
 import com.anfema.ampclient.caching.PageCacheIndex;
@@ -112,7 +113,6 @@ public class ArchiveUtils
 
 				FileWithMeta fileWithMeta = getFilePath( fileInfo, collectionFolderTemp, context );
 				File targetFile = fileWithMeta.file;
-				Log.d( TAG, String.format( "Untaring: Write file %s.", targetFile.getPath() ) );
 				FileUtils.createDir( targetFile.getParentFile() );
 
 				targetFile = FileUtils.writeToFile( debInputStream, targetFile );
@@ -128,7 +128,8 @@ public class ArchiveUtils
 		debInputStream.close();
 		archiveFile.delete();
 
-		// delete old cache index entries
+		// delete old cache index entries of the collection
+		CacheIndex.clear( config.collectionIdentifier, context );
 
 		// otherwise we would delete the collection Json we already downloaded before
 		boolean collectionExisted = keepCollectionJson( collectionFolderTemp, config, context );
@@ -238,11 +239,6 @@ public class ArchiveUtils
 			this.type = type;
 			this.archiveIndex = archiveIndex;
 			this.pageIdentifier = pageIdentifier;
-		}
-
-		public FileWithMeta( File file, AmpCallType type, ArchiveIndex archiveIndex )
-		{
-			this( file, type, archiveIndex, null );
 		}
 	}
 

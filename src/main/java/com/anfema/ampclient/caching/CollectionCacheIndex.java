@@ -49,9 +49,9 @@ public class CollectionCacheIndex extends CacheIndex
 
 	// Persistence - shared preferences
 
-	public static CollectionCacheIndex retrieve( String requestUrl, Context context )
+	public static CollectionCacheIndex retrieve( String requestUrl, String collectionIdentifier, Context context )
 	{
-		return CacheIndex.retrieve( requestUrl, context, CollectionCacheIndex.class );
+		return CacheIndex.retrieve( requestUrl, CollectionCacheIndex.class, collectionIdentifier, context );
 	}
 
 	public static void save( AmpConfig config, Context context )
@@ -63,7 +63,7 @@ public class CollectionCacheIndex extends CacheIndex
 			if ( FilePaths.getJsonFilePath( url, context ).exists() )
 			{
 				CollectionCacheIndex cacheMeta = new CollectionCacheIndex( url, DateTimeUtils.now() );
-				save( url, cacheMeta, context );
+				save( url, cacheMeta, config.collectionIdentifier, context );
 			}
 		}
 		catch ( NoAmpPagesRequestException e )
