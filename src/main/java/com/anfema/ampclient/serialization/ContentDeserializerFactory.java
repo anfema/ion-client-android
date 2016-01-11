@@ -1,16 +1,16 @@
 package com.anfema.ampclient.serialization;
 
-import com.anfema.ampclient.models.contents.ColorContent;
-import com.anfema.ampclient.models.contents.ConnectionContent;
-import com.anfema.ampclient.models.contents.ContainerContent;
-import com.anfema.ampclient.models.contents.DatetimeContent;
-import com.anfema.ampclient.models.contents.FileContent;
-import com.anfema.ampclient.models.contents.FlagContent;
-import com.anfema.ampclient.models.contents.ImageContent;
-import com.anfema.ampclient.models.contents.MediaContent;
-import com.anfema.ampclient.models.contents.NumberContent;
-import com.anfema.ampclient.models.contents.OptionContent;
-import com.anfema.ampclient.models.contents.TextContent;
+import com.anfema.ampclient.pages.models.contents.ColorContent;
+import com.anfema.ampclient.pages.models.contents.ConnectionContent;
+import com.anfema.ampclient.pages.models.contents.ContainerContent;
+import com.anfema.ampclient.pages.models.contents.DatetimeContent;
+import com.anfema.ampclient.pages.models.contents.FileContent;
+import com.anfema.ampclient.pages.models.contents.FlagContent;
+import com.anfema.ampclient.pages.models.contents.ImageContent;
+import com.anfema.ampclient.pages.models.contents.MediaContent;
+import com.anfema.ampclient.pages.models.contents.NumberContent;
+import com.anfema.ampclient.pages.models.contents.OptionContent;
+import com.anfema.ampclient.pages.models.contents.TextContent;
 
 /**
  * This is where content types are registered.

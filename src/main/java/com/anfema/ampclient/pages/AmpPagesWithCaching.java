@@ -10,11 +10,11 @@ import com.anfema.ampclient.caching.PageCacheIndex;
 import com.anfema.ampclient.exceptions.NetworkRequestException;
 import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
 import com.anfema.ampclient.exceptions.ReadFromCacheException;
-import com.anfema.ampclient.models.Collection;
-import com.anfema.ampclient.models.Page;
-import com.anfema.ampclient.models.PagePreview;
-import com.anfema.ampclient.models.responses.CollectionResponse;
-import com.anfema.ampclient.models.responses.PageResponse;
+import com.anfema.ampclient.pages.models.Collection;
+import com.anfema.ampclient.pages.models.Page;
+import com.anfema.ampclient.pages.models.PagePreview;
+import com.anfema.ampclient.pages.models.responses.CollectionResponse;
+import com.anfema.ampclient.pages.models.responses.PageResponse;
 import com.anfema.ampclient.serialization.GsonHolder;
 import com.anfema.ampclient.utils.ApiFactory;
 import com.anfema.ampclient.utils.FileUtils;
@@ -38,7 +38,7 @@ import rx.functions.Func1;
  * <p/>
  * Uses a file and a memory cache.
  */
-public class AmpPagesWithCaching implements AmpPages
+class AmpPagesWithCaching implements AmpPages
 {
 	private final Context context;
 

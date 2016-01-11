@@ -1,6 +1,6 @@
-package com.anfema.ampclient.models.responses;
+package com.anfema.ampclient.pages.models.responses;
 
-import com.anfema.ampclient.models.Page;
+import com.anfema.ampclient.pages.models.Page;
 
 public class PageResponse
 {

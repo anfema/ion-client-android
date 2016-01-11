@@ -1,7 +1,7 @@
-package com.anfema.ampclient.models.responses;
+package com.anfema.ampclient.pages.models.responses;
 
 
-import com.anfema.ampclient.models.Collection;
+import com.anfema.ampclient.pages.models.Collection;
 
 public class CollectionResponse
 {

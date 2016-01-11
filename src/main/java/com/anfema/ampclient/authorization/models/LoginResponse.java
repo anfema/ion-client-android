@@ -1,6 +1,4 @@
-package com.anfema.ampclient.models.responses;
-
-import com.anfema.ampclient.models.Login;
+package com.anfema.ampclient.authorization.models;
 
 public class LoginResponse
 {

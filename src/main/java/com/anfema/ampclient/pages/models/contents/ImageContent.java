@@ -1,4 +1,4 @@
-package com.anfema.ampclient.models.contents;
+package com.anfema.ampclient.pages.models.contents;
 
 public class ImageContent extends AContent
 {

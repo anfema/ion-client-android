@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
-import com.anfema.ampclient.models.Page;
+import com.anfema.ampclient.pages.models.Page;
 import com.anfema.ampclient.pages.PagesUrls;
 import com.anfema.ampclient.utils.Log;
 import com.squareup.okhttp.HttpUrl;

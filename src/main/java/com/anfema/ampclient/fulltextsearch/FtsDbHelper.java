@@ -7,11 +7,11 @@ import android.database.sqlite.SQLiteOpenHelper;
 /**
  * Provides access to downloaded full text search databases
  */
-public class FtsDbHelper extends SQLiteOpenHelper
+class FtsDbHelper extends SQLiteOpenHelper
 {
 	public static final int DATABASE_VERSION = 1;
 
-	public FtsDbHelper( String collectionIdentifier, Context context )
+	FtsDbHelper( String collectionIdentifier, Context context )
 	{
 		super( context, FtsDbUtils.getName( collectionIdentifier ), null, DATABASE_VERSION );
 	}

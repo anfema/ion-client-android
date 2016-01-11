@@ -1,4 +1,4 @@
-package com.anfema.ampclient.models;
+package com.anfema.ampclient.authorization.models;
 
 /**
  * Response of a successful authentication with username and password contains this information.

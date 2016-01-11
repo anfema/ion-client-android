@@ -1,8 +1,8 @@
 package com.anfema.ampclient.pages;
 
-import com.anfema.ampclient.models.Collection;
-import com.anfema.ampclient.models.Page;
-import com.anfema.ampclient.models.PagePreview;
+import com.anfema.ampclient.pages.models.Collection;
+import com.anfema.ampclient.pages.models.Page;
+import com.anfema.ampclient.pages.models.PagePreview;
 
 import rx.Observable;
 import rx.functions.Func1;

@@ -9,9 +9,9 @@ import com.anfema.ampclient.caching.FilePaths;
 import com.anfema.ampclient.caching.PageCacheIndex;
 import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
 import com.anfema.ampclient.exceptions.PageNotInCollectionException;
-import com.anfema.ampclient.models.Collection;
 import com.anfema.ampclient.pages.AmpCallType;
 import com.anfema.ampclient.pages.PagesUrls;
+import com.anfema.ampclient.pages.models.Collection;
 import com.anfema.ampclient.serialization.GsonHolder;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.Log;
@@ -38,11 +38,11 @@ import java.util.List;
 
 import rx.Observable;
 
-public class ArchiveUtils
+class ArchiveUtils
 {
 	private static final String TAG = "ArchiveUtils";
 
-	public static Observable<File> unTar( File archiveFile, Collection collection, AmpConfig config, Context context )
+	static Observable<File> unTar( File archiveFile, Collection collection, AmpConfig config, Context context )
 	{
 		return Observable.just( null )
 				.flatMap( o -> {

@@ -23,10 +23,10 @@ import rx.Observable;
 
 /**
  * Full text search on collectin data.
- * <p>
+ * <p/>
  * Accessible via {@link AmpClient}
  */
-public class AmpFtsImpl implements AmpFts
+class AmpFtsImpl implements AmpFts
 {
 	private final AmpPages  ampPages;
 	private final AmpConfig config;

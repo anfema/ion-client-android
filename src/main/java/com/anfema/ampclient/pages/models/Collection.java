@@ -1,4 +1,4 @@
-package com.anfema.ampclient.models;
+package com.anfema.ampclient.pages.models;
 
 import android.support.annotation.NonNull;
 

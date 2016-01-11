@@ -1,4 +1,4 @@
-package com.anfema.ampclient.models;
+package com.anfema.ampclient.pages.models;
 
 import com.anfema.ampclient.serialization.GsonHolder;
 import com.google.gson.JsonElement;

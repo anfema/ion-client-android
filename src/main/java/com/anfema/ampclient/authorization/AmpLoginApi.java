@@ -1,6 +1,6 @@
 package com.anfema.ampclient.authorization;
 
-import com.anfema.ampclient.models.responses.LoginResponse;
+import com.anfema.ampclient.authorization.models.LoginResponse;
 
 import retrofit.http.Field;
 import retrofit.http.FormUrlEncoded;

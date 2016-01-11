@@ -1,7 +1,7 @@
 package com.anfema.ampclient.pages;
 
-import com.anfema.ampclient.models.responses.CollectionResponse;
-import com.anfema.ampclient.models.responses.PageResponse;
+import com.anfema.ampclient.pages.models.responses.CollectionResponse;
+import com.anfema.ampclient.pages.models.responses.PageResponse;
 
 import retrofit.http.GET;
 import retrofit.http.Header;

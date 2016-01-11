@@ -5,8 +5,8 @@ import android.content.Context;
 import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.AmpFiles;
 import com.anfema.ampclient.caching.FilePaths;
-import com.anfema.ampclient.models.Collection;
 import com.anfema.ampclient.pages.AmpPages;
+import com.anfema.ampclient.pages.models.Collection;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.RxUtils;
 import com.squareup.okhttp.HttpUrl;
@@ -15,7 +15,7 @@ import java.io.File;
 
 import rx.Observable;
 
-public class AmpArchiveDownloader implements AmpArchive
+class AmpArchiveDownloader implements AmpArchive
 {
 	private final AmpPages  ampPages;
 	private final AmpConfig config;

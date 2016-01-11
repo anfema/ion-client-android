@@ -1,6 +1,6 @@
 package com.anfema.ampclient.serialization;
 
-import com.anfema.ampclient.models.contents.AContent;
+import com.anfema.ampclient.pages.models.contents.AContent;
 import com.anfema.ampclient.utils.Log;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

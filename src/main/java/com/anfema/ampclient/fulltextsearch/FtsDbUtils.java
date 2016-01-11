@@ -4,14 +4,14 @@ import android.content.Context;
 
 import java.io.File;
 
-public class FtsDbUtils
+class FtsDbUtils
 {
-	public static File getPath( String collectionIdentifier, Context context )
+	static File getPath( String collectionIdentifier, Context context )
 	{
 		return context.getDatabasePath( getName( collectionIdentifier ) );
 	}
 
-	public static String getName( String collectionIdentifier )
+	static String getName( String collectionIdentifier )
 	{
 		return "fts_" + collectionIdentifier;
 	}
