@@ -9,23 +9,29 @@ public class AmpConfig
 	/**
 	 * base URL pointing to the AMP endpoint
 	 */
-	public String baseUrl;
+	public final String baseUrl;
 
 	/**
 	 * the collection identifier, {@link AmpClient} will use for its calls
 	 */
-	public String collectionIdentifier;
+	public final String collectionIdentifier;
 
 	/**
 	 * authorization header value which is required to use the AMP API
 	 */
-	public String authorizationHeaderValue;
+	public final String authorizationHeaderValue;
 
-	public AmpConfig( String baseUrl, String collectionIdentifier, String authorizationHeaderValue )
+	/**
+	 * Time after which collection is refreshed = fetched from server again.
+	 */
+	public final int minutesUntilCollectionRefetch;
+
+	public AmpConfig( String baseUrl, String collectionIdentifier, String authorizationHeaderValue, int minutesUntilCollectionRefetch )
 	{
 		this.baseUrl = baseUrl;
 		this.collectionIdentifier = collectionIdentifier;
 		this.authorizationHeaderValue = authorizationHeaderValue;
+		this.minutesUntilCollectionRefetch = minutesUntilCollectionRefetch;
 	}
 
 	public AmpConfig( AmpConfig otherConfig )
@@ -33,6 +39,7 @@ public class AmpConfig
 		this.baseUrl = otherConfig.baseUrl;
 		this.collectionIdentifier = otherConfig.collectionIdentifier;
 		this.authorizationHeaderValue = otherConfig.authorizationHeaderValue;
+		this.minutesUntilCollectionRefetch = otherConfig.minutesUntilCollectionRefetch;
 	}
 
 	public boolean isValid()

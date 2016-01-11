@@ -38,8 +38,11 @@ import rx.functions.Func1;
  * <p/>
  * Uses a file and a memory cache.
  */
-class AmpPagesWithCaching implements AmpPages
+public class AmpPagesWithCaching implements AmpPages
 {
+
+	private CollectionDownloadedListener collectionListener;
+
 	private final Context context;
 
 	/**
@@ -67,15 +70,22 @@ class AmpPagesWithCaching implements AmpPages
 	public Observable<Collection> getCollection()
 	{
 		String collectionUrl = PagesUrls.getCollectionUrl( config );
-		CollectionCacheIndex cacheMeta = CollectionCacheIndex.retrieve( collectionUrl, config.collectionIdentifier, context );
+		CollectionCacheIndex cacheIndex = CollectionCacheIndex.retrieve( collectionUrl, config.collectionIdentifier, context );
 
 		if ( !NetworkUtils.isConnected( context ) )
 		{
+			// TODO re-visit: no check here if cached version exists
 			return getCollectionFromCache( false );
 		}
-		else if ( cacheMeta == null || cacheMeta.isOutdated() )
+		else if ( cacheIndex == null || cacheIndex.isOutdated(config) )
 		{
-			return getCollectionFromServer( false );
+			return getCollectionFromServer( false )
+					.doOnNext( collection -> {
+						if ( collectionListener != null )
+						{
+							collectionListener.collectionDownloaded( collection, cacheIndex );
+						}
+					} );
 		}
 		else
 		{
@@ -91,9 +101,9 @@ class AmpPagesWithCaching implements AmpPages
 	public Observable<Page> getPage( String pageIdentifier )
 	{
 		String pageUrl = PagesUrls.getPageUrl( config, pageIdentifier );
-		PageCacheIndex pageCacheMeta = PageCacheIndex.retrieve( pageUrl, config.collectionIdentifier, context );
+		PageCacheIndex pageCacheIndex = PageCacheIndex.retrieve( pageUrl, config.collectionIdentifier, context );
 
-		if ( pageCacheMeta == null )
+		if ( pageCacheIndex == null )
 		{
 			return getPageFromServer( pageIdentifier, false );
 		}
@@ -102,10 +112,11 @@ class AmpPagesWithCaching implements AmpPages
 				// get page's last_changed date from collection
 				.flatMap( collection -> collection.getPageLastChangedAsync( pageIdentifier ) )
 						// compare last_changed date of cached page with that of collection
-				.map( pageCacheMeta::isOutdated )
+				.map( pageCacheIndex::isOutdated )
 				.flatMap( isOutdated -> {
 					if ( !NetworkUtils.isConnected( context ) )
 					{
+						// TODO re-visit: no check here if cached version exists
 						return getPageFromCache( pageIdentifier, false );
 					}
 					else if ( isOutdated )
@@ -289,7 +300,7 @@ class AmpPagesWithCaching implements AmpPages
 	@NonNull
 	private Action1<Collection> saveCollectionCacheIndex()
 	{
-		return collection -> CollectionCacheIndex.save( config, context );
+		return collection -> CollectionCacheIndex.save( config, context, collection.getLastChanged() );
 	}
 
 	@NonNull
@@ -298,4 +309,8 @@ class AmpPagesWithCaching implements AmpPages
 		return page -> PageCacheIndex.save( page, config, context );
 	}
 
+	public void setCollectionListener( CollectionDownloadedListener collectionListener )
+	{
+		this.collectionListener = collectionListener;
+	}
 }

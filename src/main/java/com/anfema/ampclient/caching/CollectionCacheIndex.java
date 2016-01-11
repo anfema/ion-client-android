@@ -13,23 +13,24 @@ import org.joda.time.DateTime;
 
 public class CollectionCacheIndex extends CacheIndex
 {
-	private static final int MINUTES_UNTIL_COLLECTION_REFETCH = 5;
-
 	private DateTime lastUpdated;
+	private DateTime lastChanged;
 
-	public CollectionCacheIndex( String filename, DateTime lastUpdated )
+	public CollectionCacheIndex( String filename, DateTime lastUpdated, DateTime lastChanged )
 	{
 		super( filename );
 		this.lastUpdated = lastUpdated;
+		this.lastChanged = lastChanged;
 	}
 
 	/**
 	 * Use MD5 of request URL as filename
 	 */
-	public CollectionCacheIndex( HttpUrl requestUrl, DateTime lastUpdated )
+	public CollectionCacheIndex( HttpUrl requestUrl, DateTime lastUpdated, DateTime lastChanged )
 	{
 		super( requestUrl );
 		this.lastUpdated = lastUpdated;
+		this.lastChanged = lastChanged;
 	}
 
 	public DateTime getLastUpdated()
@@ -42,9 +43,19 @@ public class CollectionCacheIndex extends CacheIndex
 		this.lastUpdated = lastUpdated;
 	}
 
-	public boolean isOutdated()
+	public boolean isOutdated( AmpConfig config )
 	{
-		return lastUpdated.isBefore( DateTimeUtils.now().minusMinutes( MINUTES_UNTIL_COLLECTION_REFETCH ) );
+		return lastUpdated.isBefore( DateTimeUtils.now().minusMinutes( config.minutesUntilCollectionRefetch ) );
+	}
+
+	public DateTime getLastChanged()
+	{
+		return lastChanged;
+	}
+
+	public void setLastChanged( DateTime lastChanged )
+	{
+		this.lastChanged = lastChanged;
 	}
 
 	// Persistence - shared preferences
@@ -54,7 +65,13 @@ public class CollectionCacheIndex extends CacheIndex
 		return CacheIndex.retrieve( requestUrl, CollectionCacheIndex.class, collectionIdentifier, context );
 	}
 
-	public static void save( AmpConfig config, Context context )
+	public static CollectionCacheIndex retrieve( AmpConfig config, Context context )
+	{
+		String requestUrl = PagesUrls.getCollectionUrl( config );
+		return CacheIndex.retrieve( requestUrl, CollectionCacheIndex.class, config.collectionIdentifier, context );
+	}
+
+	public static void save( AmpConfig config, Context context, DateTime lastChanged )
 	{
 		String url = PagesUrls.getCollectionUrl( config );
 
@@ -62,7 +79,7 @@ public class CollectionCacheIndex extends CacheIndex
 		{
 			if ( FilePaths.getJsonFilePath( url, context ).exists() )
 			{
-				CollectionCacheIndex cacheMeta = new CollectionCacheIndex( url, DateTimeUtils.now() );
+				CollectionCacheIndex cacheMeta = new CollectionCacheIndex( url, DateTimeUtils.now(), lastChanged );
 				save( url, cacheMeta, config.collectionIdentifier, context );
 			}
 		}

@@ -128,6 +128,10 @@ class ArchiveUtils
 		debInputStream.close();
 		archiveFile.delete();
 
+		// remember collection's last changed date
+		CollectionCacheIndex collectionCacheIndex = CollectionCacheIndex.retrieve( config, context );
+		DateTime collectionLastChanged = collectionCacheIndex.getLastChanged();
+
 		// delete old cache index entries of the collection
 		CacheIndex.clear( config.collectionIdentifier, context );
 
@@ -145,7 +149,7 @@ class ArchiveUtils
 		// restore cache index for collection
 		if ( collectionExisted )
 		{
-			CollectionCacheIndex.save( config, context );
+			CollectionCacheIndex.save( config, context, collectionLastChanged );
 		}
 
 		// cache index entries are not written yet at this point
@@ -252,7 +256,7 @@ class ArchiveUtils
 		}
 		else if ( type == AmpCallType.COLLECTIONS )
 		{
-			CollectionCacheIndex.save( config, context );
+			CollectionCacheIndex.save( config, context, collection.getLastChanged() );
 		}
 		else if ( type == AmpCallType.PAGES )
 		{

@@ -75,6 +75,24 @@ public class Collection
 		throw new PageNotInCollectionException( identifier, pageIdentifier );
 	}
 
+	/**
+	 * Find out latest change date of all pages. If no pages exist a very early date is returned.
+	 */
+	@NonNull
+	public DateTime getLastChanged()
+	{
+		DateTime lastChanged = new DateTime( 1970, 1, 1, 0, 0 );
+
+		for ( PagePreview pagePreview : pages )
+		{
+			if ( lastChanged.isBefore( pagePreview.last_changed ) )
+			{
+				lastChanged = pagePreview.last_changed;
+			}
+		}
+		return lastChanged;
+	}
+
 	@Override
 	public String toString()
 	{
