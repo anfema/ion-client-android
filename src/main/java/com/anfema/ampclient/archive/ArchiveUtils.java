@@ -128,9 +128,14 @@ class ArchiveUtils
 		debInputStream.close();
 		archiveFile.delete();
 
-		// remember collection's last changed date
+		// remember collection's cache index
 		CollectionCacheIndex collectionCacheIndex = CollectionCacheIndex.retrieve( config, context );
-		DateTime collectionLastChanged = collectionCacheIndex.getLastChanged();
+		boolean collectionCacheIndexExists = collectionCacheIndex != null;
+		DateTime collectionLastChanged = null;
+		if ( collectionCacheIndexExists )
+		{
+			collectionLastChanged = collectionCacheIndex.getLastChanged();
+		}
 
 		// delete old cache index entries of the collection
 		CacheIndex.clear( config.collectionIdentifier, context );
@@ -147,7 +152,7 @@ class ArchiveUtils
 		}
 
 		// restore cache index for collection
-		if ( collectionExisted )
+		if ( collectionExisted && collectionCacheIndexExists )
 		{
 			CollectionCacheIndex.save( config, context, collectionLastChanged );
 		}

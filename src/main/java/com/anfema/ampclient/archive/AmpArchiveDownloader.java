@@ -48,12 +48,31 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 	@Override
 	public Observable<File> downloadArchive()
 	{
+		return downloadArchive( null );
+	}
+
+	/**
+	 * Download the archive file for current collection, which should make app usable in offline mode.
+	 *
+	 * @param inCollection If collection already is available it can be passed in order to save time.
+	 */
+	public Observable<File> downloadArchive( Collection inCollection )
+	{
 		File archivePath = FilePaths.getArchiveFilePath( config.collectionIdentifier, context );
 		Log.i( "AMP Archive", "about to download archive for collection " + config.collectionIdentifier );
 
-		activeArchiveDownload = true;
+		// use inCollection or retrieve by making a collections call
+		Observable<Collection> collectionObs;
+		if ( inCollection == null )
+		{
+			collectionObs = ampPages.getCollection();
+		}
+		else
+		{
+			collectionObs = Observable.just( inCollection );
+		}
 
-		Observable<Collection> collectionObs = ampPages.getCollection();
+		activeArchiveDownload = true;
 
 		Observable<File> archiveObs = collectionObs
 				.map( collection -> collection.archive )
@@ -81,7 +100,7 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 		if ( pagesNeedUpdate && archiveDownloadEnabled )
 		{
 			// archive needs to be downloaded again. Download runs in background and does not even inform UI when finished
-			downloadArchive()
+			downloadArchive( collection )
 					.subscribe();
 		}
 	}
