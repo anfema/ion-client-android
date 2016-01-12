@@ -26,12 +26,18 @@ public class AmpConfig
 	 */
 	public final int minutesUntilCollectionRefetch;
 
-	public AmpConfig( String baseUrl, String collectionIdentifier, String authorizationHeaderValue, int minutesUntilCollectionRefetch )
+	/**
+	 * Should the whole archive be downloaded when the collection is downloaded?
+	 */
+	public final boolean archiveDownloads;
+
+	public AmpConfig( String baseUrl, String collectionIdentifier, String authorizationHeaderValue, int minutesUntilCollectionRefetch, boolean archiveDownloads )
 	{
 		this.baseUrl = baseUrl;
 		this.collectionIdentifier = collectionIdentifier;
 		this.authorizationHeaderValue = authorizationHeaderValue;
 		this.minutesUntilCollectionRefetch = minutesUntilCollectionRefetch;
+		this.archiveDownloads = archiveDownloads;
 	}
 
 	public AmpConfig( AmpConfig otherConfig )
@@ -40,6 +46,7 @@ public class AmpConfig
 		this.collectionIdentifier = otherConfig.collectionIdentifier;
 		this.authorizationHeaderValue = otherConfig.authorizationHeaderValue;
 		this.minutesUntilCollectionRefetch = otherConfig.minutesUntilCollectionRefetch;
+		this.archiveDownloads = otherConfig.archiveDownloads;
 	}
 
 	public boolean isValid()

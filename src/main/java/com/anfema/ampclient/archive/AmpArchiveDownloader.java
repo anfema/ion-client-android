@@ -38,6 +38,11 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 	}
 
 	/**
+	 * Prevent multiple archive downloads at the same time.
+	 */
+	boolean activeArchiveDownload = false;
+
+	/**
 	 * Download the archive file for current collection, which should make app usable in offline mode.
 	 */
 	@Override
@@ -46,6 +51,8 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 		File archivePath = FilePaths.getArchiveFilePath( config.collectionIdentifier, context );
 		Log.i( "AMP Archive", "about to download archive for collection " + config.collectionIdentifier );
 
+		activeArchiveDownload = true;
+
 		Observable<Collection> collectionObs = ampPages.getCollection();
 
 		Observable<File> archiveObs = collectionObs
@@ -53,11 +60,12 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 				.flatMap( archiveUrl -> AmpFiles.getInstance( config.authorizationHeaderValue, context ).request( HttpUrl.parse( archiveUrl ), archivePath ) );
 
 		return RxUtils.flatCombineLatest( collectionObs, archiveObs, ( collection, archivePath2 ) -> ArchiveUtils.unTar( archivePath2, collection, config, context ) )
+				.doOnNext( file -> activeArchiveDownload = false )
 				.compose( RxUtils.runOnIoThread() );
 	}
 
 	/**
-	 * check if archive needs to be updated
+	 * Check if archive needs to be updated.
 	 *
 	 * @param collection
 	 * @param oldCacheIndex
@@ -65,8 +73,12 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 	@Override
 	public void collectionDownloaded( Collection collection, CollectionCacheIndex oldCacheIndex )
 	{
-		// have pages changed in collection?
-		if ( oldCacheIndex == null || collection.getLastChanged().isAfter( oldCacheIndex.getLastChanged() ) )
+		// Does a cacheIndex entry for collection exist? Have pages changed in collection?
+		boolean pagesNeedUpdate = oldCacheIndex == null || collection.getLastChanged().isAfter( oldCacheIndex.getLastChanged() );
+		// Are archive downloads activated for this collection? Archive download is not running yet.
+		boolean archiveDownloadEnabled = config.archiveDownloads && !activeArchiveDownload;
+
+		if ( pagesNeedUpdate && archiveDownloadEnabled )
 		{
 			// archive needs to be downloaded again. Download runs in background and does not even inform UI when finished
 			downloadArchive()
