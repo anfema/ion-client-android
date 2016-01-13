@@ -6,6 +6,7 @@ import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.caching.CacheIndex;
 import com.anfema.ampclient.caching.CollectionCacheIndex;
 import com.anfema.ampclient.caching.FilePaths;
+import com.anfema.ampclient.caching.MemoryCache;
 import com.anfema.ampclient.caching.PageCacheIndex;
 import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
 import com.anfema.ampclient.exceptions.PageNotInCollectionException;
@@ -42,13 +43,13 @@ class ArchiveUtils
 {
 	private static final String TAG = "ArchiveUtils";
 
-	static Observable<File> unTar( File archiveFile, Collection collection, AmpConfig config, Context context )
+	static Observable<File> unTar( File archiveFile, Collection collection, AmpConfig config, MemoryCache memoryCache, Context context )
 	{
 		return Observable.just( null )
 				.flatMap( o -> {
 					try
 					{
-						return Observable.from( performUnTar( archiveFile, config, context ) )
+						return Observable.from( performUnTar( archiveFile, config, memoryCache, context ) )
 								// write cache index entries
 								.doOnNext( fileWithType -> saveCacheIndex( fileWithType, collection, config, context ) )
 								.map( fileWithType -> fileWithType.file );
@@ -69,12 +70,13 @@ class ArchiveUtils
 	 *
 	 * @param archiveFile
 	 * @param config
+	 * @param memoryCache
 	 * @return The {@link List} of {@link File}s with the untared content.
 	 * @throws IOException
 	 * @throws FileNotFoundException
 	 * @throws ArchiveException
 	 */
-	private static List<FileWithMeta> performUnTar( File archiveFile, AmpConfig config, Context context ) throws FileNotFoundException, IOException, ArchiveException
+	private static List<FileWithMeta> performUnTar( File archiveFile, AmpConfig config, MemoryCache memoryCache, Context context ) throws FileNotFoundException, IOException, ArchiveException
 	{
 		File collectionFolder = FilePaths.getCollectionFolderPath( config.collectionIdentifier, context );
 
@@ -137,8 +139,9 @@ class ArchiveUtils
 			collectionLastChanged = collectionCacheIndex.getLastChanged();
 		}
 
-		// delete old cache index entries of the collection
+		// delete old cache index entries of the collection as well as the pages' memory cache
 		CacheIndex.clear( config.collectionIdentifier, context );
+		memoryCache.clearPagesMemCache();
 
 		// otherwise we would delete the collection Json we already downloaded before
 		boolean collectionExisted = keepCollectionJson( collectionFolderTemp, config, context );

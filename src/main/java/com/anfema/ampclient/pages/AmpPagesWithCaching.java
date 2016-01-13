@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.caching.CollectionCacheIndex;
 import com.anfema.ampclient.caching.FilePaths;
+import com.anfema.ampclient.caching.MemoryCache;
 import com.anfema.ampclient.caching.PageCacheIndex;
 import com.anfema.ampclient.exceptions.CollectionNotAvailableException;
 import com.anfema.ampclient.exceptions.NetworkRequestException;
@@ -55,13 +56,16 @@ public class AmpPagesWithCaching implements AmpPages
 	/**
 	 * Access to the AMP API
 	 */
-	private AmpPagesApi ampApi;
+	private final AmpPagesApi ampApi;
+
+	private final MemoryCache memoryCache;
 
 	public AmpPagesWithCaching( AmpConfig config, Context context, List<Interceptor> interceptors )
 	{
 		this.config = config;
 		this.context = context;
 		ampApi = ApiFactory.newInstance( config.baseUrl, interceptors, AmpPagesApi.class );
+		memoryCache = new MemoryCache();
 	}
 
 	/**
@@ -215,7 +219,17 @@ public class AmpPagesWithCaching implements AmpPages
 	private Observable<Collection> getCollectionFromCache( boolean serverCallAsBackup )
 	{
 		String collectionUrl = PagesUrls.getCollectionUrl( config );
-		Log.i( "Cache Request", collectionUrl );
+
+		// retrieve from memory cache
+		Collection collection = memoryCache.getCollection();
+		if ( collection != null )
+		{
+			Log.i( "Memory Lookup", collectionUrl );
+			return Observable.just( collection );
+		}
+
+		// retrieve from file cache
+		Log.i( "File Lookup", collectionUrl );
 		try
 		{
 			File filePath = FilePaths.getJsonFilePath( collectionUrl, context );
@@ -223,6 +237,8 @@ public class AmpPagesWithCaching implements AmpPages
 					.readFromFile( filePath )
 					.map( collectionsString -> GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class ) )
 					.map( CollectionResponse::getCollection )
+							// save to memory cache
+					.doOnNext( memoryCache::setCollection )
 					.compose( RxUtils.runOnIoThread() )
 					.onErrorResumeNext( throwable -> {
 						return handleUnsuccessfulCollectionCacheReading( collectionUrl, serverCallAsBackup, throwable );
@@ -238,13 +254,13 @@ public class AmpPagesWithCaching implements AmpPages
 	{
 		if ( serverCallAsBackup )
 		{
-			Log.w( "Backup Request", "Cache request " + collectionUrl + " failed. Trying network request instead..." );
-			Log.ex( "Cache Request", e );
+			Log.w( "Backup Request", "File lookup " + collectionUrl + " failed. Trying network request instead..." );
+			Log.ex( "File Lookup", e );
 			return getCollectionFromServer( false );
 		}
 		else
 		{
-			Log.e( "Failed Request", "Cache request " + collectionUrl + " failed." );
+			Log.e( "Failed Request", "File lookup " + collectionUrl + " failed." );
 			return Observable.error( new ReadFromCacheException( collectionUrl, e ) );
 		}
 	}
@@ -259,6 +275,7 @@ public class AmpPagesWithCaching implements AmpPages
 		return ampApi.getCollection( config.collectionIdentifier, config.authorizationHeaderValue )
 				.map( CollectionResponse::getCollection )
 				.doOnNext( saveCollectionCacheIndex() )
+				.doOnNext( memoryCache::setCollection )
 				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
 					String collectionUrl = PagesUrls.getCollectionUrl( config );
@@ -285,7 +302,17 @@ public class AmpPagesWithCaching implements AmpPages
 	private Observable<Page> getPageFromCache( String pageIdentifier, boolean serverCallAsBackup )
 	{
 		String pageUrl = PagesUrls.getPageUrl( config, pageIdentifier );
-		Log.i( "Cache Request", pageUrl );
+
+		// retrieve from memory cache
+		Page memPage = memoryCache.getPage( pageUrl );
+		if ( memPage != null )
+		{
+			Log.i( "Memory Lookup", pageUrl );
+			return Observable.just( memPage );
+		}
+
+		// retrieve from file cache
+		Log.i( "File Lookup", pageUrl );
 		try
 		{
 			File filePath = FilePaths.getJsonFilePath( pageUrl, context );
@@ -293,6 +320,8 @@ public class AmpPagesWithCaching implements AmpPages
 					.readFromFile( filePath )
 					.map( pagesString -> GsonHolder.getInstance().fromJson( pagesString, PageResponse.class ) )
 					.map( PageResponse::getPage )
+							// save to memory cache
+					.doOnNext( page -> memoryCache.savePage( page, config ) )
 					.compose( RxUtils.runOnIoThread() )
 					.onErrorResumeNext( throwable -> {
 						return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, throwable );
@@ -308,11 +337,11 @@ public class AmpPagesWithCaching implements AmpPages
 	{
 		if ( serverCallAsBackup )
 		{
-			Log.w( "Backup Request", "Cache request " + pageUrl + " failed. Trying network request instead..." );
-			Log.ex( "Cache Request", e );
+			Log.w( "Backup Request", "File lookup " + pageUrl + " failed. Trying network request instead..." );
+			Log.ex( "File Lookup", e );
 			return getPageFromServer( pageIdentifier, false );
 		}
-		Log.e( "Failed Request", "Cache request " + pageUrl + " failed." );
+		Log.e( "Failed Request", "File lookup " + pageUrl + " failed." );
 		return Observable.error( new ReadFromCacheException( pageUrl, e ) );
 	}
 
@@ -324,6 +353,7 @@ public class AmpPagesWithCaching implements AmpPages
 		return ampApi.getPage( config.collectionIdentifier, pageIdentifier, config.authorizationHeaderValue )
 				.map( PageResponse::getPage )
 				.doOnNext( savePageCacheIndex() )
+				.doOnNext( page -> memoryCache.savePage( page, config ) )
 				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
 					String pageUrl = PagesUrls.getPageUrl( config, pageIdentifier );
@@ -356,5 +386,10 @@ public class AmpPagesWithCaching implements AmpPages
 	public void setCollectionListener( CollectionDownloadedListener collectionListener )
 	{
 		this.collectionListener = collectionListener;
+	}
+
+	public MemoryCache getMemoryCache()
+	{
+		return memoryCache;
 	}
 }

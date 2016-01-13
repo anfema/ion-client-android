@@ -2,6 +2,8 @@ package com.anfema.ampclient;
 
 import com.anfema.ampclient.exceptions.AmpConfigInvalidException;
 
+import java.util.Arrays;
+
 public class AmpConfig
 {
 	// TODO add Locale, add variation?
@@ -62,5 +64,35 @@ public class AmpConfig
 		{
 			throw new AmpConfigInvalidException();
 		}
+	}
+
+	@Override
+	public boolean equals( Object obj )
+	{
+		if ( obj == this )
+		{
+			return true;
+		}
+		if ( obj == null )
+		{
+			return false;
+		}
+		if ( obj instanceof AmpConfig )
+		{
+			AmpConfig other = ( AmpConfig ) obj;
+			return other.baseUrl.equals( baseUrl )
+					&& other.collectionIdentifier.equals( collectionIdentifier )
+					&& other.authorizationHeaderValue.equals( authorizationHeaderValue )
+					&& other.minutesUntilCollectionRefetch == minutesUntilCollectionRefetch
+					&& other.archiveDownloads == archiveDownloads;
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		Object[] hashRelevantFields = { baseUrl, collectionIdentifier, authorizationHeaderValue, minutesUntilCollectionRefetch, archiveDownloads };
+		return Arrays.hashCode( hashRelevantFields );
 	}
 }

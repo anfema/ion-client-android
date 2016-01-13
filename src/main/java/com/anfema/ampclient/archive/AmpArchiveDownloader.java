@@ -6,6 +6,7 @@ import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.AmpFiles;
 import com.anfema.ampclient.caching.CollectionCacheIndex;
 import com.anfema.ampclient.caching.FilePaths;
+import com.anfema.ampclient.caching.MemoryCache;
 import com.anfema.ampclient.pages.AmpPages;
 import com.anfema.ampclient.pages.AmpPagesWithCaching;
 import com.anfema.ampclient.pages.CollectionDownloadedListener;
@@ -20,9 +21,10 @@ import rx.Observable;
 
 class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 {
-	private final AmpPages  ampPages;
-	private final AmpConfig config;
-	private final Context   context;
+	private final AmpPages    ampPages;
+	private final AmpConfig   config;
+	private final Context     context;
+	private final MemoryCache memoryCache;
 
 	public AmpArchiveDownloader( AmpPages ampPages, AmpConfig config, Context context )
 	{
@@ -33,7 +35,13 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 		// if ampPages uses caching provide archive update check when collection downloaded
 		if ( ampPages instanceof AmpPagesWithCaching )
 		{
-			( ( AmpPagesWithCaching ) ampPages ).setCollectionListener( this );
+			AmpPagesWithCaching ampPagesWithCaching = ( AmpPagesWithCaching ) ampPages;
+			ampPagesWithCaching.setCollectionListener( this );
+			memoryCache = ampPagesWithCaching.getMemoryCache();
+		}
+		else
+		{
+			memoryCache = null;
 		}
 	}
 
@@ -78,7 +86,7 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 				.map( collection -> collection.archive )
 				.flatMap( archiveUrl -> AmpFiles.getInstance( config.authorizationHeaderValue, context ).request( HttpUrl.parse( archiveUrl ), archivePath ) );
 
-		return RxUtils.flatCombineLatest( collectionObs, archiveObs, ( collection, archivePath2 ) -> ArchiveUtils.unTar( archivePath2, collection, config, context ) )
+		return RxUtils.flatCombineLatest( collectionObs, archiveObs, ( collection, archivePath2 ) -> ArchiveUtils.unTar( archivePath2, collection, config, memoryCache, context ) )
 				.doOnNext( file -> activeArchiveDownload = false )
 				.compose( RxUtils.runOnIoThread() );
 	}
