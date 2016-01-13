@@ -7,8 +7,10 @@ import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.caching.CollectionCacheIndex;
 import com.anfema.ampclient.caching.FilePaths;
 import com.anfema.ampclient.caching.PageCacheIndex;
+import com.anfema.ampclient.exceptions.CollectionNotAvailableException;
 import com.anfema.ampclient.exceptions.NetworkRequestException;
 import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
+import com.anfema.ampclient.exceptions.PageNotAvailableException;
 import com.anfema.ampclient.exceptions.ReadFromCacheException;
 import com.anfema.ampclient.pages.models.Collection;
 import com.anfema.ampclient.pages.models.Page;
@@ -63,7 +65,13 @@ public class AmpPagesWithCaching implements AmpPages
 	}
 
 	/**
-	 * Add collection identifier and authorization token to request.<br/>
+	 * Retrieve collection with following priorities:
+	 * <p/>
+	 * 1. Look if there is a current version in cache
+	 * 2. Download from server if internet connection available
+	 * 3. If no internet connection: return cached version (even if outdated)
+	 * 4. Collection is not retrievable at all: emit error
+	 * <p/>
 	 * Use default collection identifier as specified in {@link this#config}
 	 */
 	@Override
@@ -72,13 +80,17 @@ public class AmpPagesWithCaching implements AmpPages
 		String collectionUrl = PagesUrls.getCollectionUrl( config );
 		CollectionCacheIndex cacheIndex = CollectionCacheIndex.retrieve( collectionUrl, config.collectionIdentifier, context );
 
-		if ( !NetworkUtils.isConnected( context ) )
+		boolean currentCacheEntry = cacheIndex != null && !cacheIndex.isOutdated( config );
+		boolean networkConnected = NetworkUtils.isConnected( context );
+
+		if ( currentCacheEntry )
 		{
-			// TODO re-visit: no check here if cached version exists
-			return getCollectionFromCache( false );
+			// retrieve current version from cache
+			return getCollectionFromCache( networkConnected );
 		}
-		else if ( cacheIndex == null || cacheIndex.isOutdated(config) )
+		else if ( networkConnected )
 		{
+			// download collection
 			return getCollectionFromServer( false )
 					.doOnNext( collection -> {
 						if ( collectionListener != null )
@@ -87,13 +99,27 @@ public class AmpPagesWithCaching implements AmpPages
 						}
 					} );
 		}
+		else if ( cacheIndex != null )
+		{
+			// no network: use old version from cache
+			return getCollectionFromCache( false );
+		}
 		else
 		{
-			return getCollectionFromCache( true );
+			// collection can neither be downloaded nor be found in cache
+			return Observable.error( new CollectionNotAvailableException() );
 		}
 	}
 
 	/**
+	 * Retrieve page with following priorities:
+	 * <p/>
+	 * <p/>
+	 * 1. Look if there is a current version in cache
+	 * 2. Download from server if internet connection available
+	 * 3. If no internet connection: return cached version (even if outdated)
+	 * 4. Collection is not retrievable at all: emit error
+	 * <p/>
 	 * Add collection identifier and authorization token to request.<br/>
 	 * Use default collection identifier as specified in {@link this#config}
 	 */
@@ -105,7 +131,17 @@ public class AmpPagesWithCaching implements AmpPages
 
 		if ( pageCacheIndex == null )
 		{
-			return getPageFromServer( pageIdentifier, false );
+			// no cached version available: There is no need to fetch collection for date comparison.
+			if ( NetworkUtils.isConnected( context ) )
+			{
+				// download page
+				return getPageFromServer( pageIdentifier, false );
+			}
+			else
+			{
+				// page can neither be downloaded nor be found in cache
+				return Observable.error( new PageNotAvailableException() );
+			}
 		}
 
 		return getCollection()
@@ -114,18 +150,21 @@ public class AmpPagesWithCaching implements AmpPages
 						// compare last_changed date of cached page with that of collection
 				.map( pageCacheIndex::isOutdated )
 				.flatMap( isOutdated -> {
-					if ( !NetworkUtils.isConnected( context ) )
+					boolean networkConnected = NetworkUtils.isConnected( context );
+					if ( !isOutdated )
 					{
-						// TODO re-visit: no check here if cached version exists
-						return getPageFromCache( pageIdentifier, false );
+						// current version available
+						return getPageFromCache( pageIdentifier, networkConnected );
 					}
-					else if ( isOutdated )
+					else if ( networkConnected )
 					{
+						// download page
 						return getPageFromServer( pageIdentifier, false );
 					}
 					else
 					{
-						return getPageFromCache( pageIdentifier, true );
+						// no network available, but an old cached version exists
+						return getPageFromCache( pageIdentifier, false );
 					}
 				} );
 	}
@@ -210,6 +249,11 @@ public class AmpPagesWithCaching implements AmpPages
 		}
 	}
 
+	/**
+	 * Download collection from server.
+	 * Adds collection identifier and authorization token to request.<br/>
+	 * Uses default collection identifier as specified in {@link this#config}
+	 */
 	private Observable<Collection> getCollectionFromServer( boolean cacheAsBackup )
 	{
 		return ampApi.getCollection( config.collectionIdentifier, config.authorizationHeaderValue )
