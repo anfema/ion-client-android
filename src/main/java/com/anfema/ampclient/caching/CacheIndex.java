@@ -1,12 +1,14 @@
 package com.anfema.ampclient.caching;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-
-import com.anfema.ampclient.serialization.GsonHolder;
 import com.squareup.okhttp.HttpUrl;
 
+/**
+ * To save and retrieve file meta data, which is used to determine if the file in cache is up-to-date before requesting it.
+ * Holds entries separated by collection, allowing to quickly clear the cache indices of a specific collection
+ * (which needs to be done when the actual cache for that collection is cleared.)
+ * <p/>
+ * Uses shared preferences to save the data and {@link MemoryCacheIndex} for memory cache.
+ */
 public abstract class CacheIndex
 {
 	private String filename;
@@ -34,31 +36,4 @@ public abstract class CacheIndex
 		this.filename = filename;
 	}
 
-	// Persistence - shared preferences
-
-	public static <T extends CacheIndex> T retrieve( String requestUrl, Class<T> cacheMetaSubclass, String collectionIdentifier, Context context )
-	{
-		SharedPreferences prefs = getPrefs( collectionIdentifier, context );
-		String json = prefs.getString( requestUrl, null );
-		return GsonHolder.getInstance().fromJson( json, cacheMetaSubclass );
-	}
-
-	public static <T extends CacheIndex> void save( String requestUrl, T cacheMeta, String collectionIdentifier, Context context )
-	{
-		SharedPreferences prefs = getPrefs( collectionIdentifier, context );
-		Editor editor = prefs.edit();
-		editor.putString( requestUrl, GsonHolder.getInstance().toJson( cacheMeta ) );
-		editor.apply();
-	}
-
-	public static void clear( String collectionIdentifier, Context context )
-	{
-		SharedPreferences prefs = getPrefs( collectionIdentifier, context );
-		prefs.edit().clear().commit();
-	}
-
-	private static SharedPreferences getPrefs( String collectionIdentifier, Context context )
-	{
-		return context.getSharedPreferences( "prefs_cache_index_" + collectionIdentifier, 0 );
-	}
 }

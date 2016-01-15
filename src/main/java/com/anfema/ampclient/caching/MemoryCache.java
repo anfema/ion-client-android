@@ -9,17 +9,20 @@ import com.anfema.ampclient.pages.models.Page;
 
 public class MemoryCache
 {
+	// TODO make non-static and propagate differently to MemoryCacheIndex
+	public static int pagesMemoryCacheSize = 100;
+
 	///  current collection
 	private Collection collection;
 
 	// key: page URL
 	private LruCache<String, Page> pagesMemCache;
 
-	public MemoryCache()
+	public MemoryCache( int pagesMemCacheSize )
 	{
-		// keeps 100 pages max
+		this.pagesMemoryCacheSize = pagesMemCacheSize;
 		collection = null;
-		pagesMemCache = new LruCache<>( 100 );
+		pagesMemCache = new LruCache<>( pagesMemoryCacheSize );
 	}
 
 	public Collection getCollection()

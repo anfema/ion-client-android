@@ -58,17 +58,17 @@ public class CollectionCacheIndex extends CacheIndex
 		this.lastChanged = lastChanged;
 	}
 
-	// Persistence - shared preferences
+	// save & retrieve
 
 	public static CollectionCacheIndex retrieve( String requestUrl, String collectionIdentifier, Context context )
 	{
-		return CacheIndex.retrieve( requestUrl, CollectionCacheIndex.class, collectionIdentifier, context );
+		return CacheIndexStore.retrieve( requestUrl, CollectionCacheIndex.class, collectionIdentifier, context );
 	}
 
 	public static CollectionCacheIndex retrieve( AmpConfig config, Context context )
 	{
 		String requestUrl = PagesUrls.getCollectionUrl( config );
-		return CacheIndex.retrieve( requestUrl, CollectionCacheIndex.class, config.collectionIdentifier, context );
+		return CacheIndexStore.retrieve( requestUrl, CollectionCacheIndex.class, config.collectionIdentifier, context );
 	}
 
 	public static void save( AmpConfig config, Context context, DateTime lastChanged )
@@ -80,7 +80,7 @@ public class CollectionCacheIndex extends CacheIndex
 			if ( FilePaths.getJsonFilePath( url, context ).exists() )
 			{
 				CollectionCacheIndex cacheMeta = new CollectionCacheIndex( url, DateTimeUtils.now(), lastChanged );
-				save( url, cacheMeta, config.collectionIdentifier, context );
+				CacheIndexStore.save( url, cacheMeta, config.collectionIdentifier, context );
 			}
 		}
 		catch ( NoAmpPagesRequestException e )

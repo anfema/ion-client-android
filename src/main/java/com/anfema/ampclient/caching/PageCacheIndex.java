@@ -4,8 +4,8 @@ import android.content.Context;
 
 import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
-import com.anfema.ampclient.pages.models.Page;
 import com.anfema.ampclient.pages.PagesUrls;
+import com.anfema.ampclient.pages.models.Page;
 import com.anfema.ampclient.utils.Log;
 import com.squareup.okhttp.HttpUrl;
 
@@ -45,11 +45,11 @@ public class PageCacheIndex extends CacheIndex
 		return lastChanged.isBefore( serverDate );
 	}
 
-	// Persistence - shared preferences
+	// save & retrieve
 
 	public static PageCacheIndex retrieve( String requestUrl, String collectionIdentifier, Context context )
 	{
-		return CacheIndex.retrieve( requestUrl, PageCacheIndex.class, collectionIdentifier, context );
+		return CacheIndexStore.retrieve( requestUrl, PageCacheIndex.class, collectionIdentifier, context );
 	}
 
 	public static void save( Page page, AmpConfig config, Context context )
@@ -65,7 +65,7 @@ public class PageCacheIndex extends CacheIndex
 			if ( FilePaths.getJsonFilePath( url, context ).exists() )
 			{
 				PageCacheIndex cacheMeta = new PageCacheIndex( url, pageLastChanged );
-				save( url, cacheMeta, config.collectionIdentifier, context );
+				CacheIndexStore.save( url, cacheMeta, config.collectionIdentifier, context );
 			}
 		}
 		catch ( NoAmpPagesRequestException e )

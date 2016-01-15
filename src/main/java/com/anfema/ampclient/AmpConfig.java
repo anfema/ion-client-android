@@ -29,17 +29,23 @@ public class AmpConfig
 	public final int minutesUntilCollectionRefetch;
 
 	/**
+	 * How many pages are kept in LRU memory cache?
+	 */
+	public final int pagesMemCacheSize;
+
+	/**
 	 * Should the whole archive be downloaded when the collection is downloaded?
 	 */
 	public final boolean archiveDownloads;
 
-	public AmpConfig( String baseUrl, String collectionIdentifier, String authorizationHeaderValue, int minutesUntilCollectionRefetch, boolean archiveDownloads )
+	public AmpConfig( String baseUrl, String collectionIdentifier, String authorizationHeaderValue, int minutesUntilCollectionRefetch, int pagesMemCacheSize, boolean archiveDownloads )
 	{
 		this.baseUrl = baseUrl;
 		this.collectionIdentifier = collectionIdentifier;
 		this.authorizationHeaderValue = authorizationHeaderValue;
 		this.minutesUntilCollectionRefetch = minutesUntilCollectionRefetch;
 		this.archiveDownloads = archiveDownloads;
+		this.pagesMemCacheSize = pagesMemCacheSize;
 	}
 
 	public AmpConfig( AmpConfig otherConfig )
@@ -49,13 +55,16 @@ public class AmpConfig
 		this.authorizationHeaderValue = otherConfig.authorizationHeaderValue;
 		this.minutesUntilCollectionRefetch = otherConfig.minutesUntilCollectionRefetch;
 		this.archiveDownloads = otherConfig.archiveDownloads;
+		this.pagesMemCacheSize = otherConfig.pagesMemCacheSize;
 	}
 
 	public boolean isValid()
 	{
 		return baseUrl != null && baseUrl.contains( "://" )
 				&& collectionIdentifier != null
-				&& authorizationHeaderValue != null && authorizationHeaderValue.length() > 0;
+				&& authorizationHeaderValue != null && authorizationHeaderValue.length() > 0
+				&& minutesUntilCollectionRefetch >= 0
+				&& pagesMemCacheSize >= 0;
 	}
 
 	public static void assertConfigIsValid( AmpConfig config )
@@ -84,7 +93,8 @@ public class AmpConfig
 					&& other.collectionIdentifier.equals( collectionIdentifier )
 					&& other.authorizationHeaderValue.equals( authorizationHeaderValue )
 					&& other.minutesUntilCollectionRefetch == minutesUntilCollectionRefetch
-					&& other.archiveDownloads == archiveDownloads;
+					&& other.archiveDownloads == archiveDownloads
+					&& other.pagesMemCacheSize == pagesMemCacheSize;
 		}
 		return false;
 	}
@@ -92,7 +102,7 @@ public class AmpConfig
 	@Override
 	public int hashCode()
 	{
-		Object[] hashRelevantFields = { baseUrl, collectionIdentifier, authorizationHeaderValue, minutesUntilCollectionRefetch, archiveDownloads };
+		Object[] hashRelevantFields = { baseUrl, collectionIdentifier, authorizationHeaderValue, minutesUntilCollectionRefetch, pagesMemCacheSize, archiveDownloads };
 		return Arrays.hashCode( hashRelevantFields );
 	}
 }

@@ -65,7 +65,7 @@ public class AmpPagesWithCaching implements AmpPages
 		this.config = config;
 		this.context = context;
 		ampApi = ApiFactory.newInstance( config.baseUrl, interceptors, AmpPagesApi.class );
-		memoryCache = new MemoryCache();
+		memoryCache = new MemoryCache(config.pagesMemCacheSize);
 	}
 
 	/**

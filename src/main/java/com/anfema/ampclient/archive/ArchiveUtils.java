@@ -3,7 +3,7 @@ package com.anfema.ampclient.archive;
 import android.content.Context;
 
 import com.anfema.ampclient.AmpConfig;
-import com.anfema.ampclient.caching.CacheIndex;
+import com.anfema.ampclient.caching.CacheIndexStore;
 import com.anfema.ampclient.caching.CollectionCacheIndex;
 import com.anfema.ampclient.caching.FilePaths;
 import com.anfema.ampclient.caching.MemoryCache;
@@ -140,7 +140,7 @@ class ArchiveUtils
 		}
 
 		// delete old cache index entries of the collection as well as the pages' memory cache
-		CacheIndex.clear( config.collectionIdentifier, context );
+		CacheIndexStore.clear( config.collectionIdentifier, context );
 		memoryCache.clearPagesMemCache();
 
 		// otherwise we would delete the collection Json we already downloaded before

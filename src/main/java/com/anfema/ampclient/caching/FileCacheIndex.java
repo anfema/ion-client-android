@@ -40,11 +40,11 @@ public class FileCacheIndex extends CacheIndex
 		return !checksum.equals( serverChecksum );
 	}
 
-	// Persistence - shared preferences
+	// save & retrieve
 
 	// TODO save files in collection folder or remove parameter collectionIdentifier
 	public static FileCacheIndex retrieve( String requestUrl, String collectionIdentifier, Context context )
 	{
-		return CacheIndex.retrieve( requestUrl, FileCacheIndex.class, collectionIdentifier, context );
+		return CacheIndexStore.retrieve( requestUrl, FileCacheIndex.class, collectionIdentifier, context );
 	}
 }
