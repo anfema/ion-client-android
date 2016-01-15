@@ -27,9 +27,9 @@ public class Page
 	public DateTime last_changed;
 
 	/**
-	 * Content is available for one or multiple locales. There is an extra copy of the contents for each translation.
+	 * e.g. "de_DE"
 	 */
-	public ArrayList<Translation> translations;
+	public String locale;
 
 	/**
 	 * page identifier of the parent's page
@@ -37,55 +37,33 @@ public class Page
 	public String parent;
 
 	/**
+	 * Only one item, which is of type "containercontent", holding all contents of page in nested form.
+	 */
+	private ArrayList<AContent> content;
+
+	/**
 	 * page identifiers of sub-pages
 	 */
 	public ArrayList<String> children;
 
 	/**
-	 * Retrieve a translation by locale
+	 * Access content, i.e. containercontent
 	 *
-	 * @param locale e.g. "de_DE"
-	 * @return null, if there are no translations<br>
-	 * translation matching the locale if found<br>
-	 * the first element of translations if no matching local was found
+	 * @return first item of array if exists, or null otherwise
 	 */
-	public Translation getTranslation( String locale )
+	public AContent getContent()
 	{
-		if ( translations == null || translations.size() == 0 )
+		if ( content == null || content.size() == 0 )
 		{
 			return null;
 		}
-
-		if ( locale != null )
-		{
-			for ( Translation translation : translations )
-			{
-				if ( locale.equals( translation.locale ) )
-				{
-					return translation;
-				}
-			}
-		}
-		// if no translation was found for locale, then return first/"default" element
-		return translations.get( 0 );
-	}
-
-	/**
-	 * Convenience method to replace {@link Page#getTranslation(String)} appended by {@link Translation#getContent()}.
-	 */
-	public AContent getContent( String locale )
-	{
-		Translation translation = getTranslation( locale );
-		if ( translation == null )
-		{
-			return null;
-		}
-		return translation.getContent();
+		return content.get( 0 );
 	}
 
 	@Override
 	public String toString()
 	{
-		return "Page [identifier = " + identifier + ", collection = " + collection + ", last_changed = " + last_changed + ", translations = " + translations + ", parent = " + parent + ", children = " + children + "]";
+		String contentString = content == null || content.size() == 0 ? "no content" : content.get( 0 ).toString();
+		return "Page [identifier = " + identifier + ", collection = " + collection + ", last_changed = " + last_changed + ", content = " + contentString + ", parent = " + parent + ", children = " + children + "]";
 	}
 }
