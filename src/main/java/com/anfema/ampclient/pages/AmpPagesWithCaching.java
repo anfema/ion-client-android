@@ -65,7 +65,7 @@ public class AmpPagesWithCaching implements AmpPages
 		this.config = config;
 		this.context = context;
 		ampApi = ApiFactory.newInstance( config.baseUrl, interceptors, AmpPagesApi.class );
-		memoryCache = new MemoryCache(config.pagesMemCacheSize);
+		memoryCache = new MemoryCache( config.pagesMemCacheSize );
 	}
 
 	/**
@@ -272,7 +272,7 @@ public class AmpPagesWithCaching implements AmpPages
 	 */
 	private Observable<Collection> getCollectionFromServer( boolean cacheAsBackup )
 	{
-		return ampApi.getCollection( config.collectionIdentifier, config.authorizationHeaderValue )
+		return ampApi.getCollection( config.collectionIdentifier, config.locale, config.authorizationHeaderValue )
 				.map( CollectionResponse::getCollection )
 				.doOnNext( saveCollectionCacheIndex() )
 				.doOnNext( memoryCache::setCollection )
@@ -350,7 +350,7 @@ public class AmpPagesWithCaching implements AmpPages
 	 */
 	private Observable<Page> getPageFromServer( String pageIdentifier, boolean cacheAsBackup )
 	{
-		return ampApi.getPage( config.collectionIdentifier, pageIdentifier, config.authorizationHeaderValue )
+		return ampApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.authorizationHeaderValue )
 				.map( PageResponse::getPage )
 				.doOnNext( savePageCacheIndex() )
 				.doOnNext( page -> memoryCache.savePage( page, config ) )
