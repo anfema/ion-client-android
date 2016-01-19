@@ -109,12 +109,25 @@ public class AmpClient implements AmpPages, AmpArchive, AmpFts
 	}
 
 	/**
-	 * A set of pages is "returned" by emitting multiple events.<br/>
+	 * A set of pages is "returned" by emitting multiple events.
+	 * <p>
+	 * The pages are ordered by their position.
 	 */
 	@Override
-	public Observable<Page> getPagesOrdered( Func1<PagePreview, Boolean> pagesFilter )
+	public Observable<Page> getPagesSorted( Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return ampPages.getPagesOrdered( pagesFilter );
+		return ampPages.getPagesSorted( pagesFilter );
+	}
+
+	/**
+	 * A set of page previews is "returned" by emitting multiple events.
+	 * <p>
+	 * The page previews are ordered by their position.
+	 */
+	@Override
+	public Observable<PagePreview> getPagePreviewsSorted( Func1<PagePreview, Boolean> pagesFilter )
+	{
+		return ampPages.getPagePreviewsSorted( pagesFilter );
 	}
 
 

@@ -21,6 +21,7 @@ import com.anfema.ampclient.pages.models.responses.PageResponse;
 import com.anfema.ampclient.serialization.GsonHolder;
 import com.anfema.ampclient.utils.ApiFactory;
 import com.anfema.ampclient.utils.FileUtils;
+import com.anfema.ampclient.utils.ListUtils;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.NetworkUtils;
 import com.anfema.ampclient.utils.RxUtils;
@@ -203,14 +204,29 @@ public class AmpPagesWithCaching implements AmpPages
 	 * Use default collection identifier as specified in {@link this#config}
 	 */
 	@Override
-	public Observable<Page> getPagesOrdered( Func1<PagePreview, Boolean> pagesFilter )
+	public Observable<Page> getPagesSorted( Func1<PagePreview, Boolean> pagesFilter )
 	{
 		return getCollection()
 				.map( collection -> collection.pages )
+				.map( ListUtils::sort )
 				.concatMap( Observable::from )
 				.filter( pagesFilter )
 				.map( page -> page.identifier )
 				.concatMap( this::getPage );
+	}
+
+	/**
+	 * A set of pages is "returned" by emitting multiple events.<br/>
+	 * Use default collection identifier as specified in {@link this#config}
+	 */
+	@Override
+	public Observable<PagePreview> getPagePreviewsSorted( Func1<PagePreview, Boolean> pagesFilter )
+	{
+		return getCollection()
+				.map( collection -> collection.pages )
+				.map( ListUtils::sort )
+				.concatMap( Observable::from )
+				.filter( pagesFilter );
 	}
 
 

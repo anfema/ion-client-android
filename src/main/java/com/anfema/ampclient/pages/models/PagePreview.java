@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Meta/preview information for pages. It does not hold the content for a page.
  */
-public class PagePreview
+public class PagePreview implements Comparable<PagePreview>
 {
 	/**
 	 * page identifier
@@ -82,6 +82,25 @@ public class PagePreview
 		{
 			throw new JsonSyntaxException( "You tried to compare " + compareValue + " with a meta entry " + meta.get( metaKey ) + " which could not be parsed to a String.", e );
 		}
+	}
+
+	/**
+	 * Sort by positions ascending
+	 */
+	@Override
+	public int compareTo( PagePreview another )
+	{
+		if ( another == null )
+		{
+			// null objects shall be at the end
+			return -1;
+		}
+		// Alternatively, one long could be subtracted from the other resulting in a long in the right range. However, casting to int might not be safe.
+		if ( position == another.position )
+		{
+			return 0;
+		}
+		return position < another.position ? -1 : 1;
 	}
 
 	@Override
