@@ -66,6 +66,13 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 	 */
 	public Observable<File> downloadArchive( Collection inCollection )
 	{
+		if ( inCollection != null && !inCollection.identifier.equals( config.collectionIdentifier ) )
+		{
+			Exception e = new Exception( "Archive download: inCollection.identifier: " + inCollection.identifier + " does not match config's collectionIdentifier: " + config.collectionIdentifier );
+			Log.ex( e );
+			return Observable.error( e );
+		}
+
 		File archivePath = FilePaths.getArchiveFilePath( config.collectionIdentifier, context );
 		Log.i( "AMP Archive", "about to download archive for collection " + config.collectionIdentifier );
 
