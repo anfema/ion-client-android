@@ -23,7 +23,13 @@ public class CacheIndexStore
 		Log.d( "Index Lookup", requestUrl + " from shared preferences" );
 		SharedPreferences prefs = getPrefs( collectionIdentifier, context );
 		String json = prefs.getString( requestUrl, null );
-		return GsonHolder.getInstance().fromJson( json, cacheIndexSubclass );
+		index = GsonHolder.getInstance().fromJson( json, cacheIndexSubclass );
+		// save to memory cache
+		if ( index != null )
+		{
+			MemoryCacheIndex.put( requestUrl, collectionIdentifier, index );
+		}
+		return index;
 	}
 
 	public static <T extends CacheIndex> void save( String requestUrl, T cacheIndex, String collectionIdentifier, Context context )
