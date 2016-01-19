@@ -32,6 +32,16 @@ public class PagePreview
 	public DateTime last_changed;
 
 	/**
+	 * Position indicates the order among the pages.
+	 */
+	public long position;
+
+	/**
+	 * the page's layout
+	 */
+	public String layout;
+
+	/**
 	 * Meta contains additional, flexible data.
 	 * Since it is very application-specific the provided data is stored as key-value-pairs, simply consisting of strings.
 	 */
@@ -74,14 +84,9 @@ public class PagePreview
 		}
 	}
 
-	/**
-	 * the page's layout
-	 */
-	public String layout;
-
 	@Override
 	public String toString()
 	{
-		return "PagePreview [identifier = " + identifier + ", parent = " + parent + ", last_changed = " + last_changed + ", layout = " + layout + "]";
+		return "PagePreview [identifier = " + identifier + ", parent = " + parent + ", last_changed = " + last_changed + ", position = " + position + ", layout = " + layout + "]";
 	}
 }

@@ -8,7 +8,10 @@ public abstract class AContent
 
 	public String outlet;
 
-	public int position;
+	/**
+	 * When there are more contents in on the same level in an array, position indicates their order.
+	 */
+	public long position;
 
 	public boolean is_searchable; // not used by container outlet
 
