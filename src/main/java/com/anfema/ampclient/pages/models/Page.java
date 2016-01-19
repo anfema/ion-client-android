@@ -39,7 +39,7 @@ public class Page
 	/**
 	 * Only one item, which is of type "containercontent", holding all contents of page in nested form.
 	 */
-	private ArrayList<AContent> content;
+	private ArrayList<AContent> contents;
 
 	/**
 	 * page identifiers of sub-pages
@@ -53,17 +53,17 @@ public class Page
 	 */
 	public AContent getContent()
 	{
-		if ( content == null || content.size() == 0 )
+		if ( contents == null || contents.size() == 0 )
 		{
 			return null;
 		}
-		return content.get( 0 );
+		return contents.get( 0 );
 	}
 
 	@Override
 	public String toString()
 	{
-		String contentString = content == null || content.size() == 0 ? "no content" : content.get( 0 ).toString();
+		String contentString = contents == null || contents.size() == 0 ? "no content" : contents.get( 0 ).toString();
 		return "Page [identifier = " + identifier + ", collection = " + collection + ", last_changed = " + last_changed + ", content = " + contentString + ", parent = " + parent + ", children = " + children + "]";
 	}
 }
