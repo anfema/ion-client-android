@@ -49,7 +49,7 @@ class ArchiveUtils
 				.flatMap( o -> {
 					try
 					{
-						return Observable.from( performUnTar( archiveFile, config, memoryCache, context ) )
+						return Observable.from( performUnTar( archiveFile, config, collection, memoryCache, context ) )
 								// write cache index entries
 								.doOnNext( fileWithType -> saveCacheIndex( fileWithType, collection, config, context ) )
 								.map( fileWithType -> fileWithType.file );
@@ -70,13 +70,13 @@ class ArchiveUtils
 	 *
 	 * @param archiveFile
 	 * @param config
-	 * @param memoryCache
-	 * @return The {@link List} of {@link File}s with the untared content.
+	 * @param collection
+	 * @param memoryCache @return The {@link List} of {@link File}s with the untared content.
 	 * @throws IOException
 	 * @throws FileNotFoundException
 	 * @throws ArchiveException
 	 */
-	private static List<FileWithMeta> performUnTar( File archiveFile, AmpConfig config, MemoryCache memoryCache, Context context ) throws FileNotFoundException, IOException, ArchiveException
+	private static List<FileWithMeta> performUnTar( File archiveFile, AmpConfig config, Collection collection, MemoryCache memoryCache, Context context ) throws FileNotFoundException, IOException, ArchiveException
 	{
 		File collectionFolder = FilePaths.getCollectionFolderPath( config.collectionIdentifier, context );
 
@@ -130,23 +130,11 @@ class ArchiveUtils
 		debInputStream.close();
 		archiveFile.delete();
 
-		// remember collection's cache index
-		CollectionCacheIndex collectionCacheIndex = CollectionCacheIndex.retrieve( config, context );
-		boolean collectionCacheIndexExists = collectionCacheIndex != null;
-		DateTime collectionLastChanged = null;
-		if ( collectionCacheIndexExists )
-		{
-			collectionLastChanged = collectionCacheIndex.getLastChanged();
-		}
-
 		// delete old cache index entries of the collection as well as the pages' memory cache
 		CacheIndexStore.clear( config.collectionIdentifier, context );
 		memoryCache.clearPagesMemCache();
 
-		// otherwise we would delete the collection Json we already downloaded before
-		boolean collectionExisted = keepCollectionJson( collectionFolderTemp, config, context );
-
-		// replace collection folder (containing json files)
+		// replace collection folder (containing json files) - deletes old file cache
 		boolean writeSuccess = FileUtils.move( collectionFolderTemp, collectionFolder, true );
 
 		if ( !writeSuccess )
@@ -154,14 +142,32 @@ class ArchiveUtils
 			throw new IOException( "Files could not be moved to final path." );
 		}
 
-		// restore cache index for collection
-		if ( collectionExisted && collectionCacheIndexExists )
+		// add collection to file cache again
+		if ( collection != null )
 		{
-			CollectionCacheIndex.save( config, context, collectionLastChanged );
+			memoryCache.setCollection( collection );
+			try
+			{
+				saveCollectionToFileCache( config, collection, context );
+				CollectionCacheIndex.save( config, context, collection.getLastChanged() );
+			}
+			catch ( NoAmpPagesRequestException | IOException e )
+			{
+				Log.e( "AMP Archive", "Collection could not be saved." );
+				Log.ex( e );
+			}
 		}
 
 		// cache index entries are not written yet at this point
 		return untaredFiles;
+	}
+
+	private static void saveCollectionToFileCache( AmpConfig config, Collection collection, Context context ) throws NoAmpPagesRequestException, IOException
+	{
+		String collectionUrl = PagesUrls.getCollectionUrl( config );
+		File filePath = FilePaths.getJsonFilePath( collectionUrl, context );
+		String collectionJson = GsonHolder.getInstance().toJson( collection );
+		FileUtils.writeTextToFile( collectionJson, filePath );
 	}
 
 	private static FileWithMeta getFilePath( ArchiveIndex fileInfo, File collectionFolderTemp, Context context )
@@ -195,9 +201,7 @@ class ArchiveUtils
 						pageIdentifier = urlPathSegments.get( i );
 					}
 				}
-
 				String folderPath = collectionFolderTemp.getPath() + FileUtils.SLASH + StringUtils.concatStrings( remainingPathSegments, FileUtils.SLASH );
-
 				targetFile = new File( folderPath, filename );
 			}
 			else
@@ -213,29 +217,6 @@ class ArchiveUtils
 			targetFile = FilePaths.getMediaFilePath( url, context );
 		}
 		return new FileWithMeta( targetFile, type, fileInfo, pageIdentifier );
-	}
-
-	/**
-	 * @return {@code true} if collection json existed and could be "saved"
-	 */
-	private static boolean keepCollectionJson( File collectionFolderTemp, AmpConfig config, Context context )
-	{
-		// keep the collection json
-		String collectionUrl = PagesUrls.getCollectionUrl( config );
-		try
-		{
-			File collectionJson = FilePaths.getJsonFilePath( collectionUrl, context );
-			if ( collectionJson.exists() )
-			{
-				String filename = FilePaths.getFileName( collectionUrl );
-				return collectionJson.renameTo( new File( collectionFolderTemp, filename ) );
-			}
-		}
-		catch ( NoAmpPagesRequestException e )
-		{
-			Log.ex( e );
-		}
-		return false;
 	}
 
 	public static class FileWithMeta
