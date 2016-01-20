@@ -2,7 +2,4 @@
 <paths>
     <files-path name="files"
                 path="files/"/>
-    <external-path name="ext-files"
-                   path="files/"/>
-
 </paths>

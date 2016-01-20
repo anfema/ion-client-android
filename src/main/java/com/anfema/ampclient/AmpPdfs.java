@@ -13,41 +13,44 @@ import java.io.File;
 
 public class AmpPdfs
 {
-
-	public static void showPdf( File file, Context context )
+	/**
+	 * Start a PDF intent for a file, which is in internal storage, to pass to a PDF viewer app.
+	 *
+	 * @param pdfFile PDF file in internal storage
+	 */
+	public static void showPdf( File pdfFile, Context context )
 	{
-		showPdf( file, file.getPath(), context );
+		showPdf( pdfFile, pdfFile.getPath(), context );
 	}
 
 	/**
-	 * PDF file from internal storage is passed to an external app via an intent. In order to enable the PDF reader app to
+	 * Start a PDF intent for a file, which is in internal storage, to pass to a PDF viewer app.
 	 *
-	 * @param file
-	 * @param logInfo
-	 * @param context
+	 * @param pdfFile PDF file in internal storage
+	 * @param logInfo info about PDF which is logged when intent is started
 	 */
-	public static void showPdf( File file, String logInfo, Context context )
+	public static void showPdf( File pdfFile, String logInfo, Context context )
 	{
 		try
 		{
 			Intent intent = new Intent( Intent.ACTION_VIEW );
-			Uri contentUri = FileProvider.getUriForFile( context, context.getString( R.string.file_provider_authority ), file );
+			Uri contentUri = FileProvider.getUriForFile( context, context.getString( R.string.file_provider_authority ), pdfFile );
 			intent.setDataAndType( contentUri, "application/pdf" );
+			intent.setFlags( Intent.FLAG_GRANT_READ_URI_PERMISSION );
 			context.startActivity( intent );
 			Log.i( "PDF Intent", "opening PDF " + logInfo );
 		}
 		catch ( ActivityNotFoundException e )
 		{
-			Toast.makeText(context, R.string.pdf_display_error, Toast.LENGTH_SHORT).show();
+			Toast.makeText( context, R.string.pdf_display_error, Toast.LENGTH_SHORT ).show();
 			Log.ex( e );
 		}
 	}
 
 	/**
-	 * This method is only for experimental/debugging purposes. This approach only works if PDF file is NOT in internal storage.
+	 * Start a PDF intent for a file, which is in external storage, to pass to a PDF viewer app.
 	 *
-	 * @param file
-	 * @param context
+	 * @param file PDF file in internal storage
 	 */
 	public static void showPdfExt( File file, Context context )
 	{
