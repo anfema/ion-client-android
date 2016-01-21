@@ -9,10 +9,6 @@ import com.anfema.ampclient.interceptors.RequestLogger;
 import com.anfema.ampclient.utils.ContextUtils;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.RxUtils;
-import com.squareup.okhttp.HttpUrl;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,13 +16,18 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.OkHttpClient.Builder;
+import okhttp3.Request;
+import okhttp3.Response;
 import rx.Observable;
 
 /**
  * Does not perform calls against a specific API, but takes complete URLs as parameter to perform a GET call to.
- * <p/>
+ * <p>
  * Downloads the response body and stores it into a file.
- * <p/>
+ * <p>
  * However, the AMP authorization header is added (in case the URL points to protected media).
  */
 public class AmpFiles
@@ -63,9 +64,10 @@ public class AmpFiles
 	private AmpFiles( String authHeaderValue, Context context )
 	{
 		this.context = context;
-		client = new OkHttpClient();
-		client.interceptors().add( new AuthorizationHeaderInterceptor( authHeaderValue ) );
-		client.interceptors().add( new RequestLogger( "Network Request" ) );
+		OkHttpClient.Builder okHttpClientBuilder = new Builder();
+		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( authHeaderValue ) );
+		okHttpClientBuilder.addInterceptor( new RequestLogger( "Network Request" ) );
+		client = okHttpClientBuilder.build();
 	}
 
 	/**

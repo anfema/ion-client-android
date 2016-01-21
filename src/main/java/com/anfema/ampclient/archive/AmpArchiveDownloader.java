@@ -13,10 +13,10 @@ import com.anfema.ampclient.pages.CollectionDownloadedListener;
 import com.anfema.ampclient.pages.models.Collection;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.RxUtils;
-import com.squareup.okhttp.HttpUrl;
 
 import java.io.File;
 
+import okhttp3.HttpUrl;
 import rx.Observable;
 
 class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener

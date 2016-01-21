@@ -13,17 +13,17 @@ import com.anfema.ampclient.R;
 import com.anfema.ampclient.pages.AmpPages;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.RxUtils;
-import com.squareup.okhttp.HttpUrl;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.HttpUrl;
 import rx.Observable;
 
 /**
  * Full text search on collectin data.
- * <p/>
+ * <p>
  * Accessible via {@link AmpClient}
  */
 class AmpFtsImpl implements AmpFts

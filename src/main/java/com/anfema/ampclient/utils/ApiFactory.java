@@ -3,16 +3,15 @@ package com.anfema.ampclient.utils;
 import android.support.annotation.NonNull;
 
 import com.anfema.ampclient.serialization.GsonHolder;
-import com.anfema.ampclient.utils.FileUtils;
-import com.anfema.ampclient.utils.Log;
-import com.squareup.okhttp.Interceptor;
 
 import java.util.Collection;
 
-import retrofit.GsonConverterFactory;
-import retrofit.Retrofit;
-import retrofit.Retrofit.Builder;
-import retrofit.RxJavaCallAdapterFactory;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import retrofit2.GsonConverterFactory;
+import retrofit2.Retrofit;
+import retrofit2.Retrofit.Builder;
+import retrofit2.RxJavaCallAdapterFactory;
 
 public class ApiFactory
 {
@@ -20,17 +19,24 @@ public class ApiFactory
 	{
 		baseUrl = ensureEndsWithSlash( baseUrl );
 
+		// configure okHttp client: add interceptors
+		OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
+		if ( interceptors != null )
+		{
+			for ( Interceptor interceptor : interceptors )
+			{
+				okHttpClientBuilder.addInterceptor( interceptor );
+			}
+		}
+		OkHttpClient okHttpClient = okHttpClientBuilder.build();
+
 		// configure retrofit
 		final Builder retrofitBuilder = new Builder();
 		retrofitBuilder.addCallAdapterFactory( RxJavaCallAdapterFactory.create() ); // enable returning Observables
 		retrofitBuilder.addConverterFactory( GsonConverterFactory.create( GsonHolder.getInstance() ) );
 		retrofitBuilder.baseUrl( baseUrl );
+		retrofitBuilder.client( okHttpClient );
 		Retrofit retrofit = retrofitBuilder.build();
-
-		if ( interceptors != null )
-		{
-			retrofit.client().interceptors().addAll( interceptors );
-		}
 
 		return retrofit.create( serviceApi );
 	}

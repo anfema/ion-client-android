@@ -18,7 +18,6 @@ import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.RxUtils;
 import com.anfema.ampclient.utils.StringUtils;
-import com.squareup.okhttp.HttpUrl;
 
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
@@ -37,6 +36,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import okhttp3.HttpUrl;
 import rx.Observable;
 
 class ArchiveUtils
@@ -64,7 +64,7 @@ class ArchiveUtils
 
 	/**
 	 * Untar an input file into an output file.
-	 * <p/>
+	 * <p>
 	 * The output file is created in the output folder, having the same name
 	 * as the input file, minus the '.tar' extension.
 	 *

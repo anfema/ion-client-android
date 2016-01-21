@@ -25,21 +25,21 @@ import com.anfema.ampclient.utils.ListUtils;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.NetworkUtils;
 import com.anfema.ampclient.utils.RxUtils;
-import com.squareup.okhttp.Interceptor;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import okhttp3.Interceptor;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
 /**
  * A wrapper of "collections" and "pages" call of AMP API.
- * <p/>
+ * <p>
  * Adds collection identifier and authorization token to request as retrieved via {@link AmpConfig}<br/>
- * <p/>
+ * <p>
  * Uses a file and a memory cache.
  */
 public class AmpPagesWithCaching implements AmpPages
@@ -71,12 +71,12 @@ public class AmpPagesWithCaching implements AmpPages
 
 	/**
 	 * Retrieve collection with following priorities:
-	 * <p/>
+	 * <p>
 	 * 1. Look if there is a current version in cache
 	 * 2. Download from server if internet connection available
 	 * 3. If no internet connection: return cached version (even if outdated)
 	 * 4. Collection is not retrievable at all: emit error
-	 * <p/>
+	 * <p>
 	 * Use default collection identifier as specified in {@link this#config}
 	 */
 	@Override
@@ -118,13 +118,13 @@ public class AmpPagesWithCaching implements AmpPages
 
 	/**
 	 * Retrieve page with following priorities:
-	 * <p/>
-	 * <p/>
+	 * <p>
+	 * <p>
 	 * 1. Look if there is a current version in cache
 	 * 2. Download from server if internet connection available
 	 * 3. If no internet connection: return cached version (even if outdated)
 	 * 4. Collection is not retrievable at all: emit error
-	 * <p/>
+	 * <p>
 	 * Add collection identifier and authorization token to request.<br/>
 	 * Use default collection identifier as specified in {@link this#config}
 	 */

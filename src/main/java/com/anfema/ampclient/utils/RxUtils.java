@@ -1,6 +1,6 @@
 package com.anfema.ampclient.utils;
 
-import retrofit.HttpException;
+import retrofit2.HttpException;
 import rx.Observable;
 import rx.Observable.Transformer;
 import rx.android.schedulers.AndroidSchedulers;

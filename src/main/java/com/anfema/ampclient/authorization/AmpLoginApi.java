@@ -2,9 +2,9 @@ package com.anfema.ampclient.authorization;
 
 import com.anfema.ampclient.authorization.models.LoginResponse;
 
-import retrofit.http.Field;
-import retrofit.http.FormUrlEncoded;
-import retrofit.http.POST;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.POST;
 import rx.Observable;
 
 /**

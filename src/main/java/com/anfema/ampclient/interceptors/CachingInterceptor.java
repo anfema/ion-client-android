@@ -7,17 +7,17 @@ import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
 import com.anfema.ampclient.utils.ContextUtils;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.Log;
-import com.squareup.okhttp.HttpUrl;
-import com.squareup.okhttp.Interceptor;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
+import okhttp3.MediaType;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okio.Buffer;
 import okio.BufferedSource;
 
@@ -34,7 +34,7 @@ public class CachingInterceptor implements Interceptor
 	public Response intercept( Chain chain ) throws IOException
 	{
 		Request request = chain.request();
-		HttpUrl url = request.httpUrl();
+		HttpUrl url = request.url();
 		//		AmpCall ampCall = AmpCall.determineCall( url );
 		//
 		//		// filter out all requests that shall not use caching

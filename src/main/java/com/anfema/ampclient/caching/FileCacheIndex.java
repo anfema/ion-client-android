@@ -2,7 +2,8 @@ package com.anfema.ampclient.caching;
 
 import android.content.Context;
 
-import com.squareup.okhttp.HttpUrl;
+import okhttp3.HttpUrl;
+
 
 public class FileCacheIndex extends CacheIndex
 {

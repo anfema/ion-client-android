@@ -6,9 +6,10 @@ import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.interceptors.CachingInterceptor;
 import com.anfema.ampclient.interceptors.DeviceIdHeaderInterceptor;
 import com.anfema.ampclient.interceptors.RequestLogger;
-import com.squareup.okhttp.Interceptor;
 
 import java.util.ArrayList;
+
+import okhttp3.Interceptor;
 
 public class AmpPagesFactory
 {

@@ -7,9 +7,10 @@ import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
 import com.anfema.ampclient.pages.PagesUrls;
 import com.anfema.ampclient.utils.DateTimeUtils;
 import com.anfema.ampclient.utils.Log;
-import com.squareup.okhttp.HttpUrl;
 
 import org.joda.time.DateTime;
+
+import okhttp3.HttpUrl;
 
 public class CollectionCacheIndex extends CacheIndex
 {

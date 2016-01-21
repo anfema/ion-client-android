@@ -61,17 +61,18 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:23.1.0'
 
-    compile 'com.squareup.retrofit:retrofit:2.0.0-beta2' // http requests
-    compile 'com.squareup.retrofit:converter-gson:2.0.0-beta2' // json parsing
-    compile 'com.squareup.retrofit:adapter-rxjava:2.0.0-beta2' // retrofit with observables
+    compile 'com.squareup.retrofit2:retrofit:2.0.0-beta3' // http requests
+    compile 'com.squareup.retrofit2:converter-gson:2.0.0-beta3' // json parsing
+    compile 'com.squareup.retrofit2:adapter-rxjava:2.0.0-beta3' // retrofit with observables
     compile 'io.reactivex:rxandroid:1.0.1' // rxjava (observables)
     compile 'io.reactivex:rxjava:1.0.14' // RxAndroid releases are few and far between, so depend on latest version for bug fixes and new features.
     compile 'io.reactivex:rxjava-debug:1.0.3' // allows hooks to log intermediates steps
     // compile 'com.netflix.rxjava:rxjava-async-util:0.20.7' // support of Async.start()
-    compile 'org.apache.commons:commons-compress:1.2'
     compile 'com.squareup.picasso:picasso:2.5.2' // amp client provides a picasso wrapper adding an authorization header to requests
-    compile 'joda-time:joda-time:2.9' // better DateTime handling
+    compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.0.2'
 
+    compile 'org.apache.commons:commons-compress:1.2'
+    compile 'joda-time:joda-time:2.9' // better DateTime handling
     compile 'com.google.guava:guava:18.0'
 }
 

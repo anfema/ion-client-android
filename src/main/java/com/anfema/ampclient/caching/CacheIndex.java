@@ -1,12 +1,12 @@
 package com.anfema.ampclient.caching;
 
-import com.squareup.okhttp.HttpUrl;
+import okhttp3.HttpUrl;
 
 /**
  * To save and retrieve file meta data, which is used to determine if the file in cache is up-to-date before requesting it.
  * Holds entries separated by collection, allowing to quickly clear the cache indices of a specific collection
  * (which needs to be done when the actual cache for that collection is cleared.)
- * <p/>
+ * <p>
  * Uses shared preferences to save the data and {@link MemoryCacheIndex} for memory cache.
  */
 public abstract class CacheIndex

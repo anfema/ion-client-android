@@ -2,7 +2,8 @@ package com.anfema.ampclient.pages;
 
 import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
 import com.anfema.ampclient.utils.FileUtils;
-import com.squareup.okhttp.HttpUrl;
+
+import okhttp3.HttpUrl;
 
 public enum AmpCallType
 {

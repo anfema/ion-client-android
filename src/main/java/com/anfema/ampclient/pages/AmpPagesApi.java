@@ -3,10 +3,10 @@ package com.anfema.ampclient.pages;
 import com.anfema.ampclient.pages.models.responses.CollectionResponse;
 import com.anfema.ampclient.pages.models.responses.PageResponse;
 
-import retrofit.http.GET;
-import retrofit.http.Header;
-import retrofit.http.Path;
-import retrofit.http.Query;
+import retrofit2.http.GET;
+import retrofit2.http.Header;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 import rx.Observable;
 
 /**

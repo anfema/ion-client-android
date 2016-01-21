@@ -1,12 +1,13 @@
 package com.anfema.ampclient.interceptors;
 
 import com.anfema.ampclient.utils.Log;
-import com.squareup.okhttp.HttpUrl;
-import com.squareup.okhttp.Interceptor;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 
 import java.io.IOException;
+
+import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class RequestLogger implements Interceptor
 {
@@ -21,7 +22,7 @@ public class RequestLogger implements Interceptor
 	public Response intercept( Chain chain ) throws IOException
 	{
 		Request request = chain.request();
-		HttpUrl url = request.httpUrl();
+		HttpUrl url = request.url();
 		Log.i( logTag, url.toString() + " Headers: " + request.headers().toString() );
 		return chain.proceed( request );
 	}

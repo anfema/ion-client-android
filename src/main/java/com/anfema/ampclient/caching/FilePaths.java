@@ -9,11 +9,12 @@ import com.anfema.ampclient.pages.AmpCallType;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.HashUtils;
 import com.anfema.ampclient.utils.StringUtils;
-import com.squareup.okhttp.HttpUrl;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import okhttp3.HttpUrl;
 
 public class FilePaths
 {
@@ -34,7 +35,7 @@ public class FilePaths
 
 	/**
 	 * Find appropriate file path for media files.
-	 * <p/>
+	 * <p>
 	 * Do not use for collections and pages – use {@link #getJsonFilePath(String, Context)} instead
 	 * Creates folders if the do not exist yet.
 	 */
@@ -53,7 +54,7 @@ public class FilePaths
 
 	/**
 	 * Find appropriate file path for collections and pages.
-	 * <p/>
+	 * <p>
 	 * Do not use for media files – use {@link #getMediaFilePath(String, Context)} instead
 	 * Creates folders if the do not exist yet.
 	 */

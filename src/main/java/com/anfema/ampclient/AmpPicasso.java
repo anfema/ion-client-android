@@ -6,12 +6,14 @@ import android.content.Context;
 import com.anfema.ampclient.exceptions.AuthorizationHeaderValueIsNullException;
 import com.anfema.ampclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ampclient.interceptors.RequestLogger;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.picasso.OkHttpDownloader;
+import com.jakewharton.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import okhttp3.OkHttpClient;
+import okhttp3.OkHttpClient.Builder;
 
 /**
  * This class holds multiple {@link Picasso} instances.
@@ -51,11 +53,12 @@ public class AmpPicasso
 	 */
 	public static Picasso createPicassoInstance( String authHeaderValue, Context context )
 	{
-		OkHttpClient picassoClient = new OkHttpClient();
-		picassoClient.interceptors().add( new AuthorizationHeaderInterceptor( authHeaderValue ) );
-		picassoClient.interceptors().add( new RequestLogger( "Picasso Request" ) );
+		OkHttpClient.Builder okHttpClientBuilder = new Builder();
+		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( authHeaderValue ) );
+		okHttpClientBuilder.addInterceptor( new RequestLogger( "Picasso Request" ) );
+		OkHttpClient picassoClient = okHttpClientBuilder.build();
 
-		return new Picasso.Builder( context ).downloader( new OkHttpDownloader( picassoClient ) ).build();
+		return new Picasso.Builder( context ).downloader( new OkHttp3Downloader( picassoClient ) ).build();
 	}
 
 	/**
