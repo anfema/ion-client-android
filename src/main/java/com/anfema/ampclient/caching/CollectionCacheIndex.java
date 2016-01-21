@@ -15,23 +15,23 @@ import okhttp3.HttpUrl;
 public class CollectionCacheIndex extends CacheIndex
 {
 	private DateTime lastUpdated;
-	private DateTime lastChanged;
+	private String   lastModified;
 
-	public CollectionCacheIndex( String filename, DateTime lastUpdated, DateTime lastChanged )
+	public CollectionCacheIndex( String filename, DateTime lastUpdated, String lastModified )
 	{
 		super( filename );
 		this.lastUpdated = lastUpdated;
-		this.lastChanged = lastChanged;
+		this.lastModified = lastModified;
 	}
 
 	/**
 	 * Use MD5 of request URL as filename
 	 */
-	public CollectionCacheIndex( HttpUrl requestUrl, DateTime lastUpdated, DateTime lastChanged )
+	public CollectionCacheIndex( HttpUrl requestUrl, DateTime lastUpdated, String lastModified )
 	{
 		super( requestUrl );
 		this.lastUpdated = lastUpdated;
-		this.lastChanged = lastChanged;
+		this.lastModified = lastModified;
 	}
 
 	public DateTime getLastUpdated()
@@ -49,14 +49,14 @@ public class CollectionCacheIndex extends CacheIndex
 		return lastUpdated.isBefore( DateTimeUtils.now().minusMinutes( config.minutesUntilCollectionRefetch ) );
 	}
 
-	public DateTime getLastChanged()
+	public String getLastModified()
 	{
-		return lastChanged;
+		return lastModified;
 	}
 
-	public void setLastChanged( DateTime lastChanged )
+	public void setLastModified( String lastModified )
 	{
-		this.lastChanged = lastChanged;
+		this.lastModified = lastModified;
 	}
 
 	// save & retrieve
@@ -72,7 +72,7 @@ public class CollectionCacheIndex extends CacheIndex
 		return CacheIndexStore.retrieve( requestUrl, CollectionCacheIndex.class, config.collectionIdentifier, context );
 	}
 
-	public static void save( AmpConfig config, Context context, DateTime lastChanged )
+	public static void save( AmpConfig config, Context context, String lastModified )
 	{
 		String url = PagesUrls.getCollectionUrl( config );
 
@@ -80,7 +80,7 @@ public class CollectionCacheIndex extends CacheIndex
 		{
 			if ( FilePaths.getJsonFilePath( url, context ).exists() )
 			{
-				CollectionCacheIndex cacheMeta = new CollectionCacheIndex( url, DateTimeUtils.now(), lastChanged );
+				CollectionCacheIndex cacheMeta = new CollectionCacheIndex( url, DateTimeUtils.now(), lastModified );
 				CacheIndexStore.save( url, cacheMeta, config.collectionIdentifier, context );
 			}
 		}

@@ -31,20 +31,22 @@ import java.io.IOException;
 import java.util.List;
 
 import okhttp3.Interceptor;
+import retrofit2.HttpException;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
 /**
  * A wrapper of "collections" and "pages" call of AMP API.
- * <p>
+ * <p/>
  * Adds collection identifier and authorization token to request as retrieved via {@link AmpConfig}<br/>
- * <p>
+ * <p/>
  * Uses a file and a memory cache.
  */
 public class AmpPagesWithCaching implements AmpPages
 {
 
+	public static final int COLLECTION_NOT_MODIFIED = 304;
 	private CollectionDownloadedListener collectionListener;
 
 	private final Context context;
@@ -71,12 +73,12 @@ public class AmpPagesWithCaching implements AmpPages
 
 	/**
 	 * Retrieve collection with following priorities:
-	 * <p>
+	 * <p/>
 	 * 1. Look if there is a current version in cache
 	 * 2. Download from server if internet connection available
 	 * 3. If no internet connection: return cached version (even if outdated)
 	 * 4. Collection is not retrievable at all: emit error
-	 * <p>
+	 * <p/>
 	 * Use default collection identifier as specified in {@link this#config}
 	 */
 	@Override
@@ -91,23 +93,17 @@ public class AmpPagesWithCaching implements AmpPages
 		if ( currentCacheEntry )
 		{
 			// retrieve current version from cache
-			return getCollectionFromCache( networkConnected );
+			return getCollectionFromCache( cacheIndex, networkConnected );
 		}
 		else if ( networkConnected )
 		{
 			// download collection
-			return getCollectionFromServer( false )
-					.doOnNext( collection -> {
-						if ( collectionListener != null )
-						{
-							collectionListener.collectionDownloaded( collection, cacheIndex );
-						}
-					} );
+			return getCollectionFromServer( cacheIndex, false );
 		}
 		else if ( cacheIndex != null )
 		{
 			// no network: use old version from cache
-			return getCollectionFromCache( false );
+			return getCollectionFromCache( cacheIndex, false );
 		}
 		else
 		{
@@ -118,13 +114,13 @@ public class AmpPagesWithCaching implements AmpPages
 
 	/**
 	 * Retrieve page with following priorities:
-	 * <p>
-	 * <p>
+	 * <p/>
+	 * <p/>
 	 * 1. Look if there is a current version in cache
 	 * 2. Download from server if internet connection available
 	 * 3. If no internet connection: return cached version (even if outdated)
 	 * 4. Collection is not retrievable at all: emit error
-	 * <p>
+	 * <p/>
 	 * Add collection identifier and authorization token to request.<br/>
 	 * Use default collection identifier as specified in {@link this#config}
 	 */
@@ -232,7 +228,7 @@ public class AmpPagesWithCaching implements AmpPages
 
 	/// Get collection methods
 
-	private Observable<Collection> getCollectionFromCache( boolean serverCallAsBackup )
+	private Observable<Collection> getCollectionFromCache( CollectionCacheIndex cacheIndex, boolean serverCallAsBackup )
 	{
 		String collectionUrl = PagesUrls.getCollectionUrl( config );
 
@@ -257,22 +253,22 @@ public class AmpPagesWithCaching implements AmpPages
 					.doOnNext( memoryCache::setCollection )
 					.compose( RxUtils.runOnIoThread() )
 					.onErrorResumeNext( throwable -> {
-						return handleUnsuccessfulCollectionCacheReading( collectionUrl, serverCallAsBackup, throwable );
+						return handleUnsuccessfulCollectionCacheReading( collectionUrl, cacheIndex, serverCallAsBackup, throwable );
 					} );
 		}
 		catch ( IOException | NoAmpPagesRequestException e )
 		{
-			return handleUnsuccessfulCollectionCacheReading( collectionUrl, serverCallAsBackup, e );
+			return handleUnsuccessfulCollectionCacheReading( collectionUrl, cacheIndex, serverCallAsBackup, e );
 		}
 	}
 
-	private Observable<Collection> handleUnsuccessfulCollectionCacheReading( String collectionUrl, boolean serverCallAsBackup, Throwable e )
+	private Observable<Collection> handleUnsuccessfulCollectionCacheReading( String collectionUrl, CollectionCacheIndex cacheIndex, boolean serverCallAsBackup, Throwable e )
 	{
 		if ( serverCallAsBackup )
 		{
 			Log.w( "Backup Request", "File lookup " + collectionUrl + " failed. Trying network request instead..." );
 			Log.ex( "File Lookup", e );
-			return getCollectionFromServer( false );
+			return getCollectionFromServer( cacheIndex, false );
 		}
 		else
 		{
@@ -286,12 +282,38 @@ public class AmpPagesWithCaching implements AmpPages
 	 * Adds collection identifier and authorization token to request.<br/>
 	 * Uses default collection identifier as specified in {@link this#config}
 	 */
-	private Observable<Collection> getCollectionFromServer( boolean cacheAsBackup )
+	private Observable<Collection> getCollectionFromServer( CollectionCacheIndex cacheIndex, boolean cacheAsBackup )
 	{
-		return ampApi.getCollection( config.collectionIdentifier, config.locale, config.authorizationHeaderValue )
-				.map( CollectionResponse::getCollection )
-				.doOnNext( saveCollectionCacheIndex() )
-				.doOnNext( memoryCache::setCollection )
+		final String lastModified = cacheIndex != null ? cacheIndex.getLastModified() : null;
+
+		return ampApi.getCollection( config.collectionIdentifier, config.locale, config.authorizationHeaderValue, lastModified )
+				.flatMap( serverResponse -> {
+					if ( serverResponse.code() == COLLECTION_NOT_MODIFIED && memoryCache.getCollection() != null )
+					{
+						// collection has not changed, return cached version
+						return getCollectionFromCache( cacheIndex, false );
+					}
+					else if ( serverResponse.isSuccess() )
+					{
+						String lastModifiedReceived = serverResponse.headers().get( "Last-Modified" );
+
+						// parse collection data from response and write cache index and memory cache
+						return Observable.just( serverResponse.body() )
+								.map( CollectionResponse::getCollection )
+								.doOnNext( saveCollectionCacheIndex( lastModifiedReceived ) )
+								.doOnNext( memoryCache::setCollection )
+								.doOnNext( collection -> {
+									if ( collectionListener != null )
+									{
+										collectionListener.collectionDownloaded( collection, lastModified );
+									}
+								} );
+					}
+					else
+					{
+						return Observable.error( new HttpException( serverResponse ) );
+					}
+				} )
 				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
 					String collectionUrl = PagesUrls.getCollectionUrl( config );
@@ -299,7 +321,7 @@ public class AmpPagesWithCaching implements AmpPages
 					{
 						Log.w( "Backup Request", "Network request " + collectionUrl + " failed. Trying cache request instead..." );
 						Log.ex( "Network Request", throwable );
-						return getCollectionFromCache( false );
+						return getCollectionFromCache( cacheIndex, false );
 					}
 					Log.e( "Failed Request", "Network request " + collectionUrl + " failed." );
 					return Observable.error( new NetworkRequestException( collectionUrl, throwable ) );
@@ -388,9 +410,9 @@ public class AmpPagesWithCaching implements AmpPages
 
 
 	@NonNull
-	private Action1<Collection> saveCollectionCacheIndex()
+	private Action1<Collection> saveCollectionCacheIndex( String lastModified )
 	{
-		return collection -> CollectionCacheIndex.save( config, context, collection.getLastChanged() );
+		return collection -> CollectionCacheIndex.save( config, context, lastModified );
 	}
 
 	@NonNull

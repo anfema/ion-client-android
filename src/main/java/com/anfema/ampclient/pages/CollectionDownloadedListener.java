@@ -5,5 +5,5 @@ import com.anfema.ampclient.pages.models.Collection;
 
 public interface CollectionDownloadedListener
 {
-	void collectionDownloaded( Collection collection, CollectionCacheIndex oldCacheIndex );
+	void collectionDownloaded( Collection collection, String lastModified );
 }

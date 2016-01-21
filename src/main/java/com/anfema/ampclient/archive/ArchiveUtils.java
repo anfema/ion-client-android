@@ -43,15 +43,15 @@ class ArchiveUtils
 {
 	private static final String TAG = "ArchiveUtils";
 
-	static Observable<File> unTar( File archiveFile, Collection collection, AmpConfig config, MemoryCache memoryCache, Context context )
+	static Observable<File> unTar( File archiveFile, Collection collection, String lastModified, AmpConfig config, MemoryCache memoryCache, Context context )
 	{
 		return Observable.just( null )
 				.flatMap( o -> {
 					try
 					{
-						return Observable.from( performUnTar( archiveFile, config, collection, memoryCache, context ) )
+						return Observable.from( performUnTar( archiveFile, config, collection, lastModified, memoryCache, context ) )
 								// write cache index entries
-								.doOnNext( fileWithType -> saveCacheIndex( fileWithType, collection, config, context ) )
+								.doOnNext( fileWithType -> saveCacheIndex( fileWithType, collection, lastModified, config, context ) )
 								.map( fileWithType -> fileWithType.file );
 					}
 					catch ( IOException | ArchiveException e )
@@ -71,12 +71,12 @@ class ArchiveUtils
 	 * @param archiveFile
 	 * @param config
 	 * @param collection
-	 * @param memoryCache @return The {@link List} of {@link File}s with the untared content.
-	 * @throws IOException
+	 * @param lastModified
+	 * @param memoryCache  @return The {@link List} of {@link File}s with the untared content.  @throws IOException
 	 * @throws FileNotFoundException
 	 * @throws ArchiveException
 	 */
-	private static List<FileWithMeta> performUnTar( File archiveFile, AmpConfig config, Collection collection, MemoryCache memoryCache, Context context ) throws FileNotFoundException, IOException, ArchiveException
+	private static List<FileWithMeta> performUnTar( File archiveFile, AmpConfig config, Collection collection, String lastModified, MemoryCache memoryCache, Context context ) throws FileNotFoundException, IOException, ArchiveException
 	{
 		File collectionFolder = FilePaths.getCollectionFolderPath( config.collectionIdentifier, context );
 
@@ -149,7 +149,7 @@ class ArchiveUtils
 			try
 			{
 				saveCollectionToFileCache( config, collection, context );
-				CollectionCacheIndex.save( config, context, collection.getLastChanged() );
+				CollectionCacheIndex.save( config, context, lastModified );
 			}
 			catch ( NoAmpPagesRequestException | IOException e )
 			{
@@ -235,7 +235,7 @@ class ArchiveUtils
 		}
 	}
 
-	private static void saveCacheIndex( FileWithMeta fileWithMeta, Collection collection, AmpConfig config, Context context )
+	private static void saveCacheIndex( FileWithMeta fileWithMeta, Collection collection, String lastModified, AmpConfig config, Context context )
 	{
 		AmpCallType type = fileWithMeta.type;
 		if ( type == null )
@@ -245,7 +245,7 @@ class ArchiveUtils
 		}
 		else if ( type == AmpCallType.COLLECTIONS )
 		{
-			CollectionCacheIndex.save( config, context, collection.getLastChanged() );
+			CollectionCacheIndex.save( config, context, lastModified );
 		}
 		else if ( type == AmpCallType.PAGES )
 		{
