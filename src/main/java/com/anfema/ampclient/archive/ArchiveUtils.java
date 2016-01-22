@@ -13,6 +13,7 @@ import com.anfema.ampclient.exceptions.PageNotInCollectionException;
 import com.anfema.ampclient.pages.AmpCallType;
 import com.anfema.ampclient.pages.PagesUrls;
 import com.anfema.ampclient.pages.models.Collection;
+import com.anfema.ampclient.pages.models.responses.CollectionResponse;
 import com.anfema.ampclient.serialization.GsonHolder;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.Log;
@@ -129,6 +130,14 @@ class ArchiveUtils
 		// finished reading TAR archive
 		debInputStream.close();
 		archiveFile.delete();
+
+		// if lastModified date was not passed, look if cache index entry exists for collection and retrieve it from there
+		if ( collection != null && lastModified == null )
+		{
+			CollectionCacheIndex collectionCacheIndex = CollectionCacheIndex.retrieve( PagesUrls.getCollectionUrl( config ), config.collectionIdentifier, context );
+			lastModified = collectionCacheIndex == null ? null : collectionCacheIndex.getLastModified();
+			Log.d( TAG, "Restoring last_modified from cache index: " + lastModified );
+		}
 
 		// delete old cache index entries of the collection as well as the pages' memory cache
 		CacheIndexStore.clear( config.collectionIdentifier, context );

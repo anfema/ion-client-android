@@ -76,6 +76,8 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 		File archivePath = FilePaths.getArchiveFilePath( config.collectionIdentifier, context );
 		Log.i( "AMP Archive", "about to download archive for collection " + config.collectionIdentifier );
 
+		activeArchiveDownload = true;
+
 		// use inCollection or retrieve by making a collections call
 		Observable<Collection> collectionObs;
 		if ( inCollection == null )
@@ -86,8 +88,6 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 		{
 			collectionObs = Observable.just( inCollection );
 		}
-
-		activeArchiveDownload = true;
 
 		Observable<File> archiveObs = collectionObs
 				.map( collection -> collection.archive )
@@ -108,7 +108,7 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 		{
 			// archive needs to be downloaded again. Download runs in background and does not even inform UI when finished
 			downloadArchive( collection, lastModified )
-					.subscribe();
+					.subscribe( file -> Log.d( "AMP Archive", "Archive has been downloaded/updated in background" ) );
 		}
 	}
 }
