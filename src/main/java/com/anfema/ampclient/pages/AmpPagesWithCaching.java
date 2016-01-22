@@ -288,10 +288,12 @@ public class AmpPagesWithCaching implements AmpPages
 
 		return ampApi.getCollection( config.collectionIdentifier, config.locale, config.authorizationHeaderValue, lastModified )
 				.flatMap( serverResponse -> {
-					if ( serverResponse.code() == COLLECTION_NOT_MODIFIED && memoryCache.getCollection() != null )
+					if ( serverResponse.code() == COLLECTION_NOT_MODIFIED )
 					{
 						// collection has not changed, return cached version
-						return getCollectionFromCache( cacheIndex, false );
+						return getCollectionFromCache( cacheIndex, false )
+								// update cache index again (last updated needs to be reset to now)
+								.doOnNext( saveCollectionCacheIndex( lastModified ) );
 					}
 					else if ( serverResponse.isSuccess() )
 					{
@@ -300,12 +302,12 @@ public class AmpPagesWithCaching implements AmpPages
 						// parse collection data from response and write cache index and memory cache
 						return Observable.just( serverResponse.body() )
 								.map( CollectionResponse::getCollection )
-								.doOnNext( saveCollectionCacheIndex( lastModifiedReceived ) )
 								.doOnNext( memoryCache::setCollection )
+								.doOnNext( saveCollectionCacheIndex( lastModifiedReceived ) )
 								.doOnNext( collection -> {
 									if ( collectionListener != null )
 									{
-										collectionListener.collectionDownloaded( collection, lastModified );
+										collectionListener.collectionDownloaded( collection, lastModifiedReceived );
 									}
 								} );
 					}
