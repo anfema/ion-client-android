@@ -44,16 +44,19 @@ public class CachingInterceptor implements Interceptor
 		//		}
 		Response response = chain.proceed( request );
 
-		// write response to cache
-		String responseBody = getResponseBody( response );
-		try
+		if ( response.isSuccessful() )
 		{
-			File filePath = FilePaths.getJsonFilePath( url.toString(), context );
-			FileUtils.writeTextToFile( responseBody, filePath );
-		}
-		catch ( NoAmpPagesRequestException e )
-		{
-			Log.ex( e );
+			// write response to cache
+			String responseBody = getResponseBody( response );
+			try
+			{
+				File filePath = FilePaths.getJsonFilePath( url.toString(), context );
+				FileUtils.writeTextToFile( responseBody, filePath );
+			}
+			catch ( NoAmpPagesRequestException e )
+			{
+				Log.ex( e );
+			}
 		}
 
 		return response;
