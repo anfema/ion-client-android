@@ -3,10 +3,8 @@ package com.anfema.ampclient.caching;
 import android.content.Context;
 
 import com.anfema.ampclient.AmpConfig;
-import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
 import com.anfema.ampclient.pages.PagesUrls;
 import com.anfema.ampclient.utils.DateTimeUtils;
-import com.anfema.ampclient.utils.Log;
 
 import org.joda.time.DateTime;
 
@@ -75,19 +73,7 @@ public class CollectionCacheIndex extends CacheIndex
 	public static void save( AmpConfig config, Context context, String lastModified )
 	{
 		String url = PagesUrls.getCollectionUrl( config );
-
-		try
-		{
-			if ( FilePaths.getJsonFilePath( url, context ).exists() )
-			{
-				CollectionCacheIndex cacheMeta = new CollectionCacheIndex( url, DateTimeUtils.now(), lastModified );
-				CacheIndexStore.save( url, cacheMeta, config.collectionIdentifier, context );
-			}
-		}
-		catch ( NoAmpPagesRequestException e )
-		{
-			Log.e( "Cache Meta", "Could not save cache meta entry for " + url );
-			Log.ex( e );
-		}
+		CollectionCacheIndex cacheMeta = new CollectionCacheIndex( url, DateTimeUtils.now(), lastModified );
+		CacheIndexStore.save( url, cacheMeta, config.collectionIdentifier, context );
 	}
 }
