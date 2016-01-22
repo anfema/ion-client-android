@@ -166,7 +166,7 @@ class ArchiveUtils
 	{
 		String collectionUrl = PagesUrls.getCollectionUrl( config );
 		File filePath = FilePaths.getJsonFilePath( collectionUrl, context );
-		String collectionJson = GsonHolder.getInstance().toJson( collection );
+		String collectionJson = GsonHolder.getInstance().toJson( new CollectionResponse( collection ) );
 		FileUtils.writeTextToFile( collectionJson, filePath );
 	}
 
