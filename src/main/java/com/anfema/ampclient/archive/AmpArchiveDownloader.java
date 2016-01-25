@@ -89,6 +89,7 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 			collectionObs = Observable.just( inCollection );
 		}
 
+		// TODO this code seems to execute collections call twice (on each subscribe). Try using share-operator
 		Observable<File> archiveObs = collectionObs
 				.map( collection -> collection.archive )
 				.flatMap( archiveUrl -> AmpFiles.getInstance( config.authorizationHeaderValue, context ).request( HttpUrl.parse( archiveUrl ), archivePath ) );
