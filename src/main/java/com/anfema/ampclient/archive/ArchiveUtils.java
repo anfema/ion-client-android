@@ -152,11 +152,13 @@ class ArchiveUtils
 		// replace media files in collection
 		File mediaFolderTemp = FilePaths.getMediaFolderPath( config, context, true );
 		File mediaFolder = FilePaths.getMediaFolderPath( config, context, false );
-
-		boolean mediaWriteSuccess = FileUtils.move( mediaFolderTemp, mediaFolder, true );
-		if ( !mediaWriteSuccess )
+		if ( mediaFolderTemp.exists() )
 		{
-			throw new IOException( "JSON files could not be moved to final path." );
+			boolean mediaWriteSuccess = FileUtils.move( mediaFolderTemp, mediaFolder, true );
+			if ( !mediaWriteSuccess )
+			{
+				throw new IOException( "Media files could not be moved to final path." );
+			}
 		}
 
 		// add collection to file cache again
