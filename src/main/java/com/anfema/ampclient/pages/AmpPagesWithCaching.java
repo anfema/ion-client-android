@@ -236,12 +236,12 @@ public class AmpPagesWithCaching implements AmpPages
 		Collection collection = memoryCache.getCollection();
 		if ( collection != null )
 		{
-			Log.i( "Memory Lookup", collectionUrl );
+			Log.i( "Memory Cache Lookup", collectionUrl );
 			return Observable.just( collection );
 		}
 
 		// retrieve from file cache
-		Log.i( "File Lookup", collectionUrl );
+		Log.i( "File Cache Lookup", collectionUrl );
 		try
 		{
 			File filePath = FilePaths.getJsonFilePath( collectionUrl, config, context );
@@ -266,13 +266,13 @@ public class AmpPagesWithCaching implements AmpPages
 	{
 		if ( serverCallAsBackup )
 		{
-			Log.w( "Backup Request", "File lookup " + collectionUrl + " failed. Trying network request instead..." );
-			Log.ex( "File Lookup", e );
+			Log.w( "Backup Request", "Cache lookup " + collectionUrl + " failed. Trying network request instead..." );
+			Log.ex( "Cache Lookup", e );
 			return getCollectionFromServer( cacheIndex, false );
 		}
 		else
 		{
-			Log.e( "Failed Request", "File lookup " + collectionUrl + " failed." );
+			Log.e( "Failed Request", "Cache lookup " + collectionUrl + " failed." );
 			return Observable.error( new ReadFromCacheException( collectionUrl, e ) );
 		}
 	}
@@ -347,12 +347,12 @@ public class AmpPagesWithCaching implements AmpPages
 		Page memPage = memoryCache.getPage( pageUrl );
 		if ( memPage != null )
 		{
-			Log.i( "Memory Lookup", pageUrl );
+			Log.i( "Memory Cache Lookup", pageUrl );
 			return Observable.just( memPage );
 		}
 
 		// retrieve from file cache
-		Log.i( "File Lookup", pageUrl );
+		Log.i( "File Cache Lookup", pageUrl );
 		try
 		{
 			File filePath = FilePaths.getJsonFilePath( pageUrl, config, context );
@@ -377,11 +377,11 @@ public class AmpPagesWithCaching implements AmpPages
 	{
 		if ( serverCallAsBackup )
 		{
-			Log.w( "Backup Request", "File lookup " + pageUrl + " failed. Trying network request instead..." );
-			Log.ex( "File Lookup", e );
+			Log.w( "Backup Request", "Cache lookup " + pageUrl + " failed. Trying network request instead..." );
+			Log.ex( "Cache Lookup", e );
 			return getPageFromServer( pageIdentifier, false );
 		}
-		Log.e( "Failed Request", "File lookup " + pageUrl + " failed." );
+		Log.e( "Failed Request", "Cache lookup " + pageUrl + " failed." );
 		return Observable.error( new ReadFromCacheException( pageUrl, e ) );
 	}
 
