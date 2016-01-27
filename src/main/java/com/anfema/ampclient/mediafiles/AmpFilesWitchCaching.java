@@ -5,9 +5,12 @@ import android.content.Context;
 import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.caching.FileCacheIndex;
 import com.anfema.ampclient.caching.FilePaths;
+import com.anfema.ampclient.exceptions.MediaFileNotAvailableException;
 import com.anfema.ampclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ampclient.interceptors.RequestLogger;
 import com.anfema.ampclient.utils.FileUtils;
+import com.anfema.ampclient.utils.Log;
+import com.anfema.ampclient.utils.NetworkUtils;
 import com.anfema.ampclient.utils.RxUtils;
 
 import java.io.File;
@@ -59,10 +62,42 @@ public class AmpFilesWitchCaching implements AmpFiles
 	@Override
 	public Observable<File> request( HttpUrl url, File targetFile )
 	{
-		return Observable.just( null )
-				.flatMap( o -> performRequest( url, targetFile ) )
-				.doOnNext( file -> FileCacheIndex.save( url.toString(), file, config, null, context ) )
-				.compose( RxUtils.runOnIoThread() );
+		boolean networkConnected = NetworkUtils.isConnected( context );
+
+		if ( targetFile == null )
+		{
+			targetFile = FilePaths.getMediaFilePath( url.toString(), config, context );
+		}
+
+		FileCacheIndex cacheIndex = FileCacheIndex.retrieve( url.toString(), config.collectionIdentifier, context );
+		//		boolean currentCacheEntry = cacheIndex != null && !cacheIndex.isOutdated( checksum );
+
+		if ( targetFile.exists() /* TODO is current */ )
+		{
+			// retrieve current version from cache
+			Log.i( "File Cache Lookup", url.toString() );
+			return Observable.just( targetFile );
+		}
+		else if ( networkConnected )
+		{
+			// download media file
+			final File finalTargetFile = targetFile;
+			return Observable.just( null )
+					.flatMap( o -> performRequest( url, finalTargetFile ) )
+					.doOnNext( file -> FileCacheIndex.save( url.toString(), file, config, null, context ) )
+					.compose( RxUtils.runOnIoThread() );
+		}
+		else if ( targetFile.exists() )
+		{
+			// no network: use old version from cache
+			Log.i( "File Cache Lookup", url.toString() );
+			return Observable.just( targetFile );
+		}
+		else
+		{
+			// media file can neither be downloaded nor be found in cache
+			return Observable.error( new MediaFileNotAvailableException( url ) );
+		}
 	}
 
 	/**
@@ -87,13 +122,8 @@ public class AmpFilesWitchCaching implements AmpFiles
 				throw new IOException( "Unexpected code " + response );
 			}
 
-			if ( targetFile != null )
-			{
-				// use custom target file path
-				return Observable.just( writeToLocalStorage( response, targetFile ) );
-			}
-			// use default target file path
-			return Observable.just( writeToLocalStorage( response, url ) );
+			// use custom target file path
+			return Observable.just( writeToLocalStorage( response, targetFile ) );
 		}
 		catch ( IOException e )
 		{
@@ -101,14 +131,9 @@ public class AmpFilesWitchCaching implements AmpFiles
 		}
 	}
 
-	// directly from input stream to file
-	private File writeToLocalStorage( Response response, HttpUrl url ) throws IOException
-	{
-		File targetFile = FilePaths.getMediaFilePath( url.toString(), config, context );
-		return writeToLocalStorage( response, targetFile );
-	}
-
-	// directly from input stream to file
+	/**
+	 * write from input stream to file
+	 */
 	private File writeToLocalStorage( Response response, File targetFile ) throws IOException
 	{
 		// Be aware: using this method empties the response body byte stream. It is not possible to read the response a second time.
