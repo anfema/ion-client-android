@@ -1,28 +1,41 @@
 package com.anfema.ampclient;
 
 import android.content.Context;
+import android.net.Uri;
 
 import com.anfema.ampclient.archive.AmpArchive;
 import com.anfema.ampclient.archive.AmpArchiveFactory;
 import com.anfema.ampclient.fulltextsearch.AmpFts;
 import com.anfema.ampclient.fulltextsearch.AmpFtsFactory;
 import com.anfema.ampclient.fulltextsearch.SearchResult;
+import com.anfema.ampclient.mediafiles.AmpFiles;
+import com.anfema.ampclient.mediafiles.AmpFilesFactory;
+import com.anfema.ampclient.mediafiles.AmpPicasso;
+import com.anfema.ampclient.mediafiles.AmpPicassoFactory;
 import com.anfema.ampclient.pages.AmpPages;
 import com.anfema.ampclient.pages.AmpPagesFactory;
 import com.anfema.ampclient.pages.models.Collection;
 import com.anfema.ampclient.pages.models.Page;
 import com.anfema.ampclient.pages.models.PagePreview;
 import com.anfema.ampclient.utils.ContextUtils;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import okhttp3.HttpUrl;
 import rx.Observable;
 import rx.functions.Func1;
 
-public class AmpClient implements AmpPages, AmpArchive, AmpFts
+/**
+ * Main entry point for AMP functionality. Obtain an instance with {@link #getInstance(AmpConfig, Context)}.
+ * <p/>
+ * Serving as entry point AmpClient holds interfaces providing the actual implementation of its functionality.
+ */
+public class AmpClient implements AmpPages, AmpFiles, AmpPicasso, AmpArchive, AmpFts
 {
 	/// Multiton
 
@@ -57,6 +70,8 @@ public class AmpClient implements AmpPages, AmpArchive, AmpFts
 
 	// delegate classes
 	private final AmpPages   ampPages;
+	private final AmpFiles   ampFiles;
+	private final AmpPicasso ampPicasso;
 	private final AmpArchive ampArchive;
 	private final AmpFts     ampFts;
 
@@ -64,8 +79,10 @@ public class AmpClient implements AmpPages, AmpArchive, AmpFts
 	{
 		this.context = context;
 		ampPages = AmpPagesFactory.newInstance( config, context );
-		ampArchive = AmpArchiveFactory.newInstance( ampPages, config, context );
-		ampFts = AmpFtsFactory.newInstance( ampPages, config, context );
+		ampFiles = AmpFilesFactory.newInstance( config, context );
+		ampPicasso = AmpPicassoFactory.newInstance( ampFiles, config, context );
+		ampArchive = AmpArchiveFactory.newInstance( ampPages, ampFiles, config, context );
+		ampFts = AmpFtsFactory.newInstance( ampPages, ampFiles, config, context );
 	}
 
 
@@ -110,7 +127,7 @@ public class AmpClient implements AmpPages, AmpArchive, AmpFts
 
 	/**
 	 * A set of pages is "returned" by emitting multiple events.
-	 * <p>
+	 * <p/>
 	 * The pages are ordered by their position.
 	 */
 	@Override
@@ -121,13 +138,57 @@ public class AmpClient implements AmpPages, AmpArchive, AmpFts
 
 	/**
 	 * A set of page previews is "returned" by emitting multiple events.
-	 * <p>
+	 * <p/>
 	 * The page previews are ordered by their position.
 	 */
 	@Override
 	public Observable<PagePreview> getPagePreviewsSorted( Func1<PagePreview, Boolean> pagesFilter )
 	{
 		return ampPages.getPagePreviewsSorted( pagesFilter );
+	}
+
+	// Loading media files
+
+	/**
+	 * @see AmpFiles#request(HttpUrl)
+	 */
+	@Override
+	public Observable<File> request( HttpUrl url )
+	{
+		return ampFiles.request( url );
+	}
+
+	/**
+	 * @see AmpFiles#request(HttpUrl, File)
+	 */
+	@Override
+	public Observable<File> request( HttpUrl url, File targetFile )
+	{
+		return ampFiles.request( url, targetFile );
+	}
+
+	@Override
+	public RequestCreator loadImage( String path )
+	{
+		return ampPicasso.loadImage( path );
+	}
+
+	@Override
+	public RequestCreator loadImage( Uri uri )
+	{
+		return ampPicasso.loadImage( uri );
+	}
+
+	@Override
+	public RequestCreator loadImage( int resourceID )
+	{
+		return ampPicasso.loadImage( resourceID );
+	}
+
+	@Override
+	public Picasso getPicassoInstance()
+	{
+		return ampPicasso.getPicassoInstance();
 	}
 
 

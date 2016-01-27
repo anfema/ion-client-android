@@ -8,8 +8,8 @@ import android.widget.Toast;
 
 import com.anfema.ampclient.AmpClient;
 import com.anfema.ampclient.AmpConfig;
-import com.anfema.ampclient.AmpFiles;
 import com.anfema.ampclient.R;
+import com.anfema.ampclient.mediafiles.AmpFiles;
 import com.anfema.ampclient.pages.AmpPages;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.RxUtils;
@@ -23,18 +23,20 @@ import rx.Observable;
 
 /**
  * Full text search on collectin data.
- * <p>
+ * <p/>
  * Accessible via {@link AmpClient}
  */
 class AmpFtsImpl implements AmpFts
 {
 	private final AmpPages  ampPages;
+	private final AmpFiles  ampFiles;
 	private final AmpConfig config;
 	private final Context   context;
 
-	public AmpFtsImpl( AmpPages ampPages, AmpConfig config, Context context )
+	public AmpFtsImpl( AmpPages ampPages, AmpFiles ampFiles, AmpConfig config, Context context )
 	{
 		this.ampPages = ampPages;
+		this.ampFiles = ampFiles;
 		this.config = config;
 		this.context = context;
 	}
@@ -49,7 +51,7 @@ class AmpFtsImpl implements AmpFts
 		Log.i( "FTS Database", "about to download FTS database for collection " + config.collectionIdentifier );
 		return ampPages.getCollection()
 				.map( collection -> collection.fts_db )
-				.flatMap( searchDbUrl -> AmpFiles.getInstance( config.authorizationHeaderValue, context ).request( HttpUrl.parse( searchDbUrl ), dbTargetPath ) );
+				.flatMap( searchDbUrl -> ampFiles.request( HttpUrl.parse( searchDbUrl ), dbTargetPath ) );
 	}
 
 	/**

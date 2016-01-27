@@ -1,20 +1,17 @@
-package com.anfema.ampclient;
+package com.anfema.ampclient.mediafiles;
 
 import android.content.Context;
 
+import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.caching.FilePaths;
-import com.anfema.ampclient.exceptions.AuthorizationHeaderValueIsNullException;
 import com.anfema.ampclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ampclient.interceptors.RequestLogger;
-import com.anfema.ampclient.utils.ContextUtils;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.RxUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -25,47 +22,23 @@ import rx.Observable;
 
 /**
  * Does not perform calls against a specific API, but takes complete URLs as parameter to perform a GET call to.
- * <p>
+ * <p/>
  * Downloads the response body and stores it into a file.
- * <p>
+ * <p/>
  * However, the AMP authorization header is added (in case the URL points to protected media).
  */
-public class AmpFiles
+public class AmpFilesWitchCaching implements AmpFiles
 {
-	/// Multiton
-
-	// key: authorization header value
-	private static Map<String, AmpFiles> fileClientInstances = new HashMap<>();
-
-	public static AmpFiles getInstance( String authorizationHeaderValue, Context context )
-	{
-		if ( authorizationHeaderValue == null )
-		{
-			throw new AuthorizationHeaderValueIsNullException();
-		}
-
-		AmpFiles storedFileClient = fileClientInstances.get( authorizationHeaderValue );
-		if ( storedFileClient != null && storedFileClient.context != null )
-		{
-			return storedFileClient;
-		}
-
-		Context appContext = ContextUtils.getApplicationContext( context );
-		AmpFiles ampFiles = new AmpFiles( authorizationHeaderValue, appContext );
-		fileClientInstances.put( authorizationHeaderValue, ampFiles );
-		return ampFiles;
-	}
-
-	/// Multiton END
-
+	private       AmpConfig    config;
 	private       Context      context;
 	private final OkHttpClient client;
 
-	private AmpFiles( String authHeaderValue, Context context )
+	public AmpFilesWitchCaching( AmpConfig config, Context context )
 	{
+		this.config = config;
 		this.context = context;
 		OkHttpClient.Builder okHttpClientBuilder = new Builder();
-		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( authHeaderValue ) );
+		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( config.authorizationHeaderValue ) );
 		okHttpClientBuilder.addInterceptor( new RequestLogger( "Network Request" ) );
 		client = okHttpClientBuilder.build();
 	}
@@ -73,6 +46,7 @@ public class AmpFiles
 	/**
 	 * Wraps {@link this#performRequest(HttpUrl, File)} so that it runs completely async.
 	 */
+	@Override
 	public Observable<File> request( HttpUrl url )
 	{
 		return request( url, null );
@@ -81,6 +55,7 @@ public class AmpFiles
 	/**
 	 * Wraps {@link this#performRequest(HttpUrl, File)} so that it runs completely async.
 	 */
+	@Override
 	public Observable<File> request( HttpUrl url, File targetFile )
 	{
 		return Observable.just( null )
@@ -127,7 +102,7 @@ public class AmpFiles
 	// directly from input stream to file
 	private File writeToLocalStorage( Response response, HttpUrl url ) throws IOException
 	{
-		File targetFile = FilePaths.getMediaFilePath( url.toString(), context )/* + ".pdf"*/;
+		File targetFile = FilePaths.getMediaFilePath( url.toString(), config, context );
 		return writeToLocalStorage( response, targetFile );
 	}
 

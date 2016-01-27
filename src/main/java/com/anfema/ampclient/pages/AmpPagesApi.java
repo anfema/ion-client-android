@@ -15,9 +15,9 @@ import rx.Observable;
  */
 public interface AmpPagesApi
 {
-	@GET("collections/{collection_identifier}")
-	Observable<Response<CollectionResponse>> getCollection( @Path("collection_identifier") String collectionIdentifier, @Query("locale") String locale, @Header("Authorization") String authorizationToken, @Header("If-Modified-Since") String lastModified );
+	@GET("{locale}/{collection_identifier}")
+	Observable<Response<CollectionResponse>> getCollection( @Path("collection_identifier") String collectionIdentifier, @Path("locale") String locale, @Header("Authorization") String authorizationToken, @Header("If-Modified-Since") String lastModified );
 
-	@GET("pages/{collection_identifier}/{page_identifier}")
-	Observable<PageResponse> getPage( @Path("collection_identifier") String collectionIdentifier, @Path("page_identifier") String pageIdentifier, @Query("locale") String locale, @Header("Authorization") String authorizationToken );
+	@GET("{locale}/{collection_identifier}/{page_identifier}")
+	Observable<PageResponse> getPage( @Path("collection_identifier") String collectionIdentifier, @Path("page_identifier") String pageIdentifier, @Path("locale") String locale, @Header("Authorization") String authorizationToken );
 }

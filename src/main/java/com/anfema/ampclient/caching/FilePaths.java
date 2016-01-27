@@ -3,9 +3,9 @@ package com.anfema.ampclient.caching;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.anfema.ampclient.R;
+import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
-import com.anfema.ampclient.pages.AmpCallType;
+import com.anfema.ampclient.pages.AmpRequest;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.HashUtils;
 import com.anfema.ampclient.utils.StringUtils;
@@ -14,13 +14,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import okhttp3.HttpUrl;
-
 public class FilePaths
 {
-	public static File getCollectionFolderPath( String collectionIdentifier, Context context )
+	public static File getCollectionFolderPath( AmpConfig config, Context context )
 	{
-		File folder = new File( context.getFilesDir() + FileUtils.SLASH + collectionIdentifier );
+		File folder = new File( context.getFilesDir() + FileUtils.SLASH + config.collectionIdentifier + FileUtils.SLASH + config.locale );
 		if ( !folder.exists() )
 		{
 			folder.mkdirs();
@@ -28,52 +26,103 @@ public class FilePaths
 		return folder;
 	}
 
-	public static File getArchiveFilePath( String collectionIdentifier, Context context )
+	public static File getArchiveFilePath( AmpConfig config, Context context )
 	{
-		return new File( context.getFilesDir() + FileUtils.SLASH + collectionIdentifier + ".archive" );
+		return new File( context.getFilesDir() + FileUtils.SLASH + config.collectionIdentifier + FileUtils.SLASH + config.locale + ".archive" );
+	}
+
+	/**
+	 * Finds out if request is a media request or a collection/page request
+	 * and delegates to {@link #getMediaFilePath(String, AmpConfig, Context, boolean)} or {@link #getJsonFilePath(String, AmpConfig, Context, boolean)} respectively.
+	 *
+	 * @throws NoAmpPagesRequestException
+	 */
+	public static File getFilePath( String url, AmpConfig config, Context context ) throws NoAmpPagesRequestException
+	{
+		return getFilePath( url, config, context, false );
+	}
+
+	public static File getFilePath( String url, AmpConfig config, Context context, boolean tempFolder ) throws NoAmpPagesRequestException
+	{
+		if ( AmpRequest.isMediaRequestUrl( url ) )
+		{
+			return getMediaFilePath( url, config, context, tempFolder );
+		}
+		else
+		{
+			return getJsonFilePath( url, config, context, tempFolder );
+		}
 	}
 
 	/**
 	 * Find appropriate file path for media files.
-	 * <p>
-	 * Do not use for collections and pages – use {@link #getJsonFilePath(String, Context)} instead
+	 * <p/>
+	 * Do not use for collections and pages – use {@link #getJsonFilePath(String, AmpConfig, Context, boolean)} instead
 	 * Creates folders if the do not exist yet.
 	 */
-	public static File getMediaFilePath( String url, Context context )
+	public static File getMediaFilePath( String url, AmpConfig config, Context context )
 	{
-		File mediaFolderPath = getMediaFolderPath( context );
+		return getMediaFilePath( url, config, context, false );
+	}
+
+	public static File getMediaFilePath( String url, AmpConfig config, Context context, boolean tempCollectionFolder )
+	{
+		File mediaFolderPath = getMediaFolderPath( config, context, tempCollectionFolder );
 		String filename = getFileName( url );
 		return new File( mediaFolderPath, filename );
 	}
 
 	@NonNull
-	public static File getMediaFolderPath( Context context )
+	public static File getMediaFolderPath( AmpConfig config, Context context, boolean tempCollectionFolder )
 	{
-		return new File( context.getFilesDir() + FileUtils.SLASH + context.getString( R.string.files_dir ) );
+		return new File( context.getFilesDir() + FileUtils.SLASH + appendTemp( config.collectionIdentifier, tempCollectionFolder ) );
 	}
 
 	/**
 	 * Find appropriate file path for collections and pages.
-	 * <p>
-	 * Do not use for media files – use {@link #getMediaFilePath(String, Context)} instead
+	 * <p/>
+	 * Do not use for media files – use {@link #getMediaFilePath(String, AmpConfig, Context, boolean)} instead
 	 * Creates folders if the do not exist yet.
 	 */
-	public static File getJsonFilePath( String url, Context context ) throws NoAmpPagesRequestException
+	public static File getJsonFilePath( String url, AmpConfig config, Context context ) throws NoAmpPagesRequestException
 	{
-		HttpUrl httpUrl = HttpUrl.parse( url );
-		List<String> urlPathSegments = httpUrl.pathSegments();
+		return getJsonFilePath( url, config, context, false );
+	}
+
+	/**
+	 * Find appropriate file path for collections and pages.
+	 * <p/>
+	 * Do not use for media files – use {@link #getMediaFilePath(String, AmpConfig, Context, boolean)} instead
+	 * Creates folders if the do not exist yet.
+	 */
+	public static File getJsonFilePath( String url, AmpConfig config, Context context, boolean tempFolder ) throws NoAmpPagesRequestException
+	{
 		List<String> fileNamePathSegments = new ArrayList<>();
+		// internal storage path for the app on local storage
 		fileNamePathSegments.add( context.getFilesDir() + "" );
 
-		int index = findEndpointPathSegment( urlPathSegments );
-		if ( index == -1 )
+		// relative path corresponds to URL without base URL
+		String relativeUrlPath = url.replace( config.baseUrl, "" );
+		String[] urlPathSegments = relativeUrlPath.split( "/" );
+
+		// urlPathSegments length is 2 for collection call and 3 for page call
+		if ( urlPathSegments.length < 2 || urlPathSegments.length > 3 )
 		{
-			throw new NoAmpPagesRequestException();
+			throw new NoAmpPagesRequestException( url );
 		}
-		for ( int i = index + 1; i < urlPathSegments.size(); i++ )
+
+		// relative folder path is deferred from urlPathSegments, only locale and collection identifier are switched
+		List<String> relativeFilePath = new ArrayList<>();
+		relativeFilePath.add( urlPathSegments[ 1 ] );
+		relativeFilePath.add( appendTemp( urlPathSegments[ 0 ], tempFolder ) );
+		if ( urlPathSegments.length > 2 )
 		{
-			fileNamePathSegments.add( urlPathSegments.get( i ) );
+			relativeFilePath.add( urlPathSegments[ 2 ] );
 		}
+
+
+		// append relative path for spe
+		fileNamePathSegments.addAll( relativeFilePath );
 
 		String folderPath = StringUtils.concatStrings( fileNamePathSegments, FileUtils.SLASH );
 
@@ -86,43 +135,6 @@ public class FilePaths
 	public static String getFileName( String url )
 	{
 		return HashUtils.calcMD5( url );
-	}
-
-	/**
-	 * find pathSegment indicating endpoint
-	 *
-	 * @param urlPathSegments
-	 * @return
-	 */
-	public static int findEndpointPathSegment( List<String> urlPathSegments )
-	{
-		for ( int i = 0; i < urlPathSegments.size(); i++ )
-		{
-			if ( isEndpoint( urlPathSegments.get( i ) ) )
-			{
-				return i;
-			}
-		}
-		return -1;
-	}
-
-	/**
-	 * endpoints are defined in enum {@link AmpCallType}
-	 *
-	 * @param pathSegment
-	 * @return
-	 */
-	private static boolean isEndpoint( String pathSegment )
-	{
-		try
-		{
-			AmpCallType.determineCall( pathSegment );
-			return true;
-		}
-		catch ( NoAmpPagesRequestException e )
-		{
-			return false;
-		}
 	}
 
 	@NonNull
@@ -147,5 +159,14 @@ public class FilePaths
 		File folderTemp = new File( file.getPath() + "_temp" );
 		FileUtils.reset( folderTemp );
 		return folderTemp;
+	}
+
+	private static String appendTemp( String path, boolean appendTemp )
+	{
+		if ( appendTemp )
+		{
+			path += "_temp";
+		}
+		return path;
 	}
 }

@@ -18,7 +18,7 @@ public class AmpPagesFactory
 		ArrayList<Interceptor> interceptors = new ArrayList<>();
 		interceptors.add( new DeviceIdHeaderInterceptor( context ) );
 		interceptors.add( new RequestLogger( "Network Request" ) );
-		interceptors.add( new CachingInterceptor( context ) );
+		interceptors.add( new CachingInterceptor( config, context ) );
 
 		return new AmpPagesWithCaching( config, context, interceptors );
 	}

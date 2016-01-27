@@ -2,6 +2,7 @@ package com.anfema.ampclient.interceptors;
 
 import android.content.Context;
 
+import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.caching.FilePaths;
 import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
 import com.anfema.ampclient.utils.ContextUtils;
@@ -23,10 +24,12 @@ import okio.BufferedSource;
 
 public class CachingInterceptor implements Interceptor
 {
-	private Context context;
+	private final AmpConfig config;
+	private       Context   context;
 
-	public CachingInterceptor( Context context )
+	public CachingInterceptor( AmpConfig config, Context context )
 	{
+		this.config = config;
 		this.context = ContextUtils.getApplicationContext( context );
 	}
 
@@ -50,7 +53,7 @@ public class CachingInterceptor implements Interceptor
 			String responseBody = getResponseBody( response );
 			try
 			{
-				File filePath = FilePaths.getJsonFilePath( url.toString(), context );
+				File filePath = FilePaths.getJsonFilePath( url.toString(), config, context );
 				FileUtils.writeTextToFile( responseBody, filePath );
 			}
 			catch ( NoAmpPagesRequestException e )

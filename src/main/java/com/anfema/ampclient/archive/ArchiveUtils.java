@@ -5,12 +5,14 @@ import android.content.Context;
 import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.caching.CacheIndexStore;
 import com.anfema.ampclient.caching.CollectionCacheIndex;
+import com.anfema.ampclient.caching.FileCacheIndex;
 import com.anfema.ampclient.caching.FilePaths;
 import com.anfema.ampclient.caching.MemoryCache;
 import com.anfema.ampclient.caching.PageCacheIndex;
 import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
 import com.anfema.ampclient.exceptions.PageNotInCollectionException;
-import com.anfema.ampclient.pages.AmpCallType;
+import com.anfema.ampclient.pages.AmpRequest;
+import com.anfema.ampclient.pages.AmpRequest.AmpRequestInfo;
 import com.anfema.ampclient.pages.PagesUrls;
 import com.anfema.ampclient.pages.models.Collection;
 import com.anfema.ampclient.pages.models.responses.CollectionResponse;
@@ -18,7 +20,6 @@ import com.anfema.ampclient.serialization.GsonHolder;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.RxUtils;
-import com.anfema.ampclient.utils.StringUtils;
 
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
@@ -32,12 +33,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import okhttp3.HttpUrl;
 import rx.Observable;
 
 class ArchiveUtils
@@ -65,7 +64,7 @@ class ArchiveUtils
 
 	/**
 	 * Untar an input file into an output file.
-	 * <p>
+	 * <p/>
 	 * The output file is created in the output folder, having the same name
 	 * as the input file, minus the '.tar' extension.
 	 *
@@ -79,7 +78,7 @@ class ArchiveUtils
 	 */
 	private static List<FileWithMeta> performUnTar( File archiveFile, AmpConfig config, Collection collection, String lastModified, MemoryCache memoryCache, Context context ) throws FileNotFoundException, IOException, ArchiveException
 	{
-		File collectionFolder = FilePaths.getCollectionFolderPath( config.collectionIdentifier, context );
+		File collectionFolder = FilePaths.getCollectionFolderPath( config, context );
 
 		Log.d( TAG, String.format( "Untaring %s to dir %s.", archiveFile.getPath(), collectionFolder.getPath() ) );
 
@@ -114,7 +113,7 @@ class ArchiveUtils
 					continue;
 				}
 
-				FileWithMeta fileWithMeta = getFilePath( fileInfo, collectionFolderTemp, context );
+				FileWithMeta fileWithMeta = getFilePath( fileInfo, collectionFolderTemp, config, context );
 				File targetFile = fileWithMeta.file;
 				FileUtils.createDir( targetFile.getParentFile() );
 
@@ -174,56 +173,31 @@ class ArchiveUtils
 	private static void saveCollectionToFileCache( AmpConfig config, Collection collection, Context context ) throws NoAmpPagesRequestException, IOException
 	{
 		String collectionUrl = PagesUrls.getCollectionUrl( config );
-		File filePath = FilePaths.getJsonFilePath( collectionUrl, context );
+		File filePath = FilePaths.getJsonFilePath( collectionUrl, config, context );
 		String collectionJson = GsonHolder.getInstance().toJson( new CollectionResponse( collection ) );
 		FileUtils.writeTextToFile( collectionJson, filePath );
 	}
 
-	private static FileWithMeta getFilePath( ArchiveIndex fileInfo, File collectionFolderTemp, Context context )
+	private static FileWithMeta getFilePath( ArchiveIndex fileInfo, File collectionFolderTemp, AmpConfig config, Context context )
 	{
 		File targetFile;
-		AmpCallType type = null;
+		AmpRequest type = null;
 		String url = fileInfo.url;
 		String pageIdentifier = null;
+		String filename = FilePaths.getFileName( url );
 		try
 		{
 			// check URL is a collections or pages call
-			HttpUrl httpUrl = HttpUrl.parse( url );
-			type = AmpCallType.determineCall( httpUrl );
-
-			// build json file path with collection temp folder
-			String filename = FilePaths.getFileName( url );
-
-			List<String> urlPathSegments = httpUrl.pathSegments();
-			int endpointIndex = FilePaths.findEndpointPathSegment( urlPathSegments );
-			if ( endpointIndex > -1 && urlPathSegments.size() > endpointIndex + 1 )
-			{
-				List<String> remainingPathSegments = new ArrayList<>();
-
-				// In case of page path is extended with page identifier folder
-				// In case of collection no path is not extended at all
-				for ( int i = endpointIndex + 2; i < urlPathSegments.size(); i++ )
-				{
-					remainingPathSegments.add( urlPathSegments.get( i ) );
-					if ( type == AmpCallType.PAGES )
-					{
-						pageIdentifier = urlPathSegments.get( i );
-					}
-				}
-				String folderPath = collectionFolderTemp.getPath() + FileUtils.SLASH + StringUtils.concatStrings( remainingPathSegments, FileUtils.SLASH );
-				targetFile = new File( folderPath, filename );
-			}
-			else
-			{
-				Log.w( TAG, "URL " + url + " cannot be handled properly. Is it invalid?" );
-				targetFile = new File( collectionFolderTemp, filename );
-			}
+			AmpRequestInfo requestInfo = AmpRequest.analyze( url, config );
+			pageIdentifier = requestInfo.pageIdentifier;
+			type = requestInfo.requestType;
+			targetFile = FilePaths.getFilePath( url, config, context, true );
 		}
+
 		catch ( NoAmpPagesRequestException e )
 		{
-			// URL is a protected media path
-			// media files are directly written to files directory
-			targetFile = FilePaths.getMediaFilePath( url, context );
+			Log.w( TAG, "URL " + url + " cannot be handled properly. Is it invalid?" );
+			targetFile = new File( collectionFolderTemp, filename );
 		}
 		return new FileWithMeta( targetFile, type, fileInfo, pageIdentifier );
 	}
@@ -231,11 +205,11 @@ class ArchiveUtils
 	public static class FileWithMeta
 	{
 		File         file;
-		AmpCallType  type;
+		AmpRequest   type;
 		ArchiveIndex archiveIndex;
 		String       pageIdentifier;
 
-		public FileWithMeta( File file, AmpCallType type, ArchiveIndex archiveIndex, String pageIdentifier )
+		public FileWithMeta( File file, AmpRequest type, ArchiveIndex archiveIndex, String pageIdentifier )
 		{
 			this.file = file;
 			this.type = type;
@@ -246,18 +220,20 @@ class ArchiveUtils
 
 	private static void saveCacheIndex( FileWithMeta fileWithMeta, Collection collection, String lastModified, AmpConfig config, Context context )
 	{
-		AmpCallType type = fileWithMeta.type;
+		AmpRequest type = fileWithMeta.type;
 		if ( type == null )
 		{
-			// media file
-			// TODO file caching to be implemented
+			Log.w( TAG, "It could not be determined of which kind the request " + fileWithMeta.archiveIndex.url + " is. Thus, do not create a cache index entry." );
+			return;
 		}
-		else if ( type == AmpCallType.COLLECTIONS )
+
+		switch ( type )
 		{
+
+		case COLLECTION:
 			CollectionCacheIndex.save( config, context, lastModified );
-		}
-		else if ( type == AmpCallType.PAGES )
-		{
+			break;
+		case PAGE:
 			String pageIdentifier = fileWithMeta.pageIdentifier;
 			DateTime lastChanged = null;
 			try
@@ -269,6 +245,10 @@ class ArchiveUtils
 				Log.ex( TAG, e );
 			}
 			PageCacheIndex.save( pageIdentifier, lastChanged, config, context );
+			break;
+		case MEDIA:
+			FileCacheIndex.save( fileWithMeta.archiveIndex.url, config, fileWithMeta.archiveIndex.checksum, context );
+			break;
 		}
 	}
 }

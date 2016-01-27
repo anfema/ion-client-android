@@ -244,7 +244,7 @@ public class AmpPagesWithCaching implements AmpPages
 		Log.i( "File Lookup", collectionUrl );
 		try
 		{
-			File filePath = FilePaths.getJsonFilePath( collectionUrl, context );
+			File filePath = FilePaths.getJsonFilePath( collectionUrl, config, context );
 			return FileUtils
 					.readFromFile( filePath )
 					.map( collectionsString -> GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class ) )
@@ -355,7 +355,7 @@ public class AmpPagesWithCaching implements AmpPages
 		Log.i( "File Lookup", pageUrl );
 		try
 		{
-			File filePath = FilePaths.getJsonFilePath( pageUrl, context );
+			File filePath = FilePaths.getJsonFilePath( pageUrl, config, context );
 			return FileUtils
 					.readFromFile( filePath )
 					.map( pagesString -> GsonHolder.getInstance().fromJson( pagesString, PageResponse.class ) )

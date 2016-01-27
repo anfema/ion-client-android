@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
+import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.exceptions.NoAmpPagesRequestException;
 import com.anfema.ampclient.serialization.GsonHolder;
 import com.anfema.ampclient.utils.Log;
@@ -35,21 +36,19 @@ public class CacheIndexStore
 		return index;
 	}
 
-	public static <T extends CacheIndex> void save( String requestUrl, T cacheIndex, String collectionIdentifier, Context context )
+	public static <T extends CacheIndex> void save( String requestUrl, T cacheIndex, AmpConfig config, Context context )
 	{
 		try
 		{
-			// TODO generalize getJsonFilePath to get FilePath and also support media file paths
-			boolean isJsonFile = cacheIndex instanceof CollectionCacheIndex || cacheIndex instanceof PageCacheIndex;
-			File file = FilePaths.getJsonFilePath( requestUrl, context );
+			File file = FilePaths.getFilePath( requestUrl, config, context );
 
-			if ( !isJsonFile || file.exists() && file.length() > 0 /* TODO assert file size is just as big as response body length */ )
+			if ( file.exists() && file.length() > 0 /* TODO assert file size is just as big as response body length */ )
 			{
 				// save to memory cache
-				MemoryCacheIndex.put( requestUrl, collectionIdentifier, cacheIndex );
+				MemoryCacheIndex.put( requestUrl, config.collectionIdentifier, cacheIndex );
 
 				// save to shared preferences
-				SharedPreferences prefs = getPrefs( collectionIdentifier, context );
+				SharedPreferences prefs = getPrefs( config.collectionIdentifier, context );
 				Editor editor = prefs.edit();
 				editor.putString( requestUrl, GsonHolder.getInstance().toJson( cacheIndex ) );
 				editor.apply();

@@ -1,55 +1,37 @@
-package com.anfema.ampclient;
+package com.anfema.ampclient.mediafiles;
 
 import android.app.Application;
 import android.content.Context;
+import android.net.Uri;
 
-import com.anfema.ampclient.exceptions.AuthorizationHeaderValueIsNullException;
 import com.anfema.ampclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ampclient.interceptors.RequestLogger;
 import com.jakewharton.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.squareup.picasso.RequestCreator;
 
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 
 /**
  * This class holds multiple {@link Picasso} instances.
- * <p>
+ * <p/>
  * Each instance intercepts the requests being performed by adding an authorization header – which is useful in case the link is referring to
  * the protected media repository of AMP.
  */
-public class AmpPicasso
+public class AmpPicassoWithCaching implements AmpPicasso
 {
-	/// Multiton
+	private final AmpFiles ampFiles;
+	private final Picasso  picasso;
 
-	// key: authorization header value
-	private static Map<String, Picasso> picassoInstances = new HashMap<>();
-
-	public static Picasso getInstance( String authorizationHeaderValue, Context context )
+	public AmpPicassoWithCaching( AmpFiles ampFiles, String authHeaderValue, Context context )
 	{
-		if ( authorizationHeaderValue == null )
-		{
-			throw new AuthorizationHeaderValueIsNullException();
-		}
-
-		Picasso storedPicasso = picassoInstances.get( authorizationHeaderValue );
-		if ( storedPicasso != null )
-		{
-			return storedPicasso;
-		}
-
-		Picasso newPicasso = createPicassoInstance( authorizationHeaderValue, context );
-		picassoInstances.put( authorizationHeaderValue, newPicasso );
-		return newPicasso;
+		this.ampFiles = ampFiles;
+		this.picasso = createPicassoInstance( authHeaderValue, context );
 	}
 
-	/// Multiton END
-
 	/**
-	 * You might want to acquire a Picasso instance by using {@link AmpPicasso#getInstance(String, Context)}, which reuses instances.
+	 * You may not want to acquire a Picasso instance via {@link com.anfema.ampclient.AmpClient}.
 	 */
 	public static Picasso createPicassoInstance( String authHeaderValue, Context context )
 	{
@@ -63,14 +45,38 @@ public class AmpPicasso
 
 	/**
 	 * If you have a default picasso instance you want to use with default Picasso syntax, you can set the instance.
-	 * <p>
+	 * <p/>
 	 * Caution: if Picasso.with(this) has been called before an instance is already set and this method will throw an exception.
-	 * <p>
+	 * <p/>
 	 * Therefore, it is recommended to call this method in {@link Application#onCreate()}. (But do not perform any long-lasting operations there.)
 	 */
 	public static void setupDefaultPicasso( String authHeaderValue, Context context ) throws IllegalStateException
 	{
-		Picasso picasso = getInstance( authHeaderValue, context );
+		Picasso picasso = createPicassoInstance( authHeaderValue, context );
 		Picasso.setSingletonInstance( picasso );
+	}
+
+	@Override
+	public RequestCreator loadImage( String path )
+	{
+		return picasso.load( path );
+	}
+
+	@Override
+	public RequestCreator loadImage( Uri uri )
+	{
+		return picasso.load( uri );
+	}
+
+	@Override
+	public RequestCreator loadImage( int resourceID )
+	{
+		return picasso.load( resourceID );
+	}
+
+	@Override
+	public Picasso getPicassoInstance()
+	{
+		return picasso;
 	}
 }

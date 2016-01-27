@@ -73,7 +73,7 @@ public class CollectionCacheIndex extends CacheIndex
 	public static void save( AmpConfig config, Context context, String lastModified )
 	{
 		String url = PagesUrls.getCollectionUrl( config );
-		CollectionCacheIndex cacheMeta = new CollectionCacheIndex( url, DateTimeUtils.now(), lastModified );
-		CacheIndexStore.save( url, cacheMeta, config.collectionIdentifier, context );
+		CollectionCacheIndex cacheIndex = new CollectionCacheIndex( url, DateTimeUtils.now(), lastModified );
+		CacheIndexStore.save( url, cacheIndex, config, context );
 	}
 }

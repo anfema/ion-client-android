@@ -2,6 +2,8 @@ package com.anfema.ampclient.caching;
 
 import android.content.Context;
 
+import com.anfema.ampclient.AmpConfig;
+
 import okhttp3.HttpUrl;
 
 
@@ -43,9 +45,14 @@ public class FileCacheIndex extends CacheIndex
 
 	// save & retrieve
 
-	// TODO save files in collection folder or remove parameter collectionIdentifier
 	public static FileCacheIndex retrieve( String requestUrl, String collectionIdentifier, Context context )
 	{
 		return CacheIndexStore.retrieve( requestUrl, FileCacheIndex.class, collectionIdentifier, context );
+	}
+
+	public static void save( String requestUrl, AmpConfig config, String checksum, Context context )
+	{
+		FileCacheIndex cacheIndex = new FileCacheIndex( requestUrl, checksum );
+		CacheIndexStore.save( requestUrl, cacheIndex, config, context );
 	}
 }

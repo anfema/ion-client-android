@@ -3,9 +3,9 @@ package com.anfema.ampclient.archive;
 import android.content.Context;
 
 import com.anfema.ampclient.AmpConfig;
-import com.anfema.ampclient.AmpFiles;
 import com.anfema.ampclient.caching.FilePaths;
 import com.anfema.ampclient.caching.MemoryCache;
+import com.anfema.ampclient.mediafiles.AmpFiles;
 import com.anfema.ampclient.pages.AmpPages;
 import com.anfema.ampclient.pages.AmpPagesWithCaching;
 import com.anfema.ampclient.pages.CollectionDownloadedListener;
@@ -21,13 +21,15 @@ import rx.Observable;
 class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 {
 	private final AmpPages    ampPages;
+	private final AmpFiles    ampFiles;
 	private final AmpConfig   config;
 	private final Context     context;
 	private final MemoryCache memoryCache;
 
-	public AmpArchiveDownloader( AmpPages ampPages, AmpConfig config, Context context )
+	public AmpArchiveDownloader( AmpPages ampPages, AmpFiles ampFiles, AmpConfig config, Context context )
 	{
 		this.ampPages = ampPages;
+		this.ampFiles = ampFiles;
 		this.config = config;
 		this.context = context;
 
@@ -73,7 +75,7 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 			return Observable.error( e );
 		}
 
-		File archivePath = FilePaths.getArchiveFilePath( config.collectionIdentifier, context );
+		File archivePath = FilePaths.getArchiveFilePath( config, context );
 		Log.i( "AMP Archive", "about to download archive for collection " + config.collectionIdentifier );
 
 		activeArchiveDownload = true;
@@ -92,7 +94,7 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 		// TODO this code seems to execute collections call twice (on each subscribe). Try using share-operator
 		Observable<File> archiveObs = collectionObs
 				.map( collection -> collection.archive )
-				.flatMap( archiveUrl -> AmpFiles.getInstance( config.authorizationHeaderValue, context ).request( HttpUrl.parse( archiveUrl ), archivePath ) );
+				.flatMap( archiveUrl -> ampFiles.request( HttpUrl.parse( archiveUrl ), archivePath ) );
 
 		return RxUtils.flatCombineLatest( collectionObs, archiveObs, ( collection, archivePath2 ) -> ArchiveUtils.unTar( archivePath2, collection, lastModified, config, memoryCache, context ) )
 				.doOnNext( file -> activeArchiveDownload = false )
@@ -109,7 +111,7 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 		{
 			// archive needs to be downloaded again. Download runs in background and does not even inform UI when finished
 			downloadArchive( collection, lastModified )
-					.subscribe( file -> Log.d( "AMP Archive", "Archive has been downloaded/updated in background" ) );
+					.subscribe( RxUtils.NOTHING, RxUtils.DEFAULT_EXCEPTION_HANDLER, () -> Log.d( "AMP Archive", "Archive has been downloaded/updated in background" ) );
 		}
 	}
 }

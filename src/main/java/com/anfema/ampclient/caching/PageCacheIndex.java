@@ -59,7 +59,7 @@ public class PageCacheIndex extends CacheIndex
 	public static void save( String pageIdentifier, DateTime pageLastChanged, AmpConfig config, Context context )
 	{
 		String url = PagesUrls.getPageUrl( config, pageIdentifier );
-		PageCacheIndex cacheMeta = new PageCacheIndex( url, pageLastChanged );
-		CacheIndexStore.save( url, cacheMeta, config.collectionIdentifier, context );
+		PageCacheIndex cacheIndex = new PageCacheIndex( url, pageLastChanged );
+		CacheIndexStore.save( url, cacheIndex, config, context );
 	}
 }
