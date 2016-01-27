@@ -75,7 +75,7 @@ public class FilePaths
 	@NonNull
 	public static File getMediaFolderPath( AmpConfig config, Context context, boolean tempCollectionFolder )
 	{
-		return new File( context.getFilesDir() + FileUtils.SLASH + appendTemp( config.collectionIdentifier, tempCollectionFolder ) );
+		return new File( context.getFilesDir() + FileUtils.SLASH + config.collectionIdentifier + FileUtils.SLASH + appendTemp( "media", tempCollectionFolder ) );
 	}
 
 	/**

@@ -138,16 +138,25 @@ class ArchiveUtils
 			Log.d( TAG, "Restoring last_modified from cache index: " + lastModified );
 		}
 
-		// delete old cache index entries of the collection as well as the pages' memory cache
+		// delete old cache index entries of the collection in shared preferences and in memory cache
 		CacheIndexStore.clear( config.collectionIdentifier, context );
 		memoryCache.clearPagesMemCache();
 
 		// replace collection folder (containing json files) - deletes old file cache
-		boolean writeSuccess = FileUtils.move( collectionFolderTemp, collectionFolder, true );
-
-		if ( !writeSuccess )
+		boolean jsonWriteSuccess = FileUtils.move( collectionFolderTemp, collectionFolder, true );
+		if ( !jsonWriteSuccess )
 		{
-			throw new IOException( "Files could not be moved to final path." );
+			throw new IOException( "JSON files could not be moved to final path." );
+		}
+
+		// replace media files in collection
+		File mediaFolderTemp = FilePaths.getMediaFolderPath( config, context, true );
+		File mediaFolder = FilePaths.getMediaFolderPath( config, context, false );
+
+		boolean mediaWriteSuccess = FileUtils.move( mediaFolderTemp, mediaFolder, true );
+		if ( !mediaWriteSuccess )
+		{
+			throw new IOException( "JSON files could not be moved to final path." );
 		}
 
 		// add collection to file cache again
