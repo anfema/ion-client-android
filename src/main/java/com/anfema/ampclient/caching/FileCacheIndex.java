@@ -3,6 +3,9 @@ package com.anfema.ampclient.caching;
 import android.content.Context;
 
 import com.anfema.ampclient.AmpConfig;
+import com.anfema.ampclient.utils.HashUtils;
+
+import java.io.File;
 
 import okhttp3.HttpUrl;
 
@@ -50,8 +53,15 @@ public class FileCacheIndex extends CacheIndex
 		return CacheIndexStore.retrieve( requestUrl, FileCacheIndex.class, collectionIdentifier, context );
 	}
 
-	public static void save( String requestUrl, AmpConfig config, String checksum, Context context )
+	/**
+	 * @param checksum can be null
+	 */
+	public static void save( String requestUrl, File file, AmpConfig config, String checksum, Context context )
 	{
+		if ( checksum == null )
+		{
+			checksum = "sha256:" + HashUtils.getSha256( file );
+		}
 		FileCacheIndex cacheIndex = new FileCacheIndex( requestUrl, checksum );
 		CacheIndexStore.save( requestUrl, cacheIndex, config, context );
 	}

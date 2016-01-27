@@ -134,7 +134,7 @@ public class FilePaths
 	@NonNull
 	public static String getFileName( String url )
 	{
-		return HashUtils.calcMD5( url );
+		return HashUtils.getMD5Hash( url );
 	}
 
 	@NonNull

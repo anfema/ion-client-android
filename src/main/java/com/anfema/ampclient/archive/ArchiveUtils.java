@@ -247,7 +247,7 @@ class ArchiveUtils
 			PageCacheIndex.save( pageIdentifier, lastChanged, config, context );
 			break;
 		case MEDIA:
-			FileCacheIndex.save( fileWithMeta.archiveIndex.url, config, fileWithMeta.archiveIndex.checksum, context );
+			FileCacheIndex.save( fileWithMeta.archiveIndex.url, fileWithMeta.file, config, fileWithMeta.archiveIndex.checksum, context );
 			break;
 		}
 	}

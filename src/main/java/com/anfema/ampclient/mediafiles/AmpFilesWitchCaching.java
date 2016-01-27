@@ -3,6 +3,7 @@ package com.anfema.ampclient.mediafiles;
 import android.content.Context;
 
 import com.anfema.ampclient.AmpConfig;
+import com.anfema.ampclient.caching.FileCacheIndex;
 import com.anfema.ampclient.caching.FilePaths;
 import com.anfema.ampclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ampclient.interceptors.RequestLogger;
@@ -60,6 +61,7 @@ public class AmpFilesWitchCaching implements AmpFiles
 	{
 		return Observable.just( null )
 				.flatMap( o -> performRequest( url, targetFile ) )
+				.doOnNext( file -> FileCacheIndex.save( url.toString(), file, config, null, context ) )
 				.compose( RxUtils.runOnIoThread() );
 	}
 
