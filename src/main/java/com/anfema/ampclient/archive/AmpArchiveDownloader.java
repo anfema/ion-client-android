@@ -94,7 +94,7 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 		// TODO this code seems to execute collections call twice (on each subscribe). Try using share-operator
 		Observable<File> archiveObs = collectionObs
 				.map( collection -> collection.archive )
-				.flatMap( archiveUrl -> ampFiles.request( HttpUrl.parse( archiveUrl ), archivePath ) );
+				.flatMap( archiveUrl -> ampFiles.request( HttpUrl.parse( archiveUrl ), null, true, archivePath ) );
 
 		return RxUtils.flatCombineLatest( collectionObs, archiveObs, ( collection, archivePath2 ) -> ArchiveUtils.unTar( archivePath2, collection, lastModified, config, memoryCache, context ) )
 				.doOnNext( file -> activeArchiveDownload = false )

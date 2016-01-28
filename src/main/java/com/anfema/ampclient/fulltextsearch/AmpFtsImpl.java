@@ -51,7 +51,7 @@ class AmpFtsImpl implements AmpFts
 		Log.i( "FTS Database", "about to download FTS database for collection " + config.collectionIdentifier );
 		return ampPages.getCollection()
 				.map( collection -> collection.fts_db )
-				.flatMap( searchDbUrl -> ampFiles.request( HttpUrl.parse( searchDbUrl ), dbTargetPath ) );
+				.flatMap( searchDbUrl -> ampFiles.request( HttpUrl.parse( searchDbUrl ), null, true, dbTargetPath ) );
 	}
 
 	/**

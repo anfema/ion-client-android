@@ -7,7 +7,7 @@ import rx.Observable;
 
 public interface AmpFiles
 {
-	Observable<File> request( HttpUrl url );
+	Observable<File> request( HttpUrl url, String checksum );
 
-	Observable<File> request( HttpUrl url, File targetFile );
+	Observable<File> request( HttpUrl url, String checksum, boolean ignoreCaching, File targetFile );
 }

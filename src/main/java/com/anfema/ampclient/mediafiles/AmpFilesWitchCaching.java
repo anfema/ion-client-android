@@ -1,8 +1,10 @@
 package com.anfema.ampclient.mediafiles;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import com.anfema.ampclient.AmpConfig;
+import com.anfema.ampclient.caching.CollectionCacheIndex;
 import com.anfema.ampclient.caching.FileCacheIndex;
 import com.anfema.ampclient.caching.FilePaths;
 import com.anfema.ampclient.exceptions.MediaFileNotAvailableException;
@@ -51,45 +53,44 @@ public class AmpFilesWitchCaching implements AmpFiles
 	 * Wraps {@link this#performRequest(HttpUrl, File)} so that it runs completely async.
 	 */
 	@Override
-	public Observable<File> request( HttpUrl url )
+	public Observable<File> request( HttpUrl url, String checksum )
 	{
-		return request( url, null );
+		return request( url, checksum, false, null );
 	}
 
 	/**
 	 * Wraps {@link this#performRequest(HttpUrl, File)} so that it runs completely async.
 	 */
 	@Override
-	public Observable<File> request( HttpUrl url, File targetFile )
+	public Observable<File> request( HttpUrl url, String checksum, boolean ignoreCaching, @Nullable File inTargetFile )
 	{
-		boolean networkConnected = NetworkUtils.isConnected( context );
+		final File targetFile = getTargetFilePath( url, inTargetFile );
 
-		if ( targetFile == null )
+		if ( ignoreCaching )
 		{
-			targetFile = FilePaths.getMediaFilePath( url.toString(), config, context );
+			// force new download, do not create cache index entry
+			return requestWithoutCaching( url, targetFile );
 		}
 
-		FileCacheIndex cacheIndex = FileCacheIndex.retrieve( url.toString(), config.collectionIdentifier, context );
-		//		boolean currentCacheEntry = cacheIndex != null && !cacheIndex.isOutdated( checksum );
+		// fetch file from local storage or download it?
 
-		if ( targetFile.exists() /* TODO is current */ )
+		if ( targetFile.exists() && isFileUpToDate( url, checksum ) )
 		{
 			// retrieve current version from cache
 			Log.i( "File Cache Lookup", url.toString() );
 			return Observable.just( targetFile );
 		}
-		else if ( networkConnected )
+		else if ( NetworkUtils.isConnected( context ) )
 		{
 			// download media file
-			final File finalTargetFile = targetFile;
 			return Observable.just( null )
-					.flatMap( o -> performRequest( url, finalTargetFile ) )
+					.flatMap( o -> performRequest( url, targetFile ) )
 					.doOnNext( file -> FileCacheIndex.save( url.toString(), file, config, null, context ) )
 					.compose( RxUtils.runOnIoThread() );
 		}
 		else if ( targetFile.exists() )
 		{
-			// no network: use old version from cache
+			// no network: use old version from cache (even if no cache index entry exists)
 			Log.i( "File Cache Lookup", url.toString() );
 			return Observable.just( targetFile );
 		}
@@ -98,6 +99,33 @@ public class AmpFilesWitchCaching implements AmpFiles
 			// media file can neither be downloaded nor be found in cache
 			return Observable.error( new MediaFileNotAvailableException( url ) );
 		}
+	}
+
+	private Observable<File> requestWithoutCaching( HttpUrl url, File finalTargetFile )
+	{
+		return Observable.just( null )
+				.flatMap( o -> performRequest( url, finalTargetFile ) )
+				.compose( RxUtils.runOnIoThread() );
+	}
+
+	private boolean isFileUpToDate( HttpUrl url, String checksum )
+	{
+		boolean isCurrent;
+		if ( checksum != null )
+		{
+			// check with file's checksum
+			FileCacheIndex fileCacheIndex = FileCacheIndex.retrieve( url.toString(), config.collectionIdentifier, context );
+			isCurrent = fileCacheIndex != null && !fileCacheIndex.isOutdated( checksum );
+		}
+		else
+		{
+			// check with collection's last_updated date (last_modified or previewPage.last_changed would be slightly more precise)
+			CollectionCacheIndex collectionCacheIndex = CollectionCacheIndex.retrieve( config, context );
+			// TODO
+			//			isCurrent = collectionCacheIndex != null && !collectionCacheIndex.isOutdated( config );
+			isCurrent = false;
+		}
+		return isCurrent;
 	}
 
 	/**
@@ -141,5 +169,22 @@ public class AmpFilesWitchCaching implements AmpFiles
 		File file = FileUtils.writeToFile( inputStream, targetFile );
 		inputStream.close();
 		return file;
+	}
+
+	/**
+	 * Request method does not require that a file path is provided via {@param targetFile}.
+	 * If a custom path is provided, it is used. If {@code null} is passed, then the default file path for media files is calculated from the {@param url}.
+	 *
+	 * @param url        HTTP URL for an AMP internal media file
+	 * @param targetFile custom file path (optional)
+	 * @return {@param targetFile} or default file path
+	 */
+	private File getTargetFilePath( HttpUrl url, @Nullable File targetFile )
+	{
+		if ( targetFile == null )
+		{
+			targetFile = FilePaths.getMediaFilePath( url.toString(), config, context );
+		}
+		return targetFile;
 	}
 }

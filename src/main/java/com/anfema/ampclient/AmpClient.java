@@ -150,21 +150,21 @@ public class AmpClient implements AmpPages, AmpFiles, AmpPicasso, AmpArchive, Am
 	// Loading media files
 
 	/**
-	 * @see AmpFiles#request(HttpUrl)
+	 * @see AmpFiles#request(HttpUrl, String)
 	 */
 	@Override
-	public Observable<File> request( HttpUrl url )
+	public Observable<File> request( HttpUrl url, String checksum )
 	{
-		return ampFiles.request( url );
+		return ampFiles.request( url, checksum );
 	}
 
 	/**
-	 * @see AmpFiles#request(HttpUrl, File)
+	 * @see AmpFiles#request(HttpUrl, String, boolean, File)
 	 */
 	@Override
-	public Observable<File> request( HttpUrl url, File targetFile )
+	public Observable<File> request( HttpUrl url, String checksum, boolean ignoreCaching, File targetFile )
 	{
-		return ampFiles.request( url, targetFile );
+		return ampFiles.request( url, checksum, ignoreCaching, targetFile );
 	}
 
 	@Override

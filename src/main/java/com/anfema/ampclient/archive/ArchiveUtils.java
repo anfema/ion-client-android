@@ -117,6 +117,7 @@ class ArchiveUtils
 				File targetFile = fileWithMeta.file;
 				FileUtils.createDir( targetFile.getParentFile() );
 
+				// Log.i( TAG, fileWithMeta.archiveIndex.url );
 				targetFile = FileUtils.writeToFile( debInputStream, targetFile );
 
 				if ( targetFile != null )
