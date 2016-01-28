@@ -12,6 +12,9 @@ import okhttp3.HttpUrl;
 
 public class PageCacheIndex extends CacheIndex
 {
+	/**
+	 * Last changed info received from server in the page response
+	 */
 	private DateTime lastChanged;
 
 	public PageCacheIndex( String filename, DateTime lastChanged )

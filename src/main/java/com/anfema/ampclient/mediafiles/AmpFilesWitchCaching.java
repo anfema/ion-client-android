@@ -15,6 +15,8 @@ import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.NetworkUtils;
 import com.anfema.ampclient.utils.RxUtils;
 
+import org.joda.time.DateTime;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,9 +30,9 @@ import rx.Observable;
 
 /**
  * Does not perform calls against a specific API, but takes complete URLs as parameter to perform a GET call to.
- * <p/>
+ * <p>
  * Downloads the response body and stores it into a file.
- * <p/>
+ * <p>
  * However, the AMP authorization header is added (in case the URL points to protected media).
  */
 public class AmpFilesWitchCaching implements AmpFiles
@@ -90,6 +92,7 @@ public class AmpFilesWitchCaching implements AmpFiles
 		}
 		else if ( targetFile.exists() )
 		{
+			// TODO notify app that data might be outdated
 			// no network: use old version from cache (even if no cache index entry exists)
 			Log.i( "File Cache Lookup", url.toString() );
 			return Observable.just( targetFile );
@@ -110,22 +113,25 @@ public class AmpFilesWitchCaching implements AmpFiles
 
 	private boolean isFileUpToDate( HttpUrl url, String checksum )
 	{
-		boolean isCurrent;
+		FileCacheIndex fileCacheIndex = FileCacheIndex.retrieve( url.toString(), config.collectionIdentifier, context );
+		if ( fileCacheIndex == null )
+		{
+			return false;
+		}
+
 		if ( checksum != null )
 		{
 			// check with file's checksum
-			FileCacheIndex fileCacheIndex = FileCacheIndex.retrieve( url.toString(), config.collectionIdentifier, context );
-			isCurrent = fileCacheIndex != null && !fileCacheIndex.isOutdated( checksum );
+			return !fileCacheIndex.isOutdated( checksum );
 		}
 		else
 		{
-			// check with collection's last_updated date (last_modified or previewPage.last_changed would be slightly more precise)
+			// check with collection's last_modified (previewPage.last_changed would be slightly more precise)
 			CollectionCacheIndex collectionCacheIndex = CollectionCacheIndex.retrieve( config, context );
-			// TODO
-			//			isCurrent = collectionCacheIndex != null && !collectionCacheIndex.isOutdated( config );
-			isCurrent = false;
+			DateTime collectionLastModified = collectionCacheIndex == null ? null : collectionCacheIndex.getLastModifiedDate();
+			DateTime fileLastUpdated = fileCacheIndex.getLastUpdated();
+			return collectionLastModified != null && fileLastUpdated != null && !collectionLastModified.isAfter( fileLastUpdated );
 		}
-		return isCurrent;
 	}
 
 	/**

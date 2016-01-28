@@ -5,6 +5,8 @@ import android.content.Context;
 import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.utils.HashUtils;
 
+import org.joda.time.DateTime;
+
 import java.io.File;
 
 import okhttp3.HttpUrl;
@@ -12,23 +14,31 @@ import okhttp3.HttpUrl;
 
 public class FileCacheIndex extends CacheIndex
 {
+	/**
+	 * checksum of file version in local storage
+	 */
 	private String checksum;
 
-	public FileCacheIndex( String filename, String checksum )
+	/**
+	 * Needs to be set to the time, the file is saved
+	 */
+	private DateTime lastUpdated;
+
+	public FileCacheIndex( String filename, String checksum, DateTime lastUpdated )
 	{
 		super( filename );
 		this.checksum = checksum;
+		this.lastUpdated = lastUpdated;
 	}
 
 	/**
 	 * Use MD5 of request URL as filename
-	 *
-	 * @param checksum
 	 */
-	public FileCacheIndex( HttpUrl requestUrl, String checksum )
+	public FileCacheIndex( HttpUrl requestUrl, String checksum, DateTime lastUpdated )
 	{
 		super( requestUrl );
 		this.checksum = checksum;
+		this.lastUpdated = lastUpdated;
 	}
 
 	public String getChecksum()
@@ -39,6 +49,16 @@ public class FileCacheIndex extends CacheIndex
 	public void setChecksum( String checksum )
 	{
 		this.checksum = checksum;
+	}
+
+	public DateTime getLastUpdated()
+	{
+		return lastUpdated;
+	}
+
+	public void setLastUpdated( DateTime lastUpdated )
+	{
+		this.lastUpdated = lastUpdated;
 	}
 
 	public boolean isOutdated( String serverChecksum )
@@ -62,7 +82,7 @@ public class FileCacheIndex extends CacheIndex
 		{
 			checksum = "sha256:" + HashUtils.getSha256( file );
 		}
-		FileCacheIndex cacheIndex = new FileCacheIndex( requestUrl, checksum );
+		FileCacheIndex cacheIndex = new FileCacheIndex( requestUrl, checksum, DateTime.now() );
 		CacheIndexStore.save( requestUrl, cacheIndex, config, context );
 	}
 }

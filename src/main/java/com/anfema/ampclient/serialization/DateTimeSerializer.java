@@ -13,7 +13,6 @@ import com.google.gson.JsonSerializer;
 import org.joda.time.DateTime;
 
 import java.lang.reflect.Type;
-import java.text.ParseException;
 
 /**
  * Class doing both serialization and deserialization of DateTime objects.
@@ -35,9 +34,9 @@ public class DateTimeSerializer implements JsonDeserializer<DateTime>, JsonSeria
 		{
 			return DateTimeUtils.parseDateTime( dateString );
 		}
-		catch ( ParseException e )
+		catch ( IllegalArgumentException e )
 		{
-			Log.e( "Amp Deserializer", json.toString() );
+			Log.e( "AMP Deserializer", json.toString() );
 			Log.ex( e );
 			return null;
 		}

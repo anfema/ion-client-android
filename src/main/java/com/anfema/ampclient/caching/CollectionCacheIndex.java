@@ -5,6 +5,7 @@ import android.content.Context;
 import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.pages.PagesUrls;
 import com.anfema.ampclient.utils.DateTimeUtils;
+import com.anfema.ampclient.utils.Log;
 
 import org.joda.time.DateTime;
 
@@ -12,8 +13,15 @@ import okhttp3.HttpUrl;
 
 public class CollectionCacheIndex extends CacheIndex
 {
+	/**
+	 * Last time when collection server call has been made (even if the server response code is 304 NOT MODIFIED)
+	 */
 	private DateTime lastUpdated;
-	private String   lastModified;
+
+	/**
+	 * Received with the collection server call as response header "Last-Modified"
+	 */
+	private String lastModified;
 
 	public CollectionCacheIndex( String filename, DateTime lastUpdated, String lastModified )
 	{
@@ -45,6 +53,27 @@ public class CollectionCacheIndex extends CacheIndex
 	public boolean isOutdated( AmpConfig config )
 	{
 		return lastUpdated.isBefore( DateTimeUtils.now().minusMinutes( config.minutesUntilCollectionRefetch ) );
+	}
+
+	public DateTime getLastModifiedDate()
+	{
+		if ( lastModified == null )
+		{
+			Log.d( "Last Modified", "String is null" );
+			return null;
+		}
+		try
+		{
+			DateTime lastModifiedDate = DateTimeUtils.parseDateTime( lastModified );
+			Log.d( "Last Modified", "Successfully parsed " + lastModified );
+			return lastModifiedDate;
+		}
+		catch ( IllegalArgumentException e )
+		{
+			Log.e( "Last Modified", "Parse error for: " + lastModified );
+			Log.ex( "Last Modified", e );
+			return null;
+		}
 	}
 
 	public String getLastModified()
