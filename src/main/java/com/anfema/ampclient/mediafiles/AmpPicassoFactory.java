@@ -8,6 +8,6 @@ public class AmpPicassoFactory
 {
 	public static AmpPicasso newInstance( AmpFiles ampFiles, AmpConfig config, Context context )
 	{
-		return new AmpPicassoWithCaching( ampFiles, config.authorizationHeaderValue, context );
+		return new AmpPicassoWithCaching( ampFiles, config, context );
 	}
 }

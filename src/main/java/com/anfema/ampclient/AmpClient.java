@@ -2,6 +2,7 @@ package com.anfema.ampclient;
 
 import android.content.Context;
 import android.net.Uri;
+import android.widget.ImageView;
 
 import com.anfema.ampclient.archive.AmpArchive;
 import com.anfema.ampclient.archive.AmpArchiveFactory;
@@ -168,21 +169,15 @@ public class AmpClient implements AmpPages, AmpFiles, AmpPicasso, AmpArchive, Am
 	}
 
 	@Override
-	public RequestCreator loadImage( String path )
+	public void loadImage( String path, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
 	{
-		return ampPicasso.loadImage( path );
+		ampPicasso.loadImage( path, target, requestTransformation );
 	}
 
 	@Override
-	public RequestCreator loadImage( Uri uri )
+	public void loadImage( Uri uri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
 	{
-		return ampPicasso.loadImage( uri );
-	}
-
-	@Override
-	public RequestCreator loadImage( int resourceID )
-	{
-		return ampPicasso.loadImage( resourceID );
+		ampPicasso.loadImage( uri, target, requestTransformation );
 	}
 
 	@Override

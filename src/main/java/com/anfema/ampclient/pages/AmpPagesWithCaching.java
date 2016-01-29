@@ -246,7 +246,7 @@ public class AmpPagesWithCaching implements AmpPages
 		{
 			File filePath = FilePaths.getJsonFilePath( collectionUrl, config, context );
 			return FileUtils
-					.readFromFile( filePath )
+					.readTextFromFile( filePath )
 					.map( collectionsString -> GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class ) )
 					.map( CollectionResponse::getCollection )
 							// save to memory cache
@@ -357,7 +357,7 @@ public class AmpPagesWithCaching implements AmpPages
 		{
 			File filePath = FilePaths.getJsonFilePath( pageUrl, config, context );
 			return FileUtils
-					.readFromFile( filePath )
+					.readTextFromFile( filePath )
 					.map( pagesString -> GsonHolder.getInstance().fromJson( pagesString, PageResponse.class ) )
 					.map( PageResponse::getPage )
 							// save to memory cache
