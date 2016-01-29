@@ -45,7 +45,6 @@ public class FileUtils
 		LockWithCounter lock = ongoingWriteOperations.get( file );
 		lock.counter--;
 
-
 		if ( lock.counter <= 0 )
 		{
 			ongoingWriteOperations.remove( file );
