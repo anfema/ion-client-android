@@ -78,6 +78,13 @@ public class FileCacheIndex extends CacheIndex
 	 */
 	public static void save( String requestUrl, File file, AmpConfig config, String checksum, Context context )
 	{
+		// Log.d( "File Cache Index", "saving " + requestUrl + " with file " + file );
+
+		if ( file == null )
+		{
+			return;
+		}
+
 		if ( checksum == null )
 		{
 			checksum = "sha256:" + HashUtils.getSha256( file );

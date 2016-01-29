@@ -7,61 +7,110 @@ import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 import rx.Observable;
 
 public class FileUtils
 {
-	public static final String TAG = "FileUtils";
-
+	public static final String TAG   = "FileUtils";
 	public static final String SLASH = "/";
 
-	public static File writeToFile( InputStream inputStream, File file ) throws IOException
+	/// lock mechanism ensures file write operations on same file do not interfere
+
+	static class LockWithCounter
 	{
-		Log.d( TAG, "write to file: " + file.getPath() );
+		Object lock;
+		int    counter;
 
-		File fileTemp = FilePaths.getTempFilePath( file );
+		public LockWithCounter()
+		{
+			lock = new Object();
+			counter = 0;
+		}
+	}
 
-		OutputStream outputStream = new BufferedOutputStream( new FileOutputStream( fileTemp ) );
-		IOUtils.copy( inputStream, outputStream );
-		outputStream.close();
+	private static Map<File, LockWithCounter> ongoingWriteOperations = new HashMap<>();
 
-		boolean writeSuccess = move( fileTemp, file, true );
-		return writeSuccess ? file : null;
+	private static synchronized void releaseLock( File file )
+	{
+		LockWithCounter lock = ongoingWriteOperations.get( file );
+		lock.counter--;
+
+
+		if ( lock.counter <= 0 )
+		{
+			ongoingWriteOperations.remove( file );
+		}
+		// Log.d( "Lock Mechanism", "Released lock for file " + file.getPath() + ". counter: " + lock.counter );
+	}
+
+	private synchronized static Object obtainLock( File file )
+	{
+		LockWithCounter lock = ongoingWriteOperations.get( file );
+		if ( lock == null )
+		{
+			lock = new LockWithCounter();
+			ongoingWriteOperations.put( file, lock );
+		}
+		lock.counter++;
+		// Log.d( "Lock Mechanism", "Obtained lock for file " + file.getPath() + ". counter: " + lock.counter );
+		return lock;
+	}
+
+	// END lock mechanism
+
+
+	/**
+	 * Write from an input stream to a file.
+	 * <p>
+	 * Should not be called from main thread.
+	 *
+	 * @param inputStream source of the bytes to write into file
+	 * @param targetFile  file path to save data to
+	 */
+	public static File writeToFile( InputStream inputStream, File targetFile ) throws IOException
+	{
+		boolean writeSuccess;
+		synchronized ( obtainLock( targetFile ) )
+		{
+			Log.d( TAG, "write to file: " + targetFile.getPath() );
+
+			File fileTemp = FilePaths.getTempFilePath( targetFile );
+
+			OutputStream outputStream = new BufferedOutputStream( new FileOutputStream( fileTemp ) );
+			IOUtils.copy( inputStream, outputStream );
+			outputStream.close();
+
+			writeSuccess = move( fileTemp, targetFile, true );
+
+			releaseLock( targetFile );
+		}
+		return writeSuccess ? targetFile : null;
 	}
 
 	/**
-	 * Helper function to write content String to a file.
-	 * <p/>
+	 * Convenience method to write content String to a file.
+	 * <p>
 	 * Should not be called from main thread.
 	 *
-	 * @param content content String to save
-	 * @param file    File to save object(s) to
+	 * @param content    content String to save
+	 * @param targetFile file path to save data to
 	 */
-	public static File writeTextToFile( String content, File file ) throws IOException
+	public static File writeTextToFile( String content, File targetFile ) throws IOException
 	{
-		Log.d( TAG, "write to file: " + file.getPath() );
-
-		File fileTemp = FilePaths.getTempFilePath( file );
-
-		OutputStream outputStream = new FileOutputStream( fileTemp, false );
-		BufferedWriter bufferedWriter = new BufferedWriter( new OutputStreamWriter( outputStream ) );
-		bufferedWriter.write( content );
-		bufferedWriter.close();
-
-		boolean writeSuccess = move( fileTemp, file, true );
-		return writeSuccess ? file : null;
+		return writeToFile( new ByteArrayInputStream( content.getBytes( "UTF-8" ) ), targetFile );
 	}
 
-	public static Observable<String> readFromFile( File file ) throws IOException
+	public static Observable<String> readTextFromFile( File file ) throws IOException
 	{
 		return Observable.just( null )
 				.flatMap( o ->
@@ -98,12 +147,17 @@ public class FileUtils
 	 */
 	public static boolean move( File source, File target, boolean forceOverwrite )
 	{
+		if ( source.getPath().equals( target.getPath() ) )
+		{
+			return true;
+		}
+
 		if ( !forceOverwrite && target.exists() )
 		{
 			return false;
 		}
 
-		if ( source.isDirectory() && target.exists() && !target.isDirectory() || !source.isDirectory() && target.isDirectory() )
+		if ( !source.exists() || source.isDirectory() && target.exists() && !target.isDirectory() || !source.isDirectory() && target.isDirectory() )
 		{
 			throw new FileMoveException( source, target );
 		}
