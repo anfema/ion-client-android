@@ -103,8 +103,12 @@ public class AmpPicassoWithCaching implements AmpPicasso
 	private void showImage( Uri uri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
 	{
 		RequestCreator requestCreator = picasso.load( uri );
-		// apply requestCreator operations
-		requestCreator = requestTransformation.call( requestCreator );
+
+		// apply passed requestCreator operations
+		if ( requestTransformation != null )
+		{
+			requestCreator = requestTransformation.call( requestCreator );
+		}
 
 		requestCreator.into( target );
 	}

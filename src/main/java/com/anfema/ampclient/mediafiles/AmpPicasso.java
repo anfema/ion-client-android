@@ -16,12 +16,15 @@ public interface AmpPicasso
 	/**
 	 * Wraps Picassos load method {@link Picasso#load(Uri)}.
 	 * If Uri is a HTTP link then it might be changed to a file link in case the cached version shall be used.
+	 *
+	 * @param uri                   the location of the image source. can be a network link, file link, or content link, see {@link Picasso#load(Uri)}
+	 * @param target                view where the image should be displayed
+	 * @param requestTransformation can be null, chained operations on {@link RequestCreator} (e.g. requestCreator -> requestCreator.fit().centerCrop())
 	 */
 	void loadImage( Uri uri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation );
 
 	/**
 	 * Convenience method for {@link #loadImage(Uri, ImageView, Func1)} which parses path into {@link Uri}
-	 * Wraps Picassos load method {@link Picasso#load(String)}
 	 */
 	void loadImage( String path, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation );
 
