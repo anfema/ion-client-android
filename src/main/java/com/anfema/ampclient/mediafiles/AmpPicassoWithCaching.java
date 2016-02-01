@@ -64,6 +64,17 @@ public class AmpPicassoWithCaching implements AmpPicasso
 	}
 
 	@Override
+	public void loadImage( int resourceId, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
+	{
+		RequestCreator requestCreator = picasso.load( resourceId );
+		if ( requestTransformation != null )
+		{
+			requestCreator = requestTransformation.call( requestCreator );
+		}
+		requestCreator.into( target );
+	}
+
+	@Override
 	public void loadImage( String path, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
 	{
 		if ( path == null || path.trim().length() == 0 )

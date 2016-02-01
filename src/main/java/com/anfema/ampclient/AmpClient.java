@@ -33,7 +33,7 @@ import rx.functions.Func1;
 
 /**
  * Main entry point for AMP functionality. Obtain an instance with {@link #getInstance(AmpConfig, Context)}.
- * <p/>
+ * <p>
  * Serving as entry point AmpClient holds interfaces providing the actual implementation of its functionality.
  */
 public class AmpClient implements AmpPages, AmpFiles, AmpPicasso, AmpArchive, AmpFts
@@ -128,7 +128,7 @@ public class AmpClient implements AmpPages, AmpFiles, AmpPicasso, AmpArchive, Am
 
 	/**
 	 * A set of pages is "returned" by emitting multiple events.
-	 * <p/>
+	 * <p>
 	 * The pages are ordered by their position.
 	 */
 	@Override
@@ -139,7 +139,7 @@ public class AmpClient implements AmpPages, AmpFiles, AmpPicasso, AmpArchive, Am
 
 	/**
 	 * A set of page previews is "returned" by emitting multiple events.
-	 * <p/>
+	 * <p>
 	 * The page previews are ordered by their position.
 	 */
 	@Override
@@ -166,6 +166,12 @@ public class AmpClient implements AmpPages, AmpFiles, AmpPicasso, AmpArchive, Am
 	public Observable<File> request( HttpUrl url, String checksum, boolean ignoreCaching, File targetFile )
 	{
 		return ampFiles.request( url, checksum, ignoreCaching, targetFile );
+	}
+
+	@Override
+	public void loadImage( int resourceId, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
+	{
+		ampPicasso.loadImage( resourceId, target, requestTransformation );
 	}
 
 	@Override
