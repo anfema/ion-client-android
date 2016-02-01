@@ -12,16 +12,17 @@ import java.util.Map;
 /**
  * This utility methods are only relevant if minimum supported API level is below 21. Otherwise, headers can be set with {@link VideoView#setVideoURI(Uri, Map)}.
  */
-public class VideoHeaderUtils
+public class VideoUtils
 {
 	/**
 	 * Setting headers for video URI in {@link VideoView} is possible with method {@link VideoView#setVideoURI(Uri, Map)} from API level 21.
 	 * This method is a bit hacky. It enables setting headers by use reflection to access a private field.
-	 * <p/>
-	 * Call this method AFTER {@link VideoView#setVideoURI(Uri)} because otherwise "mHeaders" field is set to null again!
+	 * <p>
+	 * Call this method INSTEAD OF {@link VideoView#setVideoURI(Uri)}. DO NOT CALL {@link VideoView#setVideoURI(Uri)} afterwards, in which case "mHeaders" field would be set to null again!
 	 */
-	public static void setHeaders( VideoView videoView, Map<String, String> headersMap )
+	public static void setVideoUri( VideoView videoView, Uri videoUri, Map<String, String> headersMap )
 	{
+		videoView.setVideoURI( videoUri );
 		try
 		{
 			Field field = VideoView.class.getDeclaredField( "mHeaders" );
@@ -36,15 +37,15 @@ public class VideoHeaderUtils
 
 	/**
 	 * Set authorization header for video URI in {@link VideoView}.
-	 * <p/>
+	 * <p>
 	 * Call this method AFTER {@link VideoView#setVideoURI(Uri)} because otherwise "mHeaders" field is set to null again!
 	 *
-	 * @see #setHeaders(VideoView, Map)
+	 * @see #setVideoUri(VideoView, Uri, Map)
 	 */
-	public static void setAuthorizationHeader( VideoView videoView, String authHeaderValue )
+	public static void setVideoUri( VideoView videoView, Uri videoUri, String authHeaderValue )
 	{
 		Map<String, String> headers = new HashMap<>();
 		headers.put( "Authorization", authHeaderValue );
-		setHeaders( videoView, headers );
+		setVideoUri( videoView, videoUri, headers );
 	}
 }
