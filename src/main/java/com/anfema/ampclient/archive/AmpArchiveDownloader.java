@@ -84,14 +84,13 @@ class AmpArchiveDownloader implements AmpArchive, CollectionDownloadedListener
 		Observable<Collection> collectionObs;
 		if ( inCollection == null )
 		{
-			collectionObs = ampPages.getCollection();
+			collectionObs = ampPages.getCollection().share();
 		}
 		else
 		{
 			collectionObs = Observable.just( inCollection );
 		}
 
-		// TODO this code seems to execute collections call twice (on each subscribe). Try using share-operator
 		Observable<File> archiveObs = collectionObs
 				.map( collection -> collection.archive )
 				.flatMap( archiveUrl -> ampFiles.request( HttpUrl.parse( archiveUrl ), null, true, archivePath ) );
