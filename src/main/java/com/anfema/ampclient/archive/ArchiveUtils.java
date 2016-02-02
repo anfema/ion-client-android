@@ -64,7 +64,7 @@ class ArchiveUtils
 
 	/**
 	 * Untar an input file into an output file.
-	 * <p/>
+	 * <p>
 	 * The output file is created in the output folder, having the same name
 	 * as the input file, minus the '.tar' extension.
 	 *
@@ -113,11 +113,11 @@ class ArchiveUtils
 					continue;
 				}
 
+				Log.i( TAG, fileInfo.url );
 				FileWithMeta fileWithMeta = getFilePath( fileInfo, collectionFolderTemp, config, context );
 				File targetFile = fileWithMeta.file;
 				FileUtils.createDir( targetFile.getParentFile() );
 
-				// Log.i( TAG, fileWithMeta.archiveIndex.url );
 				targetFile = FileUtils.writeToFile( debInputStream, targetFile );
 
 				if ( targetFile != null )
@@ -160,6 +160,10 @@ class ArchiveUtils
 			{
 				throw new IOException( "Media files could not be moved to final path." );
 			}
+		}
+		else
+		{
+			Log.w( TAG, "No media files were contained in archive." );
 		}
 
 		// add collection to file cache again
@@ -241,7 +245,6 @@ class ArchiveUtils
 
 		switch ( type )
 		{
-
 		case COLLECTION:
 			CollectionCacheIndex.save( config, context, lastModified );
 			break;
