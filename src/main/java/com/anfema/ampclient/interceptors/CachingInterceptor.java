@@ -38,13 +38,6 @@ public class CachingInterceptor implements Interceptor
 	{
 		Request request = chain.request();
 		HttpUrl url = request.url();
-		//		AmpCall ampCall = AmpCall.determineCall( url );
-		//
-		//		// filter out all requests that shall not use caching
-		//		if ( ampCall != AmpCall.COLLECTIONS && ampCall != AmpCall.PAGES )
-		//		{
-		//			return chain.proceed( request );
-		//		}
 		Response response = chain.proceed( request );
 
 		if ( response.isSuccessful() )
@@ -53,7 +46,7 @@ public class CachingInterceptor implements Interceptor
 			String responseBody = getResponseBody( response );
 			try
 			{
-				File filePath = FilePaths.getJsonFilePath( url.toString(), config, context );
+				File filePath = FilePaths.getFilePath( url.toString(), config, context );
 				FileUtils.writeTextToFile( responseBody, filePath );
 			}
 			catch ( NoAmpPagesRequestException e )
