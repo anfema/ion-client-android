@@ -50,7 +50,7 @@ public enum AmpRequest
 			}
 			else if ( urlPathSegments.length == 3 )
 			{
-				return new AmpRequestInfo( COLLECTION, urlPathSegments[ 0 ], urlPathSegments[ 1 ], urlPathSegments[ 2 ] );
+				return new AmpRequestInfo( PAGE, urlPathSegments[ 0 ], urlPathSegments[ 1 ], urlPathSegments[ 2 ] );
 			}
 			else
 			{
