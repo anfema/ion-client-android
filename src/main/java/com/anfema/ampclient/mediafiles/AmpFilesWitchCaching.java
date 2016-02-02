@@ -153,7 +153,11 @@ public class AmpFilesWitchCaching implements AmpFiles
 			Response response = client.newCall( request ).execute();
 			if ( !response.isSuccessful() )
 			{
-				throw new IOException( "Unexpected code " + response );
+				if ( response.body() != null )
+				{
+					response.body().close();
+				}
+				throw new IOException( "Unexpected code: " + response );
 			}
 
 			// use custom target file path

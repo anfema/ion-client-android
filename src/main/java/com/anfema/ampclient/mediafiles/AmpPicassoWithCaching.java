@@ -91,10 +91,7 @@ public class AmpPicassoWithCaching implements AmpPicasso
 	{
 		Log.i( "AMP Picasso", "START: requestUri: " + requestUri );
 		fetchImageFile( requestUri )
-				.subscribe( fileUri -> showImage( fileUri, target, requestTransformation ), throwable -> {
-					Log.e( "AMP Picasso", "requestUri: " + requestUri + ", target: " + target );
-					Log.ex( "AMP Picasso", throwable );
-				} );
+				.subscribe( fileUri -> showImage( fileUri, target, requestTransformation ), throwable -> Log.ex( "AMP Picasso", throwable ) );
 	}
 
 	private Observable<Uri> fetchImageFile( Uri uri )
