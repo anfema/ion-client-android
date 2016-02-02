@@ -26,17 +26,10 @@ public class RxUtils
 	}
 
 	/**
-	 * Convenience action for on error:
-	 * This is an action that receives Throwable but ignores exception. Use only if exception is handled at another spot.
-	 */
-	public static Action1<Throwable> IGNORE_ERROR = throwable -> {
-	};
-
-	/**
-	 * Convenience action for on next:
+	 * Convenience action for onNext function.
 	 * This is an action that receives one argument and does nothing.
 	 */
-	public static Action1 NOTHING = o -> doNothing();
+	public static Action1<Object> NOTHING = o -> doNothing();
 
 	public static void doNothing()
 	{
