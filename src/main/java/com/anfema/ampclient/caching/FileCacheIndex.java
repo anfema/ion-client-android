@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.anfema.ampclient.AmpConfig;
 import com.anfema.ampclient.utils.HashUtils;
+import com.anfema.ampclient.utils.Log;
 
 import org.joda.time.DateTime;
 
@@ -78,10 +79,9 @@ public class FileCacheIndex extends CacheIndex
 	 */
 	public static void save( String requestUrl, File file, AmpConfig config, String checksum, Context context )
 	{
-		// Log.d( "File Cache Index", "saving " + requestUrl + " with file " + file );
-
 		if ( file == null )
 		{
+			Log.e( "File Cache Index", "Could not save cache index for " + requestUrl + "\nBecause file is null." );
 			return;
 		}
 

@@ -38,6 +38,8 @@ public class CacheIndexStore
 
 	public static <T extends CacheIndex> void save( String requestUrl, T cacheIndex, AmpConfig config, Context context )
 	{
+		Log.d( "Cache Index", "saving index for " + requestUrl );
+
 		try
 		{
 			File file = FilePaths.getFilePath( requestUrl, config, context );
@@ -52,6 +54,10 @@ public class CacheIndexStore
 				Editor editor = prefs.edit();
 				editor.putString( requestUrl, GsonHolder.getInstance().toJson( cacheIndex ) );
 				editor.apply();
+			}
+			else
+			{
+				Log.e( "Cache Index", "Could not save cache index entry for " + requestUrl + "\nBecause file does not exist." );
 			}
 		}
 		catch ( NoAmpPagesRequestException e )
