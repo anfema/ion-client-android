@@ -1,6 +1,7 @@
 package com.anfema.ampclient.serialization;
 
 import com.anfema.ampclient.pages.models.contents.AContent;
+import com.anfema.ampclient.pages.models.contents.EmptyContent;
 import com.anfema.ampclient.utils.Log;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -30,14 +31,26 @@ public class ContentDeserializer implements JsonDeserializer<AContent>
 	{
 		JsonObject jsonObject = json.getAsJsonObject();
 
-		// determine content type
-		String typeName = jsonObject.get( ELEMENT_NAME_FOR_TYPE ).getAsString();
-		Class<? extends AContent> type = contentTypeRegistry.get( typeName );
+		// check if content is unavailable
+		JsonElement isAvailableElement = jsonObject.get( "is_available" );
+		boolean isAvailable = isAvailableElement == null || isAvailableElement.getAsBoolean();
 
-		if ( type == null )
+		Class<? extends AContent> type;
+		if ( isAvailable )
 		{
-			Log.w( "Content deserialization failed because no type is registered for " + typeName + "." );
-			return null;
+			// determine content type
+			String typeName = jsonObject.get( ELEMENT_NAME_FOR_TYPE ).getAsString();
+			type = contentTypeRegistry.get( typeName );
+
+			if ( type == null )
+			{
+				Log.w( "Content deserialization failed because no type is registered for " + typeName + "." );
+				return null;
+			}
+		}
+		else
+		{
+			type = EmptyContent.class;
 		}
 		return context.deserialize( jsonObject, type );
 	}
