@@ -24,6 +24,7 @@ import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.ListUtils;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.NetworkUtils;
+import com.anfema.ampclient.utils.PagesFilter;
 import com.anfema.ampclient.utils.RxUtils;
 
 import java.io.File;
@@ -38,9 +39,9 @@ import rx.functions.Func1;
 
 /**
  * A wrapper of "collections" and "pages" call of AMP API.
- * <p/>
+ * <p>
  * Adds collection identifier and authorization token to request as retrieved via {@link AmpConfig}<br/>
- * <p/>
+ * <p>
  * Uses a file and a memory cache.
  */
 public class AmpPagesWithCaching implements AmpPages
@@ -73,12 +74,12 @@ public class AmpPagesWithCaching implements AmpPages
 
 	/**
 	 * Retrieve collection with following priorities:
-	 * <p/>
+	 * <p>
 	 * 1. Look if there is a current version in cache
 	 * 2. Download from server if internet connection available
 	 * 3. If no internet connection: return cached version (even if outdated)
 	 * 4. Collection is not retrievable at all: emit error
-	 * <p/>
+	 * <p>
 	 * Use default collection identifier as specified in {@link this#config}
 	 */
 	@Override
@@ -114,13 +115,13 @@ public class AmpPagesWithCaching implements AmpPages
 
 	/**
 	 * Retrieve page with following priorities:
-	 * <p/>
-	 * <p/>
+	 * <p>
+	 * <p>
 	 * 1. Look if there is a current version in cache
 	 * 2. Download from server if internet connection available
 	 * 3. If no internet connection: return cached version (even if outdated)
 	 * 4. Collection is not retrievable at all: emit error
-	 * <p/>
+	 * <p>
 	 * Add collection identifier and authorization token to request.<br/>
 	 * Use default collection identifier as specified in {@link this#config}
 	 */
@@ -223,6 +224,15 @@ public class AmpPagesWithCaching implements AmpPages
 				.map( ListUtils::sort )
 				.concatMap( Observable::from )
 				.filter( pagesFilter );
+	}
+
+	@Override
+	public Observable<PagePreview> getPagePreview( String pageIdentifier )
+	{
+		return getCollection()
+				.map( collection -> collection.pages )
+				.flatMap( Observable::from )
+				.filter( PagesFilter.identifierEquals( pageIdentifier ) );
 	}
 
 
