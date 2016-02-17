@@ -104,6 +104,7 @@ public class AmpPagesWithCaching implements AmpPages
 		else if ( cacheIndex != null )
 		{
 			// no network: use old version from cache
+			// TODO notify app that data might be outdated
 			return getCollectionFromCache( cacheIndex, false );
 		}
 		else
