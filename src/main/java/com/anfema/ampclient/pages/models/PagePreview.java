@@ -34,7 +34,7 @@ public class PagePreview implements Comparable<PagePreview>
 	/**
 	 * Position indicates the order among the pages.
 	 */
-	public long position;
+	private long position;
 
 	/**
 	 * the page's layout

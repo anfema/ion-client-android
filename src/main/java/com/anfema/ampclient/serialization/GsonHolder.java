@@ -1,5 +1,6 @@
 package com.anfema.ampclient.serialization;
 
+import com.anfema.ampclient.pages.models.Collection;
 import com.anfema.ampclient.pages.models.contents.AContent;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -19,6 +20,7 @@ public class GsonHolder
 			gsonBuilder.registerTypeAdapter( AContent.class, ContentDeserializerFactory.newInstance() );
 			// parse datetime strings (trying two patterns)
 			gsonBuilder.registerTypeAdapter( DateTime.class, new DateTimeSerializer() );
+			gsonBuilder.registerTypeAdapter( Collection.class, new CollectionDeserializer() );
 			gsonInstance = gsonBuilder.create();
 		}
 		return gsonInstance;

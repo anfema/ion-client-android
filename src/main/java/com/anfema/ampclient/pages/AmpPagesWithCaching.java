@@ -21,7 +21,6 @@ import com.anfema.ampclient.pages.models.responses.PageResponse;
 import com.anfema.ampclient.serialization.GsonHolder;
 import com.anfema.ampclient.utils.ApiFactory;
 import com.anfema.ampclient.utils.FileUtils;
-import com.anfema.ampclient.utils.ListUtils;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.NetworkUtils;
 import com.anfema.ampclient.utils.PagesFilter;
@@ -206,7 +205,6 @@ public class AmpPagesWithCaching implements AmpPages
 	{
 		return getCollection()
 				.map( collection -> collection.pages )
-				.map( ListUtils::sort )
 				.concatMap( Observable::from )
 				.filter( pagesFilter )
 				.map( page -> page.identifier )
@@ -222,7 +220,6 @@ public class AmpPagesWithCaching implements AmpPages
 	{
 		return getCollection()
 				.map( collection -> collection.pages )
-				.map( ListUtils::sort )
 				.concatMap( Observable::from )
 				.filter( pagesFilter );
 	}

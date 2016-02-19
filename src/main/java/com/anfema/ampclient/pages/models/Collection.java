@@ -19,7 +19,7 @@ public class Collection
 
 	/**
 	 * Usually, there is one collection that is used per app. Thus, the collection identifier can be hard-coded and passed to AMP client configuration.
-	 * The identifier matches the collection_identifer in the API requests.
+	 * The identifier matches the collection_identifier in the API requests.
 	 */
 	public String identifier;
 
