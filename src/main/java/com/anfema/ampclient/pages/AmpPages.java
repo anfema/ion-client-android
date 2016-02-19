@@ -21,5 +21,7 @@ public interface AmpPages
 
 	Observable<PagePreview> getPagePreview( String pageIdentifier );
 
+	Observable<PagePreview> getPagePreviews( Func1<PagePreview, Boolean> pagesFilter );
+
 	Observable<PagePreview> getPagePreviewsSorted( Func1<PagePreview, Boolean> pagesFilter );
 }

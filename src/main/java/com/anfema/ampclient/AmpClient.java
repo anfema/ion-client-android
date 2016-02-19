@@ -145,6 +145,15 @@ public class AmpClient implements AmpPages, AmpFiles, AmpPicasso, AmpArchive, Am
 
 	/**
 	 * A set of page previews is "returned" by emitting multiple events.
+	 */
+	@Override
+	public Observable<PagePreview> getPagePreviews( Func1<PagePreview, Boolean> pagesFilter )
+	{
+		return ampPages.getPagePreviews( pagesFilter );
+	}
+
+	/**
+	 * A set of page previews is "returned" by emitting multiple events.
 	 * <p>
 	 * The page previews are ordered by their position.
 	 */

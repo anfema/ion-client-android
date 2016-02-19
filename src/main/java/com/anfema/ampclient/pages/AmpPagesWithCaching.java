@@ -211,10 +211,15 @@ public class AmpPagesWithCaching implements AmpPages
 				.concatMap( this::getPage );
 	}
 
-	/**
-	 * A set of pages is "returned" by emitting multiple events.<br/>
-	 * Use default collection identifier as specified in {@link this#config}
-	 */
+	@Override
+	public Observable<PagePreview> getPagePreviews( Func1<PagePreview, Boolean> pagesFilter )
+	{
+		return getCollection()
+				.map( collection -> collection.pages )
+				.flatMap( Observable::from )
+				.filter( pagesFilter );
+	}
+
 	@Override
 	public Observable<PagePreview> getPagePreviewsSorted( Func1<PagePreview, Boolean> pagesFilter )
 	{
