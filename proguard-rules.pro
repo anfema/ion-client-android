@@ -1,22 +1,6 @@
-#
-# This ProGuard configuration file illustrates how to process a program
-# library, such that it remains usable as a library.
-# Usage:
-#     java -jar proguard.jar @library.pro
-#
-
-# Specify the input jars, output jars, and library jars.
-# In this case, the input jar is the program library that we want to process.
-
-#-injars  in.jar
-#-outjars out.jar
-#
-#-libraryjars  <java.home>/lib/rt.jar
-
-# Save the obfuscation mapping to a file, so we can de-obfuscate any stack
-# traces later on. Keep a fixed source file attribute and all line number
-# tables to get line numbers in the stack traces.
-# You can comment this out if you're not interested in stack traces.
+# *** Generic library configuartion ***
+# If libary is obsfuscated separatly without the application (because it is deployed as an SDK),
+# this part guarantees it remains usable as a library.
 
 #-printmapping out.map
 -keepparameternames
@@ -69,12 +53,6 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
-
-# Your library may contain more items that need to be preserved;
-# typically classes that are dynamically created using Class.forName:
-
-# -keep public class mypackage.MyClass
-# -keep public interface mypackage.MyInterface
-# -keep public class * implements mypackage.MyInterface
-
 -dontwarn java.lang.invoke.*
+
+# include configuration from proguard-library-consumer.pro here
