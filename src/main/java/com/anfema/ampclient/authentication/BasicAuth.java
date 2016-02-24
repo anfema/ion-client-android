@@ -1,4 +1,4 @@
-package com.anfema.ampclient.authorization;
+package com.anfema.ampclient.authentication;
 
 import android.util.Base64;
 

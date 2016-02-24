@@ -1,4 +1,4 @@
-package com.anfema.ampclient.authorization;
+package com.anfema.ampclient.authentication;
 
 /**
  * Helper class for basic access authentication.

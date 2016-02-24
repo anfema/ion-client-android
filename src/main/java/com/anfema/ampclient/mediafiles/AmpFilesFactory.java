@@ -8,6 +8,6 @@ public class AmpFilesFactory
 {
 	public static AmpFiles newInstance( AmpConfig config, Context context )
 	{
-		return new AmpFilesWitchCaching( config, context );
+		return new AmpFilesWithCaching( config, context );
 	}
 }

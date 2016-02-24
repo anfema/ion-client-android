@@ -35,13 +35,13 @@ import rx.Observable;
  * <p>
  * However, the AMP authorization header is added (in case the URL points to protected media).
  */
-public class AmpFilesWitchCaching implements AmpFiles
+public class AmpFilesWithCaching implements AmpFiles
 {
 	private       AmpConfig    config;
 	private       Context      context;
 	private final OkHttpClient client;
 
-	public AmpFilesWitchCaching( AmpConfig config, Context context )
+	public AmpFilesWithCaching( AmpConfig config, Context context )
 	{
 		this.config = config;
 		this.context = context;
