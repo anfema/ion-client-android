@@ -28,12 +28,10 @@ public class FileUtils
 
 	static class LockWithCounter
 	{
-		Object lock;
-		int    counter;
+		int counter;
 
 		public LockWithCounter()
 		{
-			lock = new Object();
 			counter = 0;
 		}
 	}
@@ -52,7 +50,7 @@ public class FileUtils
 		// Log.d( "Lock Mechanism", "Released lock for file " + file.getPath() + ". counter: " + lock.counter );
 	}
 
-	private synchronized static Object obtainLock( File file )
+	private synchronized static LockWithCounter obtainLock( File file )
 	{
 		LockWithCounter lock = ongoingWriteOperations.get( file );
 		if ( lock == null )
