@@ -1,4 +1,4 @@
-package com.anfema.ampclient.archive;
+package com.anfema.ampclient.archive.models;
 
 import android.support.annotation.NonNull;
 

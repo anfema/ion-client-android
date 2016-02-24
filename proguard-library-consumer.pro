@@ -26,9 +26,8 @@
 -keep class sun.misc.Unsafe { *; }
 
 # AMP client specific classes that will be serialized/deserialized over Gson
--keep class com.anfema.ampclient.*.models.** { *; }
+-keep class com.anfema.ampclient.**.models.** { *; }
 -keep class * extends com.anfema.ampclient.caching.CacheIndex { *; }
--keep class com.anfema.ampclient.archive.ArchiveIndex { *; }
 
 
 # *** OkHttp3 ***

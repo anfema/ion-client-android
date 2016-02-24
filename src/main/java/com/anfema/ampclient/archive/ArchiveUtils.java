@@ -3,6 +3,7 @@ package com.anfema.ampclient.archive;
 import android.content.Context;
 
 import com.anfema.ampclient.AmpConfig;
+import com.anfema.ampclient.archive.models.ArchiveIndex;
 import com.anfema.ampclient.caching.CacheIndexStore;
 import com.anfema.ampclient.caching.CollectionCacheIndex;
 import com.anfema.ampclient.caching.FileCacheIndex;
