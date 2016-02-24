@@ -56,6 +56,16 @@ public class DateTimeUtils extends org.joda.time.DateTimeUtils
 	}
 
 	/**
+	 * Parse datetime strings by applying {@param inputPattern} and assuming timezone UTC.
+	 *
+	 * @param inputPattern e.g. "dd.MM.yy"
+	 */
+	public static DateTime parseDateTime( String dateString, String inputPattern ) throws IllegalArgumentException
+	{
+		return DateTimeFormat.forPattern( inputPattern ).withZoneUTC().withLocale( Locale.US ).parseDateTime( dateString );
+	}
+
+	/**
 	 * Return string respresentatin according to {@link DateTimeUtils#DATETIME_PATTERN}
 	 */
 	public static String toString( DateTime dateTime )
