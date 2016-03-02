@@ -25,9 +25,9 @@
 # Gson specific classes
 -keep class sun.misc.Unsafe { *; }
 
-# AMP client specific classes that will be serialized/deserialized over Gson
--keep class com.anfema.ampclient.**.models.** { *; }
--keep class * extends com.anfema.ampclient.caching.CacheIndex { *; }
+# ION client specific classes that will be serialized/deserialized over Gson
+-keep class com.anfema.ionclient.**.models.** { *; }
+-keep class * extends com.anfema.ionclient.caching.CacheIndex { *; }
 
 
 # *** OkHttp3 ***

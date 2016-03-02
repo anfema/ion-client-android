@@ -1,4 +1,4 @@
-package com.anfema.ampclient.utils;
+package com.anfema.ionclient.utils;
 
 import junit.framework.TestCase;
 
