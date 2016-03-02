@@ -24,6 +24,7 @@ import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.Log;
 import com.anfema.ionclient.utils.NetworkUtils;
 import com.anfema.ionclient.utils.PagesFilter;
+import com.anfema.ionclient.utils.RunningDownloadHandler;
 import com.anfema.ionclient.utils.RxUtils;
 
 import java.io.File;
@@ -45,9 +46,11 @@ import rx.functions.Func1;
  */
 public class IonPagesWithCaching implements IonPages
 {
-
 	public static final int COLLECTION_NOT_MODIFIED = 304;
 	private CollectionDownloadedListener collectionListener;
+
+	private RunningDownloadHandler<String, Collection> runningCollectionDownload; //key: collection identifier
+	private RunningDownloadHandler<String, Page>       runningPageDownloads; //key: page identifier
 
 	private final Context context;
 
@@ -69,6 +72,8 @@ public class IonPagesWithCaching implements IonPages
 		this.context = context;
 		ionApi = ApiFactory.newInstance( config.baseUrl, interceptors, IonPagesApi.class );
 		memoryCache = new MemoryCache( config.pagesMemCacheSize );
+		runningCollectionDownload = new RunningDownloadHandler<>();
+		runningPageDownloads = new RunningDownloadHandler<>();
 	}
 
 	/**
@@ -299,7 +304,7 @@ public class IonPagesWithCaching implements IonPages
 	{
 		final String lastModified = cacheIndex != null ? cacheIndex.getLastModified() : null;
 
-		return ionApi.getCollection( config.collectionIdentifier, config.locale, config.authorizationHeaderValue, lastModified )
+		Observable<Collection> collectionObservable = ionApi.getCollection( config.collectionIdentifier, config.locale, config.authorizationHeaderValue, lastModified )
 				.flatMap( serverResponse -> {
 					if ( serverResponse.code() == COLLECTION_NOT_MODIFIED )
 					{
@@ -340,7 +345,9 @@ public class IonPagesWithCaching implements IonPages
 					}
 					Log.e( "Failed Request", "Network request " + collectionUrl + " failed." );
 					return Observable.error( new NetworkRequestException( collectionUrl, throwable ) );
-				} );
+				} )
+				.doOnNext( file -> runningCollectionDownload.finished( config.collectionIdentifier ) );
+		return runningCollectionDownload.starting( config.collectionIdentifier, collectionObservable );
 	}
 
 
@@ -403,7 +410,7 @@ public class IonPagesWithCaching implements IonPages
 	 */
 	private Observable<Page> getPageFromServer( String pageIdentifier, boolean cacheAsBackup )
 	{
-		return ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.authorizationHeaderValue )
+		Observable<Page> pageObservable = ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.authorizationHeaderValue )
 				.map( PageResponse::getPage )
 				.doOnNext( savePageCacheIndex() )
 				.doOnNext( page -> memoryCache.savePage( page, config ) )
@@ -418,7 +425,9 @@ public class IonPagesWithCaching implements IonPages
 					}
 					Log.e( "Failed Request", "Network request " + pageUrl + " failed." );
 					return Observable.error( new NetworkRequestException( pageUrl, throwable ) );
-				} );
+				} )
+				.doOnNext( file -> runningPageDownloads.finished( pageIdentifier ) );
+		return runningPageDownloads.starting( pageIdentifier, pageObservable );
 	}
 
 	/// Get page methods END

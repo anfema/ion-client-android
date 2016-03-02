@@ -13,8 +13,8 @@ import com.anfema.ionclient.interceptors.RequestLogger;
 import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.Log;
 import com.anfema.ionclient.utils.NetworkUtils;
-import com.anfema.ionclient.utils.RxUtils;
 import com.anfema.ionclient.utils.RunningDownloadHandler;
+import com.anfema.ionclient.utils.RxUtils;
 
 import org.joda.time.DateTime;
 
@@ -38,10 +38,10 @@ import rx.Observable;
  */
 public class IonFilesWithCaching implements IonFiles
 {
-	private       IonConfig                    config;
-	private       Context                      context;
-	private final OkHttpClient                 client;
-	private       RunningDownloadHandler<File> runningDownloads;
+	private       IonConfig                             config;
+	private       Context                               context;
+	private final OkHttpClient                          client;
+	private       RunningDownloadHandler<HttpUrl, File> runningDownloads;
 
 	public IonFilesWithCaching( IonConfig config, Context context )
 	{

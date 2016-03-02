@@ -3,26 +3,25 @@ package com.anfema.ionclient.utils;
 import java.util.HashMap;
 import java.util.Map;
 
-import okhttp3.HttpUrl;
 import rx.Observable;
 
-public class RunningDownloadHandler<T>
+public class RunningDownloadHandler<K, T>
 {
-	private volatile Map<HttpUrl, Observable<T>> runningDownloads = new HashMap<>();
+	private volatile Map<K, Observable<T>> runningDownloads = new HashMap<>();
 
-	public Observable<T> starting( HttpUrl url, Observable<T> newObservable )
+	public Observable<T> starting( K key, Observable<T> newObservable )
 	{
-		Observable<T> runningDownload = runningDownloads.get( url );
+		Observable<T> runningDownload = runningDownloads.get( key );
 		if ( runningDownload == null )
 		{
 			runningDownload = newObservable.share();
-			runningDownloads.put( url, runningDownload );
+			runningDownloads.put( key, runningDownload );
 		}
 		return runningDownload;
 	}
 
-	public void finished( HttpUrl url )
+	public void finished( K key )
 	{
-		runningDownloads.remove( url );
+		runningDownloads.remove( key );
 	}
 }

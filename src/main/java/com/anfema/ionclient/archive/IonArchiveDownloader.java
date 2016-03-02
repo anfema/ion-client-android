@@ -6,8 +6,8 @@ import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.caching.MemoryCache;
 import com.anfema.ionclient.mediafiles.IonFiles;
-import com.anfema.ionclient.pages.IonPages;
 import com.anfema.ionclient.pages.CollectionDownloadedListener;
+import com.anfema.ionclient.pages.IonPages;
 import com.anfema.ionclient.pages.IonPagesWithCaching;
 import com.anfema.ionclient.pages.models.Collection;
 import com.anfema.ionclient.utils.Log;
@@ -84,7 +84,7 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 		Observable<Collection> collectionObs;
 		if ( inCollection == null )
 		{
-			collectionObs = ionPages.getCollection().share();
+			collectionObs = ionPages.getCollection();
 		}
 		else
 		{
