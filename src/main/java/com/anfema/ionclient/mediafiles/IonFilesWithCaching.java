@@ -14,6 +14,7 @@ import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.Log;
 import com.anfema.ionclient.utils.NetworkUtils;
 import com.anfema.ionclient.utils.RxUtils;
+import com.anfema.ionclient.utils.RunningDownloadHandler;
 
 import org.joda.time.DateTime;
 
@@ -37,9 +38,10 @@ import rx.Observable;
  */
 public class IonFilesWithCaching implements IonFiles
 {
-	private       IonConfig    config;
-	private       Context      context;
-	private final OkHttpClient client;
+	private       IonConfig                    config;
+	private       Context                      context;
+	private final OkHttpClient                 client;
+	private       RunningDownloadHandler<File> runningDownloads;
 
 	public IonFilesWithCaching( IonConfig config, Context context )
 	{
@@ -49,6 +51,7 @@ public class IonFilesWithCaching implements IonFiles
 		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( config.authorizationHeaderValue ) );
 		okHttpClientBuilder.addInterceptor( new RequestLogger( "Network Request" ) );
 		client = okHttpClientBuilder.build();
+		runningDownloads = new RunningDownloadHandler<>();
 	}
 
 	/**
@@ -85,10 +88,12 @@ public class IonFilesWithCaching implements IonFiles
 		else if ( NetworkUtils.isConnected( context ) )
 		{
 			// download media file
-			return Observable.just( null )
+			Observable<File> downloadObservable = Observable.just( null )
 					.flatMap( o -> performRequest( url, targetFile ) )
 					.doOnNext( file -> FileCacheIndex.save( url.toString(), file, config, null, context ) )
-					.compose( RxUtils.runOnIoThread() );
+					.compose( RxUtils.runOnIoThread() )
+					.doOnNext( file -> runningDownloads.finished( url ) );
+			return runningDownloads.starting( url, downloadObservable );
 		}
 		else if ( targetFile.exists() )
 		{
