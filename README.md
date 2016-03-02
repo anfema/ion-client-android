@@ -1,4 +1,4 @@
-# amp-client-android
+# ion-client-android
 
 Integrate this as a module for your Android project (preferrably as submodule of your current repository).
 

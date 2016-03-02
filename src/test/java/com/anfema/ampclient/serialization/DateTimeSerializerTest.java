@@ -1,6 +1,6 @@
-package com.anfema.ampclient.serialization;
+package com.anfema.ionclient.serialization;
 
-import com.anfema.ampclient.utils.DateTimeUtils;
+import com.anfema.ionclient.utils.DateTimeUtils;
 import com.google.gson.Gson;
 
 import junit.framework.TestCase;
