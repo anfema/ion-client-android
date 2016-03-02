@@ -13,6 +13,7 @@ import com.anfema.ampclient.interceptors.RequestLogger;
 import com.anfema.ampclient.utils.FileUtils;
 import com.anfema.ampclient.utils.Log;
 import com.anfema.ampclient.utils.NetworkUtils;
+import com.anfema.ampclient.utils.RunningDownloadHandler;
 import com.anfema.ampclient.utils.RxUtils;
 
 import org.joda.time.DateTime;
@@ -37,9 +38,10 @@ import rx.Observable;
  */
 public class AmpFilesWithCaching implements AmpFiles
 {
-	private       AmpConfig    config;
-	private       Context      context;
-	private final OkHttpClient client;
+	private       AmpConfig                    config;
+	private       Context                      context;
+	private final OkHttpClient                 client;
+	private       RunningDownloadHandler<File> runningDownloads;
 
 	public AmpFilesWithCaching( AmpConfig config, Context context )
 	{
@@ -49,6 +51,7 @@ public class AmpFilesWithCaching implements AmpFiles
 		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( config.authorizationHeaderValue ) );
 		okHttpClientBuilder.addInterceptor( new RequestLogger( "Network Request" ) );
 		client = okHttpClientBuilder.build();
+		runningDownloads = new RunningDownloadHandler<>();
 	}
 
 	/**
@@ -85,10 +88,12 @@ public class AmpFilesWithCaching implements AmpFiles
 		else if ( NetworkUtils.isConnected( context ) )
 		{
 			// download media file
-			return Observable.just( null )
+			Observable<File> downloadObservable = Observable.just( null )
 					.flatMap( o -> performRequest( url, targetFile ) )
 					.doOnNext( file -> FileCacheIndex.save( url.toString(), file, config, null, context ) )
-					.compose( RxUtils.runOnIoThread() );
+					.compose( RxUtils.runOnIoThread() )
+					.doOnNext( file -> runningDownloads.finished( url ) );
+			return runningDownloads.starting( url, downloadObservable );
 		}
 		else if ( targetFile.exists() )
 		{
