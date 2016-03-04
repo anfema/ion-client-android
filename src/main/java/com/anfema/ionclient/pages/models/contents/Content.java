@@ -2,14 +2,16 @@ package com.anfema.ionclient.pages.models.contents;
 
 public abstract class Content
 {
-	public String type;
-
+	// TODO remove variation?
 	public String variation;
 
+	/**
+	 * identifies the content, specifies where it is supposed to be used in a layout
+	 */
 	public String outlet;
 
 	/**
-	 * When there are more contents in on the same level in an array, position indicates their order.
+	 * When there are more contents of same kind an array, position indicates their order.
 	 */
 	public long position;
 
@@ -18,7 +20,7 @@ public abstract class Content
 	@Override
 	public String toString()
 	{
-		return "Content [type = " + type + ", variation = " + variation + ", outlet = " + outlet + ", type = " + type + ", outlet = " + outlet
-				+ ", is_searchable = " + is_searchable + ", variation = " + variation + "]";
+		return "Content [class: " + getClass().getSimpleName() + ", outlet = " + outlet + ", variation = " + variation + ", position = " + position
+				+ ", is_searchable = " + is_searchable + "]";
 	}
 }
