@@ -1,6 +1,6 @@
 package com.anfema.ionclient.pages.models.contents;
 
-public class MediaContent extends IContent
+public class MediaContent extends Content
 {
 	public String original_checksum;
 

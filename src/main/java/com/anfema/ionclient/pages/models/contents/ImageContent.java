@@ -1,6 +1,6 @@
 package com.anfema.ionclient.pages.models.contents;
 
-public class ImageContent extends IContent
+public class ImageContent extends Content
 {
 	public String mime_type;
 

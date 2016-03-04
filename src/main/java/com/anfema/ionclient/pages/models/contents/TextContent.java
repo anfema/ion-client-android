@@ -1,6 +1,6 @@
 package com.anfema.ionclient.pages.models.contents;
 
-public class TextContent extends IContent
+public class TextContent extends Content
 {
 	public String text;
 

@@ -1,7 +1,7 @@
 package com.anfema.ionclient.serialization;
 
 import com.anfema.ionclient.pages.models.Collection;
-import com.anfema.ionclient.pages.models.contents.IContent;
+import com.anfema.ionclient.pages.models.contents.Content;
 import com.anfema.ionclient.utils.ListUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -31,7 +31,7 @@ public class CollectionDeserializer implements JsonDeserializer<Collection>
 	{
 		final GsonBuilder gsonBuilder = new GsonBuilder();
 		// parse content subtypes
-		gsonBuilder.registerTypeAdapter( IContent.class, ContentDeserializerFactory.newInstance() );
+		gsonBuilder.registerTypeAdapter( Content.class, ContentDeserializerFactory.newInstance() );
 		// parse datetime strings (trying two patterns)
 		gsonBuilder.registerTypeAdapter( DateTime.class, new DateTimeSerializer() );
 		return gsonBuilder.create();

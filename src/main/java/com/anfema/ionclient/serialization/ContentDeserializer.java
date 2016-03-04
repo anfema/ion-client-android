@@ -1,6 +1,6 @@
 package com.anfema.ionclient.serialization;
 
-import com.anfema.ionclient.pages.models.contents.IContent;
+import com.anfema.ionclient.pages.models.contents.Content;
 import com.anfema.ionclient.pages.models.contents.EmptyContent;
 import com.anfema.ionclient.utils.Log;
 import com.google.gson.JsonDeserializationContext;
@@ -13,21 +13,21 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ContentDeserializer implements JsonDeserializer<IContent>
+public class ContentDeserializer implements JsonDeserializer<Content>
 {
 	// element name where content type is stored in Json
 	private final String ELEMENT_NAME_FOR_TYPE = "type";
 
 
-	Map<String, Class<? extends IContent>> contentTypeRegistry = new HashMap<>();
+	Map<String, Class<? extends Content>> contentTypeRegistry = new HashMap<>();
 
-	void registerContentType( String typeName, Class<? extends IContent> type )
+	void registerContentType( String typeName, Class<? extends Content> type )
 	{
 		contentTypeRegistry.put( typeName, type );
 	}
 
 	@Override
-	public IContent deserialize( JsonElement json, Type typeOfT, JsonDeserializationContext context ) throws JsonParseException
+	public Content deserialize( JsonElement json, Type typeOfT, JsonDeserializationContext context ) throws JsonParseException
 	{
 		JsonObject jsonObject = json.getAsJsonObject();
 
@@ -35,7 +35,7 @@ public class ContentDeserializer implements JsonDeserializer<IContent>
 		JsonElement isAvailableElement = jsonObject.get( "is_available" );
 		boolean isAvailable = isAvailableElement == null || isAvailableElement.getAsBoolean();
 
-		Class<? extends IContent> type;
+		Class<? extends Content> type;
 		if ( isAvailable )
 		{
 			// determine content type

@@ -1,10 +1,11 @@
 package com.anfema.ionclient.pages.models;
 
-import com.anfema.ionclient.pages.models.contents.IContent;
+import com.anfema.ionclient.pages.models.contents.Content;
+import com.anfema.ionclient.pages.models.contents.ContainerContent;
 
 import org.joda.time.DateTime;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A page holds all the information about its content.
@@ -37,27 +38,28 @@ public class Page
 	public String parent;
 
 	/**
-	 * Only one item, which is of type "containercontent", holding all contents of page in nested form.
-	 */
-	private ArrayList<IContent> contents;
-
-	/**
 	 * page identifiers of sub-pages
 	 */
-	public ArrayList<String> children;
+	public List<String> children;
+
+	/**
+	 * Only one item, which is of type "containercontent", holding all contents of page in nested form.
+	 */
+	public List<Content> contents;
 
 	/**
 	 * Access content, i.e. containercontent
 	 *
 	 * @return first item of array if exists, or null otherwise
 	 */
-	public IContent getContent()
+	public ContainerContent getContainerContent()
 	{
 		if ( contents == null || contents.size() == 0 )
 		{
 			return null;
 		}
-		return contents.get( 0 );
+		return ( ContainerContent ) contents.get( 0 );
+	}
 	}
 
 	@Override

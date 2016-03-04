@@ -1,6 +1,6 @@
 package com.anfema.ionclient.pages.models.contents;
 
-public abstract class IContent
+public abstract class Content
 {
 	public String type;
 

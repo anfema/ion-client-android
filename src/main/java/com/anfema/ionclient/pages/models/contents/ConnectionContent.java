@@ -2,7 +2,7 @@ package com.anfema.ionclient.pages.models.contents;
 
 
 // TODO parse string into fields collectionIdentifier and pageIdentifier right at deserialization
-public class ConnectionContent extends IContent
+public class ConnectionContent extends Content
 {
 	public String connection_string;
 

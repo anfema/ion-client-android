@@ -1,6 +1,6 @@
 package com.anfema.ionclient.pages.models.contents;
 
-public class FileContent extends IContent
+public class FileContent extends Content
 {
 	public String file_size;
 

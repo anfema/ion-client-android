@@ -1,6 +1,6 @@
 package com.anfema.ionclient.pages.models.contents;
 
-public class ColorContent extends IContent
+public class ColorContent extends Content
 {
 	public String r;
 

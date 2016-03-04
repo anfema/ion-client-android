@@ -2,7 +2,7 @@ package com.anfema.ionclient.pages.models.contents;
 
 import java.util.ArrayList;
 
-public class ContainerContent extends IContent
+public class ContainerContent extends Content
 {
-	public ArrayList<IContent> children;
+	public ArrayList<Content> children;
 }
