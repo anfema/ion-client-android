@@ -30,14 +30,14 @@ public class ConnectionContentSerializer implements JsonDeserializer<ConnectionC
 		JsonObject jsonObject = new Gson().toJsonTree( connection, Content.class ).getAsJsonObject();
 
 		Builder uriBuilder = new Builder()
-				.scheme( connection.scheme )
-				.authority( connection.collectionIdentifier );
-		for ( String pageIdentifier : connection.pageIdentifierPath )
+				.scheme( connection.getScheme() )
+				.authority( connection.getCollectionIdentifier() );
+		for ( String pageIdentifier : connection.getPageIdentifierPath() )
 		{
 			uriBuilder.appendPath( pageIdentifier );
 		}
 		Uri connectionUri = uriBuilder
-				.fragment( connection.contentIdentifier )
+				.fragment( connection.getContentIdentifier() )
 				.build();
 		String connectionString = connectionUri.toString();
 		jsonObject.add( CONNECTION_STRING, new JsonPrimitive( connectionString ) );

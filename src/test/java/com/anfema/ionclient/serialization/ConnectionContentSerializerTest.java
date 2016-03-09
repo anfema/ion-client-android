@@ -25,15 +25,15 @@ public class ConnectionContentSerializerTest extends TestCase
 	public void testRoundtripConnectionContent() throws Exception
 	{
 		ConnectionContent original = new ConnectionContent( null );
-		original.scheme = "ion";
-		original.collectionIdentifier = "collection_identifier";
+		original.connection.scheme = "ion";
+		original.connection.collectionIdentifier = "collection_identifier";
 		List<String> pageIdentifierPath = new ArrayList<>();
 		pageIdentifierPath.add( "page_identifier1" );
 		String pageIdentifier = "page_identifier2";
 		pageIdentifierPath.add( pageIdentifier );
-		original.pageIdentifierPath = pageIdentifierPath;
-		original.pageIdentifier = pageIdentifier;
-		original.contentIdentifier = "content_identifier";
+		original.connection.pageIdentifierPath = pageIdentifierPath;
+		original.connection.pageIdentifier = pageIdentifier;
+		original.connection.contentIdentifier = "content_identifier";
 		System.out.println( "original toString(): " + original );
 
 
@@ -41,7 +41,7 @@ public class ConnectionContentSerializerTest extends TestCase
 		System.out.println( "intermediate String: " + intermediate );
 		ConnectionContent afterRoundtrip = gson.fromJson( intermediate, ConnectionContent.class );
 		System.out.println( "afterRoundtrip toString(): " + afterRoundtrip );
-		assertEquals( original, afterRoundtrip );
+		assertEquals( original.connection, afterRoundtrip.connection );
 	}
 
 	public void testRoundtripRelativeUrl() throws Exception

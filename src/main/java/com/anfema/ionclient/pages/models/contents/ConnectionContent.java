@@ -1,17 +1,11 @@
 package com.anfema.ionclient.pages.models.contents;
 
 
-import android.net.Uri;
-
 import java.util.List;
 
 public class ConnectionContent extends Content
 {
-	public String       scheme;
-	public String       collectionIdentifier;
-	public List<String> pageIdentifierPath;
-	public String       pageIdentifier;
-	public String       contentIdentifier;
+	public Connection connection;
 
 	public ConnectionContent( String connectionContentString )
 	{
@@ -20,6 +14,11 @@ public class ConnectionContent extends Content
 
 	public ConnectionContent( Content content, String connectionContentString )
 	{
+		this( content, new Connection( connectionContentString ) );
+	}
+
+	public ConnectionContent( Content content, Connection connection )
+	{
 		if ( content != null )
 		{
 			outlet = content.outlet;
@@ -27,60 +26,43 @@ public class ConnectionContent extends Content
 			position = content.position;
 			is_searchable = content.is_searchable;
 		}
+		this.connection = connection;
+	}
 
-		if ( connectionContentString != null )
-		{
-			Uri uri = Uri.parse( connectionContentString );
-			scheme = uri.getScheme();
-			collectionIdentifier = uri.getHost();
-			pageIdentifierPath = uri.getPathSegments();
-			if ( pageIdentifierPath != null && !pageIdentifierPath.isEmpty() )
-			{
-				pageIdentifier = pageIdentifierPath.get( pageIdentifierPath.size() - 1 );
-			}
-			contentIdentifier = uri.getFragment();
-		}
+	public String getScheme()
+	{
+		return connection.scheme;
+	}
+
+	public String getCollectionIdentifier()
+	{
+		return connection.collectionIdentifier;
+	}
+
+	public List<String> getPageIdentifierPath()
+	{
+		return connection.pageIdentifierPath;
+	}
+
+	public String getPageIdentifier()
+	{
+		return connection.pageIdentifier;
+	}
+
+	public String getContentIdentifier()
+	{
+		return connection.contentIdentifier;
 	}
 
 	@Override
 	public String toString()
 	{
-		return super.toString() + " + [scheme = " + scheme + ", collection = " + collectionIdentifier + ", page = " + pageIdentifier
-				+ ", content = " + collectionIdentifier + "]";
-	}
-
-	@Override
-	public boolean equals( Object other )
-	{
-		if ( !( other instanceof ConnectionContent ) )
+		String toString = super.toString();
+		if ( connection != null )
 		{
-			return false;
+			toString += " + [scheme = " + connection.scheme + ", collection = " + connection.collectionIdentifier + ", page = " + connection.pageIdentifier
+					+ ", content = " + connection.collectionIdentifier + "]";
 		}
-
-		ConnectionContent o = ( ConnectionContent ) other;
-		return super.equals( other ) && equal( scheme, o.scheme ) && equal( collectionIdentifier, o.collectionIdentifier ) && equalPaths( o )
-				&& equal( pageIdentifier, o.pageIdentifier ) && equal( contentIdentifier, o.contentIdentifier );
-	}
-
-	private boolean equalPaths( ConnectionContent o )
-	{
-		if ( pageIdentifierPath == null )
-		{
-			return o.pageIdentifierPath == null;
-		}
-		if ( pageIdentifierPath.size() != o.pageIdentifierPath.size() )
-		{
-			return false;
-		}
-		for ( int i = 0; i < pageIdentifierPath.size(); i++ )
-		{
-			String page = pageIdentifierPath.get( i );
-			String otherPage = o.pageIdentifierPath.get( i );
-			if ( !equal( page, otherPage ) )
-			{
-				return false;
-			}
-		}
-		return true;
+		return toString;
 	}
 }
