@@ -1,5 +1,6 @@
 package com.anfema.ionclient.pages.models;
 
+import com.anfema.ionclient.pages.models.contents.ConnectionContent;
 import com.anfema.ionclient.serialization.GsonHolder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
@@ -58,6 +59,11 @@ public class PagePreview implements Comparable<PagePreview>
 		{
 		}.getType();
 		return GsonHolder.getInstance().fromJson( meta.get( metaKey ), listType );
+	}
+
+	public ConnectionContent getMetaConnection( String metaKey )
+	{
+		return new ConnectionContent( getMetaString( metaKey ) );
 	}
 
 	/**
