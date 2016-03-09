@@ -1,55 +1,86 @@
 package com.anfema.ionclient.pages.models.contents;
 
 
-// TODO parse string into fields collectionIdentifier and pageIdentifier right at deserialization
+import android.net.Uri;
+
+import java.util.List;
+
 public class ConnectionContent extends Content
 {
-	public String connection_string;
+	public String       scheme;
+	public String       collectionIdentifier;
+	public List<String> pageIdentifierPath;
+	public String       pageIdentifier;
+	public String       contentIdentifier;
 
-	public String getCollectionIdentifier()
+	public ConnectionContent( String connectionContentString )
 	{
-		return getCollectionIdentifier( connection_string );
+		this( null, connectionContentString );
 	}
 
-	public String getPageIdentifier()
+	public ConnectionContent( Content content, String connectionContentString )
 	{
-		return getPageIdentifier( connection_string );
+		if ( content != null )
+		{
+			outlet = content.outlet;
+			variation = content.variation;
+			position = content.position;
+			is_searchable = content.is_searchable;
+		}
+
+		if ( connectionContentString != null )
+		{
+			Uri uri = Uri.parse( connectionContentString );
+			scheme = uri.getScheme();
+			collectionIdentifier = uri.getHost();
+			pageIdentifierPath = uri.getPathSegments();
+			if ( pageIdentifierPath != null && !pageIdentifierPath.isEmpty() )
+			{
+				pageIdentifier = pageIdentifierPath.get( pageIdentifierPath.size() - 1 );
+			}
+			contentIdentifier = uri.getFragment();
+		}
 	}
 
-	public static String getCollectionIdentifier( String connectionContentString )
+	@Override
+	public String toString()
 	{
-		if ( connectionContentString == null )
-		{
-			return null;
-		}
-
-		if ( connectionContentString.length() <= 2 )
-		{
-			return connectionContentString;
-		}
-
-		String[] sections = connectionContentString.substring( 2 ).split( "/" );
-		int index = sections.length - 2;
-		if ( index < 0 )
-		{
-			index = 0;
-		}
-		return sections[ index ];
+		return super.toString() + " + [scheme = " + scheme + ", collection = " + collectionIdentifier + ", page = " + pageIdentifier
+				+ ", content = " + collectionIdentifier + "]";
 	}
 
-	public static String getPageIdentifier( String connectionContentString )
+	@Override
+	public boolean equals( Object other )
 	{
-		if ( connectionContentString == null )
+		if ( !( other instanceof ConnectionContent ) )
 		{
-			return null;
+			return false;
 		}
 
-		if ( connectionContentString.length() <= 2 )
-		{
-			return connectionContentString;
-		}
+		ConnectionContent o = ( ConnectionContent ) other;
+		return super.equals( other ) && equal( scheme, o.scheme ) && equal( collectionIdentifier, o.collectionIdentifier ) && equalPaths( o )
+				&& equal( pageIdentifier, o.pageIdentifier ) && equal( contentIdentifier, o.contentIdentifier );
+	}
 
-		String[] sections = connectionContentString.substring( 2 ).split( "/" );
-		return sections[ sections.length - 1 ];
+	private boolean equalPaths( ConnectionContent o )
+	{
+		if ( pageIdentifierPath == null )
+		{
+			return o.pageIdentifierPath == null;
+		}
+		if ( pageIdentifierPath.size() != o.pageIdentifierPath.size() )
+		{
+			return false;
+		}
+		for ( int i = 0; i < pageIdentifierPath.size(); i++ )
+		{
+			String page = pageIdentifierPath.get( i );
+			String otherPage = o.pageIdentifierPath.get( i );
+			if ( !equal( page, otherPage ) )
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 }

@@ -25,7 +25,7 @@ public class ContentDeserializerFactory
 	}
 
 	/**
-	 * List all subtypes of IContent which shall be deserialized.
+	 * List all subtypes of Content which shall be deserialized.
 	 */
 	private static void registerAllContentTypes( ContentDeserializer deserializer )
 	{

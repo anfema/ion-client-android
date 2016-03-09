@@ -46,7 +46,7 @@ public class DateTimeSerializerTest extends TestCase
 	/**
 	 * Tests that deserialising an empty string returns null
 	 */
-	public void testDeserialiseEmptyString()
+	public void testDeserializeEmptyString()
 	{
 		DateTime intermediate = gson.fromJson( "", DateTime.class );
 		assert ( intermediate == null );
@@ -55,7 +55,7 @@ public class DateTimeSerializerTest extends TestCase
 	/**
 	 * Tests that deserialising a null string returns null
 	 */
-	public void testDeserialiseNullString()
+	public void testDeserializeNullString()
 	{
 		DateTime intermediate = gson.fromJson( ( String ) null, DateTime.class );
 		assert ( intermediate == null );
