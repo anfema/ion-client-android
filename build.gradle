@@ -92,7 +92,10 @@ dependencies {
 unMock {
     // URI to download the android-all.jar from. e.g. https://oss.sonatype.org/content/groups/public/org/robolectric/android-all/
     downloadFrom 'https://oss.sonatype.org/content/groups/public/org/robolectric/android-all/4.3_r2-robolectric-0/android-all-4.3_r2-robolectric-0.jar'
+
     keep "android.net.Uri"
+    keepStartingWith "libcore."
+    keepAndRename "java.nio.charset.Charsets" to "xjava.nio.charset.Charsets"
 }
 
 // output in gradle console
