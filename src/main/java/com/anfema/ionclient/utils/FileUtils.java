@@ -213,11 +213,17 @@ public class FileUtils
 
 	public static void deleteRecursive( File fileOrDirectory )
 	{
+		if ( fileOrDirectory == null )
+		{
+			return;
+		}
+
 		if ( fileOrDirectory.isDirectory() )
 		{
-			for ( File child : fileOrDirectory.listFiles() )
+			File[] files = fileOrDirectory.listFiles();
+			if ( files != null )
 			{
-				if ( child != null )
+				for ( File child : files )
 				{
 					deleteRecursive( child );
 				}

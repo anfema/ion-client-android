@@ -80,57 +80,74 @@ class ArchiveUtils
 	private static List<FileWithMeta> performUnTar( File archiveFile, IonConfig config, Collection collection, String lastModified, MemoryCache memoryCache, Context context ) throws FileNotFoundException, IOException, ArchiveException
 	{
 		File collectionFolder = FilePaths.getCollectionFolderPath( config, context );
-
-		Log.d( TAG, String.format( "Untaring %s to dir %s.", archiveFile.getPath(), collectionFolder.getPath() ) );
-
 		File collectionFolderTemp = FilePaths.getTempFilePath( collectionFolder );
 
 		final List<FileWithMeta> untaredFiles = new LinkedList<>();
-		final InputStream is = new FileInputStream( archiveFile );
-		final TarArchiveInputStream debInputStream = ( TarArchiveInputStream ) new ArchiveStreamFactory().createArchiveInputStream( "tar", is );
 
-		TarArchiveEntry entry;
-		List<ArchiveIndex> index = null;
-		boolean indexHasBeenRead = false;
-		while ( ( entry = ( TarArchiveEntry ) debInputStream.getNextEntry() ) != null )
+		InputStream is = null;
+		TarArchiveInputStream debInputStream = null;
+		try
 		{
-			if ( !indexHasBeenRead )
-			{
-				// get index.json
-				InputStreamReader inputStreamReader = new InputStreamReader( debInputStream, "UTF-8" );
-				index = Arrays.asList( GsonHolder.getInstance().fromJson( inputStreamReader, ArchiveIndex[].class ) );
-				indexHasBeenRead = true;
-				continue;
-			}
+			Log.d( TAG, String.format( "Untaring %s to dir %s.", archiveFile.getPath(), collectionFolder.getPath() ) );
 
-			// write the "content" files
-			if ( !entry.isDirectory() )
+			is = new FileInputStream( archiveFile );
+			debInputStream = ( TarArchiveInputStream ) new ArchiveStreamFactory().createArchiveInputStream( "tar", is );
+
+			TarArchiveEntry entry;
+			List<ArchiveIndex> index = null;
+			boolean indexHasBeenRead = false;
+			while ( ( entry = ( TarArchiveEntry ) debInputStream.getNextEntry() ) != null )
 			{
-				String archiveFileName = entry.getName();
-				ArchiveIndex fileInfo = ArchiveIndex.getByName( archiveFileName, index );
-				if ( fileInfo == null )
+				if ( !indexHasBeenRead )
 				{
-					Log.w( TAG, "Skipping " + entry.getName() + " because it was not found in index.json." );
+					// get index.json
+					InputStreamReader inputStreamReader = new InputStreamReader( debInputStream, "UTF-8" );
+					index = Arrays.asList( GsonHolder.getInstance().fromJson( inputStreamReader, ArchiveIndex[].class ) );
+					indexHasBeenRead = true;
 					continue;
 				}
 
-				Log.i( TAG, fileInfo.url );
-				FileWithMeta fileWithMeta = getFilePath( fileInfo, collectionFolderTemp, config, context );
-				File targetFile = fileWithMeta.file;
-				FileUtils.createDir( targetFile.getParentFile() );
-
-				targetFile = FileUtils.writeToFile( debInputStream, targetFile );
-
-				if ( targetFile != null )
+				// write the "content" files
+				if ( !entry.isDirectory() )
 				{
-					untaredFiles.add( fileWithMeta );
+					String archiveFileName = entry.getName();
+					ArchiveIndex fileInfo = ArchiveIndex.getByName( archiveFileName, index );
+					if ( fileInfo == null )
+					{
+						Log.w( TAG, "Skipping " + entry.getName() + " because it was not found in index.json." );
+						continue;
+					}
+
+					Log.i( TAG, fileInfo.url );
+					FileWithMeta fileWithMeta = getFilePath( fileInfo, collectionFolderTemp, config, context );
+					File targetFile = fileWithMeta.file;
+					FileUtils.createDir( targetFile.getParentFile() );
+
+					targetFile = FileUtils.writeToFile( debInputStream, targetFile );
+
+					if ( targetFile != null )
+					{
+						untaredFiles.add( fileWithMeta );
+					}
 				}
 			}
 		}
-
-		// finished reading TAR archive
-		debInputStream.close();
-		archiveFile.delete();
+		finally
+		{
+			// finished reading TAR archive
+			if ( is != null )
+			{
+				is.close();
+			}
+			if ( debInputStream != null )
+			{
+				debInputStream.close();
+			}
+			if ( archiveFile != null && archiveFile.exists() )
+			{
+				archiveFile.delete();
+			}
+		}
 
 		// if lastModified date was not passed, look if cache index entry exists for collection and retrieve it from there
 		if ( collection != null && lastModified == null )

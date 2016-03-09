@@ -45,9 +45,19 @@ public class Installation
 
 	private static void writeInstallationFile( File installation ) throws IOException
 	{
-		FileOutputStream out = new FileOutputStream( installation );
-		String id = UUID.randomUUID().toString();
-		out.write( id.getBytes() );
-		out.close();
+		FileOutputStream out = null;
+		try
+		{
+			out = new FileOutputStream( installation );
+			String id = UUID.randomUUID().toString();
+			out.write( id.getBytes() );
+		}
+		finally
+		{
+			if ( out != null )
+			{
+				out.close();
+			}
+		}
 	}
 }
