@@ -29,7 +29,7 @@ public class RxUtils
 	 * Convenience action for onNext function.
 	 * This is an action that receives one argument and does nothing.
 	 */
-	public static Action1<Object> NOTHING = o -> doNothing();
+	public static final Action1<Object> NOTHING = o -> doNothing();
 
 	public static void doNothing()
 	{

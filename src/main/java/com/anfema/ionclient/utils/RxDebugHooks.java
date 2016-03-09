@@ -9,7 +9,7 @@ public class RxDebugHooks
 {
 	public static final String RX_DEBUG = "RX-DEBUG";
 
-	public static DebugHook debugHook = new DebugHook( new DebugNotificationListener()
+	public static final DebugHook debugHook = new DebugHook( new DebugNotificationListener()
 	{
 		public Object onNext( DebugNotification n )
 		{

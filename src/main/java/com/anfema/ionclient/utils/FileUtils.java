@@ -217,7 +217,10 @@ public class FileUtils
 		{
 			for ( File child : fileOrDirectory.listFiles() )
 			{
-				deleteRecursive( child );
+				if ( child != null )
+				{
+					deleteRecursive( child );
+				}
 			}
 		}
 		fileOrDirectory.delete();

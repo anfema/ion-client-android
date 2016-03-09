@@ -16,8 +16,7 @@ import java.util.Map;
 public class ContentDeserializer implements JsonDeserializer<Content>
 {
 	// element name where content type is stored in Json
-	private final String ELEMENT_NAME_FOR_TYPE = "type";
-
+	private static final String ELEMENT_NAME_FOR_TYPE = "type";
 
 	Map<String, Class<? extends Content>> contentTypeRegistry = new HashMap<>();
 

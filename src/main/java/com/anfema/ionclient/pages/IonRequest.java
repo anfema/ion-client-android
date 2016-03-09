@@ -38,23 +38,15 @@ public enum IonRequest
 			String relativeUrlPath = url.replace( config.baseUrl, "" );
 			String[] urlPathSegments = relativeUrlPath.split( "/" );
 
-			// urlPathSegments length is 2 for collection call and 3 for page call
-			if ( urlPathSegments.length < 2 || urlPathSegments.length > 3 )
+			switch ( urlPathSegments.length )
 			{
-				throw new NoIonPagesRequestException( url );
-			}
-
-			if ( urlPathSegments.length == 2 )
-			{
-				return new IonRequestInfo( COLLECTION, urlPathSegments[ 0 ], urlPathSegments[ 1 ], null );
-			}
-			else if ( urlPathSegments.length == 3 )
-			{
-				return new IonRequestInfo( PAGE, urlPathSegments[ 0 ], urlPathSegments[ 1 ], urlPathSegments[ 2 ] );
-			}
-			else
-			{
-				throw new NoIonPagesRequestException( url );
+				// urlPathSegments length is 2 for collection call and 3 for page call
+				case 2:
+					return new IonRequestInfo( COLLECTION, urlPathSegments[ 0 ], urlPathSegments[ 1 ], null );
+				case 3:
+					return new IonRequestInfo( PAGE, urlPathSegments[ 0 ], urlPathSegments[ 1 ], urlPathSegments[ 2 ] );
+				default:
+					throw new NoIonPagesRequestException( url );
 			}
 		}
 	}
