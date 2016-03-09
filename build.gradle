@@ -9,6 +9,7 @@ buildscript {
 
 apply plugin: 'com.android.library'
 apply plugin: 'me.tatarka.retrolambda' // apply last because it might interfere with android-apt commands
+apply plugin: 'de.mobilej.unmock'
 
 buildscript {
     repositories {
@@ -19,6 +20,7 @@ buildscript {
     dependencies {
         classpath 'me.tatarka:gradle-retrolambda:3.2.3' // activate lambda expressions (on maven central)
         classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2'
+        classpath 'de.mobilej.unmock:UnMockPlugin:0.3.6'
     }
 
     // Exclude the version that the android plugin depends on.
@@ -84,6 +86,37 @@ dependencies {
     compile 'org.apache.commons:commons-compress:1.2'
     compile 'joda-time:joda-time:2.9' // better DateTime handling
     compile 'com.google.guava:guava:18.0'
+}
+
+// allow unit tests to use some basic android library classes
+unMock {
+    // URI to download the android-all.jar from. e.g. https://oss.sonatype.org/content/groups/public/org/robolectric/android-all/
+    downloadFrom 'https://oss.sonatype.org/content/groups/public/org/robolectric/android-all/4.3_r2-robolectric-0/android-all-4.3_r2-robolectric-0.jar'
+
+    keep "android.net.Uri"
+    //    keep "android.widget.BaseAdapter"
+    //    keep "android.widget.ArrayAdapter"
+    //    keep "android.os.Bundle"
+    //    keepStartingWith "android.database.MatrixCursor"
+    //    keep "android.database.AbstractCursor"
+    //    keep "android.database.CrossProcessCursor"
+    //    keepStartingWith "android.text.TextUtils"
+    //    keepStartingWith "android.util."
+    //    keepStartingWith "android.text."
+    //    keepStartingWith "android.content.ContentValues"
+    //    keepStartingWith "android.content.ComponentName"
+    //    keepStartingWith "android.content.ContentUris"
+    //    keepStartingWith "android.content.ContentProviderOperation"
+    //    keepStartingWith "android.content.ContentProviderResult"
+    //    keepStartingWith "android.content.UriMatcher"
+    //    keepStartingWith "android.content.Intent"
+    //    keep "android.location.Location"
+    //    keepStartingWith "android.content.res.Configuration"
+    //    keepStartingWith "org."
+    //    keepStartingWith "libcore."
+    //    keepStartingWith "com.android.internal.R"
+    //    keepStartingWith "com.android.internal.util."
+    //    keepAndRename "java.nio.charset.Charsets" to "xjava.nio.charset.Charsets"
 }
 
 // output in gradle console
