@@ -1,7 +1,6 @@
 package com.anfema.ionclient.pages.models;
 
 import com.anfema.ionclient.pages.models.contents.Content;
-import com.anfema.ionclient.pages.models.contents.ContainerContent;
 
 import org.joda.time.DateTime;
 
@@ -27,6 +26,8 @@ public class Page
 	 */
 	public DateTime last_changed;
 
+	public String layout;
+
 	/**
 	 * e.g. "de_DE"
 	 */
@@ -42,30 +43,11 @@ public class Page
 	 */
 	public List<String> children;
 
-	/**
-	 * Only one item, which is of type "containercontent", holding all contents of page in nested form.
-	 */
 	public List<Content> contents;
-
-	/**
-	 * Access content, i.e. containercontent
-	 *
-	 * @return first item of array if exists, or null otherwise
-	 */
-	public ContainerContent getContainerContent()
-	{
-		if ( contents == null || contents.size() == 0 )
-		{
-			return null;
-		}
-		return ( ContainerContent ) contents.get( 0 );
-	}
-	}
 
 	@Override
 	public String toString()
 	{
-		String contentString = contents == null || contents.size() == 0 ? "no content" : contents.get( 0 ).toString();
-		return "Page [identifier = " + identifier + ", collection = " + collection + ", last_changed = " + last_changed + ", content = " + contentString + ", parent = " + parent + ", children = " + children + "]";
+		return "Page [identifier = " + identifier + ", collection = " + collection + ", last_changed = " + last_changed + ", parent = " + parent + ", children = " + children + "]";
 	}
 }
