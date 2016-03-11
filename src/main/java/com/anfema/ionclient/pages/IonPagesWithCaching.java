@@ -91,7 +91,7 @@ public class IonPagesWithCaching implements IonPages
 	 * Use default collection identifier as specified in {@link this#config}
 	 */
 	@Override
-	public Observable<Collection> getCollection()
+	public Observable<Collection> fetchCollection()
 	{
 		String collectionUrl = IonPageUrls.getCollectionUrl( config );
 		CollectionCacheIndex cacheIndex = CollectionCacheIndex.retrieve( collectionUrl, config.collectionIdentifier, context );
@@ -123,27 +123,27 @@ public class IonPagesWithCaching implements IonPages
 	}
 
 	@Override
-	public Observable<PagePreview> getPagePreview( String pageIdentifier )
+	public Observable<PagePreview> fetchPagePreview( String pageIdentifier )
 	{
-		return getCollection()
+		return fetchCollection()
 				.map( collection -> collection.pages )
 				.flatMap( Observable::from )
 				.filter( PagesFilter.identifierEquals( pageIdentifier ) );
 	}
 
 	@Override
-	public Observable<PagePreview> getPagePreviews( Func1<PagePreview, Boolean> pagesFilter )
+	public Observable<PagePreview> fetchPagePreviews( Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return getCollection()
+		return fetchCollection()
 				.map( collection -> collection.pages )
 				.concatMap( Observable::from )
 				.filter( pagesFilter );
 	}
 
 	@Override
-	public Observable<PagePreview> getAllPagePreviews()
+	public Observable<PagePreview> fetchAllPagePreviews()
 	{
-		return getPagePreviews( PagesFilter.all() );
+		return fetchPagePreviews( PagesFilter.ALL );
 	}
 
 	/**
@@ -159,7 +159,7 @@ public class IonPagesWithCaching implements IonPages
 	 * Use default collection identifier as specified in {@link this#config}
 	 */
 	@Override
-	public Observable<Page> getPage( String pageIdentifier )
+	public Observable<Page> fetchPage( String pageIdentifier )
 	{
 		String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 		PageCacheIndex pageCacheIndex = PageCacheIndex.retrieve( pageUrl, config.collectionIdentifier, context );
@@ -179,7 +179,7 @@ public class IonPagesWithCaching implements IonPages
 			}
 		}
 
-		return getCollection()
+		return fetchCollection()
 				// get page's last_changed date from collection
 				.flatMap( collection -> collection.getPageLastChangedAsync( pageIdentifier ) )
 				// compare last_changed date of cached page with that of collection
@@ -209,14 +209,14 @@ public class IonPagesWithCaching implements IonPages
 	 * Use collection identifier as specified in {@link this#config}
 	 */
 	@Override
-	public Observable<Page> getPages( Func1<PagePreview, Boolean> pagesFilter )
+	public Observable<Page> fetchPages( Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return getCollection()
+		return fetchCollection()
 				.map( collection -> collection.pages )
 				.concatMap( Observable::from )
 				.filter( pagesFilter )
 				.map( page -> page.identifier )
-				.concatMap( this::getPage );
+				.concatMap( this::fetchPage );
 	}
 
 	/**
@@ -224,9 +224,9 @@ public class IonPagesWithCaching implements IonPages
 	 * Use collection identifier as specified in {@link this#config}
 	 */
 	@Override
-	public Observable<Page> getAllPages()
+	public Observable<Page> fetchAllPages()
 	{
-		return getPages( PagesFilter.all() );
+		return fetchPages( PagesFilter.ALL );
 	}
 
 
@@ -353,7 +353,7 @@ public class IonPagesWithCaching implements IonPages
 
 		// retrieve from file cache
 		Log.i( "File Cache Lookup", pageUrl );
-		
+
 		File filePath = FilePaths.getPageJsonPath( pageUrl, pageIdentifier, config, context );
 		return FileUtils
 				.readTextFromFile( filePath )

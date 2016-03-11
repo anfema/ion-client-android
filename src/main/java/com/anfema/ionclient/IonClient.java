@@ -102,16 +102,16 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * Adds collection identifier and authorization token to request as retrieved via {@link IonConfig}<br/>
 	 */
 	@Override
-	public Observable<Collection> getCollection()
+	public Observable<Collection> fetchCollection()
 	{
-		return ionPages.getCollection();
+		return ionPages.fetchCollection();
 	}
 
 
 	@Override
-	public Observable<PagePreview> getPagePreview( String pageIdentifier )
+	public Observable<PagePreview> fetchPagePreview( String pageIdentifier )
 	{
-		return ionPages.getPagePreview( pageIdentifier );
+		return ionPages.fetchPagePreview( pageIdentifier );
 	}
 
 	/**
@@ -120,24 +120,24 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * @param pagesFilter see {@link com.anfema.ionclient.utils.PagesFilter} for some frequently used filter options.
 	 */
 	@Override
-	public Observable<PagePreview> getPagePreviews( Func1<PagePreview, Boolean> pagesFilter )
+	public Observable<PagePreview> fetchPagePreviews( Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return ionPages.getPagePreviews( pagesFilter );
+		return ionPages.fetchPagePreviews( pagesFilter );
 	}
 
 	@Override
-	public Observable<PagePreview> getAllPagePreviews()
+	public Observable<PagePreview> fetchAllPagePreviews()
 	{
-		return ionPages.getAllPagePreviews();
+		return ionPages.fetchAllPagePreviews();
 	}
 
 	/**
 	 * Add collection identifier and authorization token to request.<br/>
 	 */
 	@Override
-	public Observable<Page> getPage( String pageIdentifier )
+	public Observable<Page> fetchPage( String pageIdentifier )
 	{
-		return ionPages.getPage( pageIdentifier );
+		return ionPages.fetchPage( pageIdentifier );
 	}
 
 	/**
@@ -146,18 +146,18 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * @param pagesFilter see {@link com.anfema.ionclient.utils.PagesFilter} for some frequently used filter options.
 	 */
 	@Override
-	public Observable<Page> getPages( Func1<PagePreview, Boolean> pagesFilter )
+	public Observable<Page> fetchPages( Func1<PagePreview, Boolean> pagesFilter )
 	{
-		return ionPages.getPages( pagesFilter );
+		return ionPages.fetchPages( pagesFilter );
 	}
 
 	/**
 	 * A set of pages is "returned" by emitting multiple events.<br/>
 	 */
 	@Override
-	public Observable<Page> getAllPages()
+	public Observable<Page> fetchAllPages()
 	{
-		return ionPages.getAllPages();
+		return ionPages.fetchAllPages();
 	}
 
 

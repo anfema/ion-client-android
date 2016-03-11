@@ -7,29 +7,37 @@ import java.util.List;
 import rx.functions.Func1;
 
 /**
- * This utility filters are supposed to be used with {@link com.anfema.ionclient.pages.IonPages#getPagePreviews(Func1)}
- * and {@link com.anfema.ionclient.pages.IonPages#getPages(Func1)}.
+ * This utility filters are supposed to be used with {@link com.anfema.ionclient.pages.IonPages#fetchPagePreviews(Func1)}
+ * and {@link com.anfema.ionclient.pages.IonPages#fetchPages(Func1)}.
  */
 public class PagesFilter
 {
-	public static Func1<PagePreview, Boolean> all()
-	{
-		return pagePreview -> true;
-	}
+	/**
+	 * Fetch all (preview) pages of current collection.
+	 */
+	public static final Func1<PagePreview, Boolean> ALL = pagePreview -> pagePreview != null;
+
+	/**
+	 * Fetch all (preview) pages, which are (tree-hierarchical) root pages within the collection.
+	 */
+	public static final Func1<PagePreview, Boolean> ROOT_ELEMENTS = pagePreview -> pagePreview != null && pagePreview.parent == null;
 
 	/**
 	 * Before using this filter method, consider using
-	 * {@link com.anfema.ionclient.pages.IonPages#getPage(String)} or {@link com.anfema.ionclient.pages.IonPages#getPagePreview(String)} instead.
+	 * {@link com.anfema.ionclient.pages.IonPages#fetchPage(String)} or {@link com.anfema.ionclient.pages.IonPages#fetchPagePreview(String)} instead.
 	 */
 	public static Func1<PagePreview, Boolean> identifierEquals( String pageIdentifier )
 	{
-		return pagePreview -> pagePreview.identifier != null && pagePreview.identifier.equals( pageIdentifier );
+		return pagePreview -> pagePreview != null && pagePreview.identifier != null && pagePreview.identifier.equals( pageIdentifier );
 	}
 
+	/**
+	 * Fetch (preview) pages while providing a list of page identifiers.
+	 */
 	public static Func1<PagePreview, Boolean> identifierIn( List<String> pageIdentifiers )
 	{
 		return pagePreview -> {
-			if ( pageIdentifiers == null )
+			if ( pagePreview == null || pageIdentifiers == null )
 			{
 				return false;
 			}
@@ -45,15 +53,19 @@ public class PagesFilter
 		};
 	}
 
+	/**
+	 * Fetch (preview) pages with a specific layout.
+	 */
 	public static Func1<PagePreview, Boolean> layoutEquals( String layout )
 	{
-		return pagePreview -> pagePreview.layout != null && pagePreview.layout.equals( layout );
+		return pagePreview -> pagePreview != null && pagePreview.layout != null && pagePreview.layout.equals( layout );
 	}
 
+	/**
+	 * Fetch (preview) pages with a specific direct tree parent.
+	 */
 	public static Func1<PagePreview, Boolean> childOf( String parentIdentifier )
 	{
-		return pagePreview -> pagePreview.parent != null && pagePreview.parent.equals( parentIdentifier );
+		return pagePreview -> pagePreview != null && pagePreview.parent != null && pagePreview.parent.equals( parentIdentifier );
 	}
-
-	// TODO root elements && leaf elements & all
 }

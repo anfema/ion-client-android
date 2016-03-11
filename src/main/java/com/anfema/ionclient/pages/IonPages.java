@@ -9,17 +9,17 @@ import rx.functions.Func1;
 
 public interface IonPages extends ConfigUpdatable
 {
-	Observable<Collection> getCollection();
+	Observable<Collection> fetchCollection();
 
-	Observable<PagePreview> getPagePreview( String pageIdentifier );
+	Observable<PagePreview> fetchPagePreview( String pageIdentifier );
 
-	Observable<PagePreview> getPagePreviews( Func1<PagePreview, Boolean> pagesFilter );
+	Observable<PagePreview> fetchPagePreviews( Func1<PagePreview, Boolean> pagesFilter );
 
-	Observable<PagePreview> getAllPagePreviews();
+	Observable<PagePreview> fetchAllPagePreviews();
 
-	Observable<Page> getPage( String pageIdentifier );
+	Observable<Page> fetchPage( String pageIdentifier );
 
-	Observable<Page> getPages( Func1<PagePreview, Boolean> pagesFilter );
+	Observable<Page> fetchPages( Func1<PagePreview, Boolean> pagesFilter );
 
-	Observable<Page> getAllPages();
+	Observable<Page> fetchAllPages();
 }
