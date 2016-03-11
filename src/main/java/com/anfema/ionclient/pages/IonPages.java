@@ -7,7 +7,7 @@ import com.anfema.ionclient.pages.models.PagePreview;
 import rx.Observable;
 import rx.functions.Func1;
 
-public interface IonPages
+public interface IonPages extends ConfigUpdatable
 {
 	Observable<Collection> getCollection();
 

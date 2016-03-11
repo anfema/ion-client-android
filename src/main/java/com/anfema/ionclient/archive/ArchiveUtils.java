@@ -12,9 +12,9 @@ import com.anfema.ionclient.caching.MemoryCache;
 import com.anfema.ionclient.caching.PageCacheIndex;
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException;
 import com.anfema.ionclient.exceptions.PageNotInCollectionException;
-import com.anfema.ionclient.pages.IonRequest;
-import com.anfema.ionclient.pages.IonRequest.IonRequestInfo;
-import com.anfema.ionclient.pages.PagesUrls;
+import com.anfema.ionclient.pages.IonPageUrls;
+import com.anfema.ionclient.pages.IonPageUrls.IonRequestInfo;
+import com.anfema.ionclient.pages.IonPageUrls.IonRequestType;
 import com.anfema.ionclient.pages.models.Collection;
 import com.anfema.ionclient.pages.models.responses.CollectionResponse;
 import com.anfema.ionclient.serialization.GsonHolder;
@@ -152,7 +152,7 @@ class ArchiveUtils
 		// if lastModified date was not passed, look if cache index entry exists for collection and retrieve it from there
 		if ( collection != null && lastModified == null )
 		{
-			CollectionCacheIndex collectionCacheIndex = CollectionCacheIndex.retrieve( PagesUrls.getCollectionUrl( config ), config.collectionIdentifier, context );
+			CollectionCacheIndex collectionCacheIndex = CollectionCacheIndex.retrieve( IonPageUrls.getCollectionUrl( config ), config.collectionIdentifier, context );
 			lastModified = collectionCacheIndex == null ? null : collectionCacheIndex.getLastModified();
 			Log.d( TAG, "Restoring last_modified from cache index: " + lastModified );
 		}
@@ -206,8 +206,8 @@ class ArchiveUtils
 
 	private static void saveCollectionToFileCache( IonConfig config, Collection collection, Context context ) throws NoIonPagesRequestException, IOException
 	{
-		String collectionUrl = PagesUrls.getCollectionUrl( config );
-		File filePath = FilePaths.getJsonFilePath( collectionUrl, config, context );
+		String collectionUrl = IonPageUrls.getCollectionUrl( config );
+		File filePath = FilePaths.getCollectionJsonPath( collectionUrl, config, context );
 		String collectionJson = GsonHolder.getInstance().toJson( new CollectionResponse( collection ) );
 		FileUtils.writeTextToFile( collectionJson, filePath );
 	}
@@ -215,14 +215,14 @@ class ArchiveUtils
 	private static FileWithMeta getFilePath( ArchiveIndex fileInfo, File collectionFolderTemp, IonConfig config, Context context )
 	{
 		File targetFile;
-		IonRequest type = null;
+		IonRequestType type = null;
 		String url = fileInfo.url;
 		String pageIdentifier = null;
 		String filename = FilePaths.getFileName( url );
 		try
 		{
 			// check URL is a collections or pages call
-			IonRequestInfo requestInfo = IonRequest.analyze( url, config );
+			IonRequestInfo requestInfo = IonPageUrls.analyze( url, config );
 			pageIdentifier = requestInfo.pageIdentifier;
 			type = requestInfo.requestType;
 			targetFile = FilePaths.getFilePath( url, config, context, true );
@@ -238,12 +238,12 @@ class ArchiveUtils
 
 	public static class FileWithMeta
 	{
-		File         file;
-		IonRequest   type;
-		ArchiveIndex archiveIndex;
-		String       pageIdentifier;
+		File           file;
+		IonRequestType type;
+		ArchiveIndex   archiveIndex;
+		String         pageIdentifier;
 
-		public FileWithMeta( File file, IonRequest type, ArchiveIndex archiveIndex, String pageIdentifier )
+		public FileWithMeta( File file, IonRequestType type, ArchiveIndex archiveIndex, String pageIdentifier )
 		{
 			this.file = file;
 			this.type = type;
@@ -254,7 +254,7 @@ class ArchiveUtils
 
 	private static void saveCacheIndex( FileWithMeta fileWithMeta, Collection collection, String lastModified, IonConfig config, Context context )
 	{
-		IonRequest type = fileWithMeta.type;
+		IonRequestType type = fileWithMeta.type;
 		if ( type == null )
 		{
 			Log.w( TAG, "It could not be determined of which kind the request " + fileWithMeta.archiveIndex.url + " is. Thus, do not create a cache index entry." );

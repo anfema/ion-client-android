@@ -1,11 +1,13 @@
 package com.anfema.ionclient.mediafiles;
 
+import com.anfema.ionclient.pages.ConfigUpdatable;
+
 import java.io.File;
 
 import okhttp3.HttpUrl;
 import rx.Observable;
 
-public interface IonFiles
+public interface IonFiles extends ConfigUpdatable
 {
 	Observable<File> request( HttpUrl url, String checksum );
 

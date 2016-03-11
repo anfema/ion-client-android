@@ -54,6 +54,15 @@ public class IonFilesWithCaching implements IonFiles
 		runningDownloads = new RunningDownloadHandler<>();
 	}
 
+	@Override
+	public void updateConfig( IonConfig config )
+	{
+		this.config = config;
+	}
+
+	// TODO pass content instead of checksum
+	// TODO global flag for offline mode
+
 	/**
 	 * Wraps {@link this#performRequest(HttpUrl, File)} so that it runs completely async.
 	 */

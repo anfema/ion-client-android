@@ -13,8 +13,8 @@ import com.anfema.ionclient.mediafiles.IonFiles;
 import com.anfema.ionclient.mediafiles.IonFilesFactory;
 import com.anfema.ionclient.mediafiles.IonPicasso;
 import com.anfema.ionclient.mediafiles.IonPicassoFactory;
-import com.anfema.ionclient.pages.IonPagesFactory;
 import com.anfema.ionclient.pages.IonPages;
+import com.anfema.ionclient.pages.IonPagesFactory;
 import com.anfema.ionclient.pages.models.Collection;
 import com.anfema.ionclient.pages.models.Page;
 import com.anfema.ionclient.pages.models.PagePreview;
@@ -54,6 +54,8 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 		IonClient storedClient = instances.get( config );
 		if ( storedClient != null && storedClient.context != null )
 		{
+			// update config because values, which are not included in equality check, might have changed
+			storedClient.updateConfig( config );
 			return storedClient;
 		}
 
@@ -86,6 +88,12 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 		ionFts = IonFtsFactory.newInstance( ionPages, ionFiles, config, context );
 	}
 
+	@Override
+	public void updateConfig( IonConfig config )
+	{
+		ionPages.updateConfig( config );
+
+	}
 
 	/// Collection and page calls
 
@@ -125,6 +133,9 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	{
 		return ionPages.getPages( pagesFilter );
 	}
+
+
+	// TODO remove sorted and make sorted by default
 
 	/**
 	 * A set of pages is "returned" by emitting multiple events.

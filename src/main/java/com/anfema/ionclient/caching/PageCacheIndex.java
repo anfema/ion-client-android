@@ -3,7 +3,7 @@ package com.anfema.ionclient.caching;
 import android.content.Context;
 
 import com.anfema.ionclient.IonConfig;
-import com.anfema.ionclient.pages.PagesUrls;
+import com.anfema.ionclient.pages.IonPageUrls;
 import com.anfema.ionclient.pages.models.Page;
 
 import org.joda.time.DateTime;
@@ -61,7 +61,7 @@ public class PageCacheIndex extends CacheIndex
 
 	public static void save( String pageIdentifier, DateTime pageLastChanged, IonConfig config, Context context )
 	{
-		String url = PagesUrls.getPageUrl( config, pageIdentifier );
+		String url = IonPageUrls.getPageUrl( config, pageIdentifier );
 		PageCacheIndex cacheIndex = new PageCacheIndex( url, pageLastChanged );
 		CacheIndexStore.save( url, cacheIndex, config, context );
 	}

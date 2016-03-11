@@ -43,11 +43,6 @@ public class PagesFilter
 		};
 	}
 
-	public static Func1<PagePreview, Boolean> titleEquals( String title )
-	{
-		return pagePreview -> pagePreview.metaEquals( "title", title );
-	}
-
 	public static Func1<PagePreview, Boolean> layoutEquals( String layout )
 	{
 		return pagePreview -> pagePreview.layout != null && pagePreview.layout.equals( layout );
@@ -57,4 +52,6 @@ public class PagesFilter
 	{
 		return pagePreview -> pagePreview.parent != null && pagePreview.parent.equals( parentIdentifier );
 	}
+
+	// TODO root elements && leaf elements
 }

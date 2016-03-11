@@ -3,7 +3,7 @@ package com.anfema.ionclient.caching;
 import android.content.Context;
 
 import com.anfema.ionclient.IonConfig;
-import com.anfema.ionclient.pages.PagesUrls;
+import com.anfema.ionclient.pages.IonPageUrls;
 import com.anfema.ionclient.utils.DateTimeUtils;
 import com.anfema.ionclient.utils.Log;
 
@@ -95,13 +95,13 @@ public class CollectionCacheIndex extends CacheIndex
 
 	public static CollectionCacheIndex retrieve( IonConfig config, Context context )
 	{
-		String requestUrl = PagesUrls.getCollectionUrl( config );
+		String requestUrl = IonPageUrls.getCollectionUrl( config );
 		return CacheIndexStore.retrieve( requestUrl, CollectionCacheIndex.class, config.collectionIdentifier, context );
 	}
 
 	public static void save( IonConfig config, Context context, String lastModified )
 	{
-		String url = PagesUrls.getCollectionUrl( config );
+		String url = IonPageUrls.getCollectionUrl( config );
 		CollectionCacheIndex cacheIndex = new CollectionCacheIndex( url, DateTimeUtils.now(), lastModified );
 		CacheIndexStore.save( url, cacheIndex, config, context );
 	}

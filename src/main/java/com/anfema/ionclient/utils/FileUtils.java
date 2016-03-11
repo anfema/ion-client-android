@@ -65,6 +65,7 @@ public class FileUtils
 
 	// END lock mechanism
 
+	// TODO handle full disk
 
 	/**
 	 * Write from an input stream to a file.

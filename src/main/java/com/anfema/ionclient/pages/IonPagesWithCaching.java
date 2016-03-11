@@ -57,7 +57,7 @@ public class IonPagesWithCaching implements IonPages
 	/**
 	 * Contains essential data for making calls to ION API
 	 */
-	private final IonConfig config;
+	private IonConfig config;
 
 	/**
 	 * Access to the ION API
@@ -71,9 +71,15 @@ public class IonPagesWithCaching implements IonPages
 		this.config = config;
 		this.context = context;
 		ionApi = ApiFactory.newInstance( config.baseUrl, interceptors, IonPagesApi.class );
-		memoryCache = new MemoryCache( config.pagesMemCacheSize );
+		memoryCache = new MemoryCache();
 		runningCollectionDownload = new RunningDownloadHandler<>();
 		runningPageDownloads = new RunningDownloadHandler<>();
+	}
+
+	@Override
+	public void updateConfig( IonConfig config )
+	{
+		this.config = config;
 	}
 
 	/**
@@ -89,7 +95,7 @@ public class IonPagesWithCaching implements IonPages
 	@Override
 	public Observable<Collection> getCollection()
 	{
-		String collectionUrl = PagesUrls.getCollectionUrl( config );
+		String collectionUrl = IonPageUrls.getCollectionUrl( config );
 		CollectionCacheIndex cacheIndex = CollectionCacheIndex.retrieve( collectionUrl, config.collectionIdentifier, context );
 
 		boolean currentCacheEntry = cacheIndex != null && !cacheIndex.isOutdated( config );
@@ -133,7 +139,7 @@ public class IonPagesWithCaching implements IonPages
 	@Override
 	public Observable<Page> getPage( String pageIdentifier )
 	{
-		String pageUrl = PagesUrls.getPageUrl( config, pageIdentifier );
+		String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 		PageCacheIndex pageCacheIndex = PageCacheIndex.retrieve( pageUrl, config.collectionIdentifier, context );
 
 		if ( pageCacheIndex == null )
@@ -154,7 +160,7 @@ public class IonPagesWithCaching implements IonPages
 		return getCollection()
 				// get page's last_changed date from collection
 				.flatMap( collection -> collection.getPageLastChangedAsync( pageIdentifier ) )
-						// compare last_changed date of cached page with that of collection
+				// compare last_changed date of cached page with that of collection
 				.map( pageCacheIndex::isOutdated )
 				.flatMap( isOutdated -> {
 					boolean networkConnected = NetworkUtils.isConnected( context );
@@ -248,7 +254,7 @@ public class IonPagesWithCaching implements IonPages
 
 	private Observable<Collection> getCollectionFromCache( CollectionCacheIndex cacheIndex, boolean serverCallAsBackup )
 	{
-		String collectionUrl = PagesUrls.getCollectionUrl( config );
+		String collectionUrl = IonPageUrls.getCollectionUrl( config );
 
 		// retrieve from memory cache
 		Collection collection = memoryCache.getCollection();
@@ -262,12 +268,12 @@ public class IonPagesWithCaching implements IonPages
 		Log.i( "File Cache Lookup", collectionUrl );
 		try
 		{
-			File filePath = FilePaths.getJsonFilePath( collectionUrl, config, context );
+			File filePath = FilePaths.getCollectionJsonPath( collectionUrl, config, context );
 			return FileUtils
 					.readTextFromFile( filePath )
 					.map( collectionsString -> GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class ) )
 					.map( CollectionResponse::getCollection )
-							// save to memory cache
+					// save to memory cache
 					.doOnNext( memoryCache::setCollection )
 					.compose( RxUtils.runOnIoThread() )
 					.onErrorResumeNext( throwable -> {
@@ -304,7 +310,7 @@ public class IonPagesWithCaching implements IonPages
 	{
 		final String lastModified = cacheIndex != null ? cacheIndex.getLastModified() : null;
 
-		Observable<Collection> collectionObservable = ionApi.getCollection( config.collectionIdentifier, config.locale, config.authorizationHeaderValue, lastModified )
+		Observable<Collection> collectionObservable = ionApi.getCollection( config.collectionIdentifier, config.locale, config.authorizationHeaderValue, config.variation, lastModified )
 				.flatMap( serverResponse -> {
 					if ( serverResponse.code() == COLLECTION_NOT_MODIFIED )
 					{
@@ -336,7 +342,7 @@ public class IonPagesWithCaching implements IonPages
 				} )
 				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
-					String collectionUrl = PagesUrls.getCollectionUrl( config );
+					String collectionUrl = IonPageUrls.getCollectionUrl( config );
 					if ( cacheAsBackup )
 					{
 						Log.w( "Backup Request", "Network request " + collectionUrl + " failed. Trying cache request instead..." );
@@ -361,7 +367,7 @@ public class IonPagesWithCaching implements IonPages
 	 */
 	private Observable<Page> getPageFromCache( String pageIdentifier, boolean serverCallAsBackup )
 	{
-		String pageUrl = PagesUrls.getPageUrl( config, pageIdentifier );
+		String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 
 		// retrieve from memory cache
 		Page memPage = memoryCache.getPage( pageUrl );
@@ -375,12 +381,12 @@ public class IonPagesWithCaching implements IonPages
 		Log.i( "File Cache Lookup", pageUrl );
 		try
 		{
-			File filePath = FilePaths.getJsonFilePath( pageUrl, config, context );
+			File filePath = FilePaths.getPageJsonPath( pageUrl, pageIdentifier, config, context );
 			return FileUtils
 					.readTextFromFile( filePath )
 					.map( pagesString -> GsonHolder.getInstance().fromJson( pagesString, PageResponse.class ) )
 					.map( PageResponse::getPage )
-							// save to memory cache
+					// save to memory cache
 					.doOnNext( page -> memoryCache.savePage( page, config ) )
 					.compose( RxUtils.runOnIoThread() )
 					.onErrorResumeNext( throwable -> {
@@ -410,13 +416,13 @@ public class IonPagesWithCaching implements IonPages
 	 */
 	private Observable<Page> getPageFromServer( String pageIdentifier, boolean cacheAsBackup )
 	{
-		Observable<Page> pageObservable = ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.authorizationHeaderValue )
+		Observable<Page> pageObservable = ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.variation, config.authorizationHeaderValue )
 				.map( PageResponse::getPage )
 				.doOnNext( savePageCacheIndex() )
 				.doOnNext( page -> memoryCache.savePage( page, config ) )
 				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
-					String pageUrl = PagesUrls.getPageUrl( config, pageIdentifier );
+					String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 					if ( cacheAsBackup )
 					{
 						Log.w( "Backup Request", "Network request " + pageUrl + " failed. Trying cache request instead..." );

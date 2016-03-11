@@ -2,14 +2,16 @@ package com.anfema.ionclient.caching;
 
 import android.util.LruCache;
 
+import com.anfema.ionclient.IonConfig;
+
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Holds cache index entries in memory cache.
- * <p/>
+ * <p>
  * Entries can be save and retrieved by requestUrl.
- * <p/>
+ * <p>
  * A separate map is held for each collection, allowing quickly clearing the memory cache of a specific collection.
  * Analogously to shared preferences store in {@link CacheIndex}.
  */
@@ -40,8 +42,7 @@ public class MemoryCacheIndex
 		LruCache<String, CacheIndex> memoryCacheIndex = memoryCacheIndices.get( collectionIdentifier );
 		if ( memoryCacheIndex == null )
 		{
-			// TODO cleaner way to get LRU cache size
-			memoryCacheIndex = new LruCache<>( MemoryCache.pagesMemoryCacheSize );
+			memoryCacheIndex = new LruCache<>( IonConfig.pagesMemCacheSize );
 			memoryCacheIndices.put( collectionIdentifier, memoryCacheIndex );
 		}
 		memoryCacheIndex.put( requestUrl, index );

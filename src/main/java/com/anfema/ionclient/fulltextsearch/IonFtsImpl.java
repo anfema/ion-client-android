@@ -10,7 +10,9 @@ import com.anfema.ionclient.IonClient;
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.R;
 import com.anfema.ionclient.mediafiles.IonFiles;
+import com.anfema.ionclient.pages.CollectionDownloadedListener;
 import com.anfema.ionclient.pages.IonPages;
+import com.anfema.ionclient.pages.models.Collection;
 import com.anfema.ionclient.utils.Log;
 import com.anfema.ionclient.utils.RxUtils;
 
@@ -23,14 +25,14 @@ import rx.Observable;
 
 /**
  * Full text search on collectin data.
- * <p/>
+ * <p>
  * Accessible via {@link IonClient}
  */
-class IonFtsImpl implements IonFts
+class IonFtsImpl implements IonFts, CollectionDownloadedListener
 {
 	private final IonPages  ionPages;
 	private final IonFiles  ionFiles;
-	private final IonConfig config;
+	private       IonConfig config;
 	private final Context   context;
 
 	public IonFtsImpl( IonPages ionPages, IonFiles ionFiles, IonConfig config, Context context )
@@ -41,17 +43,46 @@ class IonFtsImpl implements IonFts
 		this.context = context;
 	}
 
+	@Override
+	public void updateConfig( IonConfig config )
+	{
+		this.config = config;
+	}
+
+	/**
+	 * Prevent multiple archive downloads at the same time.
+	 */
+	boolean activeFtsDbDownload = false;
+
 	/**
 	 * @see IonFts#downloadSearchDatabase() (String, String, String)
 	 */
 	@Override
 	public Observable<File> downloadSearchDatabase()
 	{
+		activeFtsDbDownload = true;
+
 		File dbTargetPath = FtsDbUtils.getPath( config.collectionIdentifier, context );
 		Log.i( "FTS Database", "about to download FTS database for collection " + config.collectionIdentifier );
 		return ionPages.getCollection()
 				.map( collection -> collection.fts_db )
-				.flatMap( searchDbUrl -> ionFiles.request( HttpUrl.parse( searchDbUrl ), null, true, dbTargetPath ) );
+				.flatMap( searchDbUrl -> ionFiles.request( HttpUrl.parse( searchDbUrl ), null, true, dbTargetPath ) )
+				.doOnNext( file -> activeFtsDbDownload = false )
+				.compose( RxUtils.runOnIoThread() );
+	}
+
+	/**
+	 * Check if database needs to be updated.
+	 */
+	@Override
+	public void collectionDownloaded( Collection collection, String lastModified )
+	{
+		if ( config.ftsDbDownloads && !activeFtsDbDownload )
+		{
+			// archive needs to be downloaded again. Download runs in background and does not even inform UI when finished
+			downloadSearchDatabase()
+					.subscribe( RxUtils.NOTHING, RxUtils.DEFAULT_EXCEPTION_HANDLER, () -> Log.d( "ION FTS", "FTS database has been downloaded/updated in background" ) );
+		}
 	}
 
 	/**

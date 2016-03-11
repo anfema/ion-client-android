@@ -1,11 +1,13 @@
 package com.anfema.ionclient.fulltextsearch;
 
+import com.anfema.ionclient.pages.ConfigUpdatable;
+
 import java.io.File;
 import java.util.List;
 
 import rx.Observable;
 
-public interface IonFts
+public interface IonFts extends ConfigUpdatable
 {
 	/**
 	 * download full text search database for respective collection

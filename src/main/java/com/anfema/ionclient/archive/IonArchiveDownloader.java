@@ -22,7 +22,7 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 {
 	private final IonPages    ionPages;
 	private final IonFiles    ionFiles;
-	private final IonConfig   config;
+	private       IonConfig   config;
 	private final Context     context;
 	private final MemoryCache memoryCache;
 
@@ -46,6 +46,12 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 		}
 	}
 
+	@Override
+	public void updateConfig( IonConfig config )
+	{
+		this.config = config;
+	}
+
 	/**
 	 * Prevent multiple archive downloads at the same time.
 	 */
@@ -64,7 +70,7 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 	 * Download the archive file for current collection, which should make app usable in offline mode.
 	 *
 	 * @param inCollection If collection already is available it can be passed in order to save time.
-	 * @param lastModified
+	 * @param lastModified when the collection has been last modified
 	 */
 	public Observable<File> downloadArchive( Collection inCollection, String lastModified )
 	{

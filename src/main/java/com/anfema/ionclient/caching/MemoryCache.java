@@ -3,26 +3,22 @@ package com.anfema.ionclient.caching;
 import android.util.LruCache;
 
 import com.anfema.ionclient.IonConfig;
-import com.anfema.ionclient.pages.PagesUrls;
+import com.anfema.ionclient.pages.IonPageUrls;
 import com.anfema.ionclient.pages.models.Collection;
 import com.anfema.ionclient.pages.models.Page;
 
 public class MemoryCache
 {
-	// TODO make non-static and propagate differently to MemoryCacheIndex
-	public static int pagesMemoryCacheSize = 100;
-
 	///  current collection
 	private Collection collection;
 
 	// key: page URL
 	private LruCache<String, Page> pagesMemCache;
 
-	public MemoryCache( int pagesMemCacheSize )
+	public MemoryCache()
 	{
-		this.pagesMemoryCacheSize = pagesMemCacheSize;
 		collection = null;
-		pagesMemCache = new LruCache<>( pagesMemoryCacheSize );
+		pagesMemCache = new LruCache<>( IonConfig.pagesMemCacheSize );
 	}
 
 	public Collection getCollection()
@@ -42,7 +38,7 @@ public class MemoryCache
 
 	public Page getPage( String pageIdentifier, IonConfig config )
 	{
-		String pageUrl = PagesUrls.getPageUrl( config, pageIdentifier );
+		String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 		return getPage( pageUrl );
 	}
 
@@ -54,7 +50,7 @@ public class MemoryCache
 	 */
 	public Page savePage( Page page, IonConfig config )
 	{
-		String pageUrl = PagesUrls.getPageUrl( config, page.identifier );
+		String pageUrl = IonPageUrls.getPageUrl( config, page.identifier );
 		return pagesMemCache.put( pageUrl, page );
 	}
 
