@@ -1,5 +1,6 @@
 package com.anfema.ionclient.caching;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -67,6 +68,7 @@ public class CacheIndexStore
 		}
 	}
 
+	@SuppressLint("CommitPrefEdits")
 	public static void clear( String collectionIdentifier, Context context )
 	{
 		// clear memory cache

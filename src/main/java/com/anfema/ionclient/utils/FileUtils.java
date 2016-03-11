@@ -108,7 +108,7 @@ public class FileUtils
 		return writeToFile( new ByteArrayInputStream( content.getBytes( "UTF-8" ) ), targetFile );
 	}
 
-	public static Observable<String> readTextFromFile( File file ) throws IOException
+	public static Observable<String> readTextFromFile( File file )
 	{
 		return Observable.just( null )
 				.flatMap( o ->

@@ -7,14 +7,16 @@ import java.util.List;
 import rx.functions.Func1;
 
 /**
- * This utility filters are supposed to be used with
- * {@link com.anfema.ionclient.pages.IonPages#getPagePreviews(Func1)},
- * {@link com.anfema.ionclient.pages.IonPages#getPagePreviewsSorted(Func1)},
- * {@link com.anfema.ionclient.pages.IonPages#getPages(Func1)}, and
- * {@link com.anfema.ionclient.pages.IonPages#getPagesSorted(Func1)}
+ * This utility filters are supposed to be used with {@link com.anfema.ionclient.pages.IonPages#getPagePreviews(Func1)}
+ * and {@link com.anfema.ionclient.pages.IonPages#getPages(Func1)}.
  */
 public class PagesFilter
 {
+	public static Func1<PagePreview, Boolean> all()
+	{
+		return pagePreview -> true;
+	}
+
 	/**
 	 * Before using this filter method, consider using
 	 * {@link com.anfema.ionclient.pages.IonPages#getPage(String)} or {@link com.anfema.ionclient.pages.IonPages#getPagePreview(String)} instead.
@@ -53,5 +55,5 @@ public class PagesFilter
 		return pagePreview -> pagePreview.parent != null && pagePreview.parent.equals( parentIdentifier );
 	}
 
-	// TODO root elements && leaf elements
+	// TODO root elements && leaf elements & all
 }

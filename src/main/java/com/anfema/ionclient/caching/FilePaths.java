@@ -49,7 +49,7 @@ public class FilePaths
 	 * <p>
 	 * Creates folders if they do not exist yet.
 	 */
-	public static File getCollectionJsonPath( String url, IonConfig config, Context context ) throws NoIonPagesRequestException
+	public static File getCollectionJsonPath( String url, IonConfig config, Context context )
 	{
 		return getCollectionJsonPath( url, config, context, false );
 	}
@@ -59,7 +59,7 @@ public class FilePaths
 	 * <p>
 	 * Creates folders if they do not exist yet.
 	 */
-	public static File getCollectionJsonPath( String url, IonConfig config, Context context, boolean tempFolder ) throws NoIonPagesRequestException
+	public static File getCollectionJsonPath( String url, IonConfig config, Context context, boolean tempFolder )
 	{
 		if ( url == null || url.isEmpty() )
 		{
@@ -73,7 +73,7 @@ public class FilePaths
 	 * <p>
 	 * Creates folders if they do not exist yet.
 	 */
-	public static File getPageJsonPath( String url, String pageIdentifier, IonConfig config, Context context ) throws NoIonPagesRequestException
+	public static File getPageJsonPath( String url, String pageIdentifier, IonConfig config, Context context )
 	{
 		return getPageJsonPath( url, pageIdentifier, config, context, false );
 	}
@@ -83,7 +83,7 @@ public class FilePaths
 	 * <p>
 	 * Creates folders if they do not exist yet.
 	 */
-	public static File getPageJsonPath( String url, String pageIdentifier, IonConfig config, Context context, boolean tempFolder ) throws NoIonPagesRequestException
+	public static File getPageJsonPath( String url, String pageIdentifier, IonConfig config, Context context, boolean tempFolder )
 	{
 		if ( url == null || url.isEmpty() )
 		{

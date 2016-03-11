@@ -107,6 +107,30 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 		return ionPages.getCollection();
 	}
 
+
+	@Override
+	public Observable<PagePreview> getPagePreview( String pageIdentifier )
+	{
+		return ionPages.getPagePreview( pageIdentifier );
+	}
+
+	/**
+	 * A set of page previews is "returned" by emitting multiple events.
+	 *
+	 * @param pagesFilter see {@link com.anfema.ionclient.utils.PagesFilter} for some frequently used filter options.
+	 */
+	@Override
+	public Observable<PagePreview> getPagePreviews( Func1<PagePreview, Boolean> pagesFilter )
+	{
+		return ionPages.getPagePreviews( pagesFilter );
+	}
+
+	@Override
+	public Observable<PagePreview> getAllPagePreviews()
+	{
+		return ionPages.getAllPagePreviews();
+	}
+
 	/**
 	 * Add collection identifier and authorization token to request.<br/>
 	 */
@@ -118,15 +142,8 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 
 	/**
 	 * A set of pages is "returned" by emitting multiple events.<br/>
-	 */
-	@Override
-	public Observable<Page> getAllPages()
-	{
-		return ionPages.getAllPages();
-	}
-
-	/**
-	 * A set of pages is "returned" by emitting multiple events.<br/>
+	 *
+	 * @param pagesFilter see {@link com.anfema.ionclient.utils.PagesFilter} for some frequently used filter options.
 	 */
 	@Override
 	public Observable<Page> getPages( Func1<PagePreview, Boolean> pagesFilter )
@@ -134,45 +151,15 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 		return ionPages.getPages( pagesFilter );
 	}
 
-
-	// TODO remove sorted and make sorted by default
-
 	/**
-	 * A set of pages is "returned" by emitting multiple events.
-	 * <p>
-	 * The pages are ordered by their position.
+	 * A set of pages is "returned" by emitting multiple events.<br/>
 	 */
 	@Override
-	public Observable<Page> getPagesSorted( Func1<PagePreview, Boolean> pagesFilter )
+	public Observable<Page> getAllPages()
 	{
-		return ionPages.getPagesSorted( pagesFilter );
+		return ionPages.getAllPages();
 	}
 
-	@Override
-	public Observable<PagePreview> getPagePreview( String pageIdentifier )
-	{
-		return ionPages.getPagePreview( pageIdentifier );
-	}
-
-	/**
-	 * A set of page previews is "returned" by emitting multiple events.
-	 */
-	@Override
-	public Observable<PagePreview> getPagePreviews( Func1<PagePreview, Boolean> pagesFilter )
-	{
-		return ionPages.getPagePreviews( pagesFilter );
-	}
-
-	/**
-	 * A set of page previews is "returned" by emitting multiple events.
-	 * <p>
-	 * The page previews are ordered by their position.
-	 */
-	@Override
-	public Observable<PagePreview> getPagePreviewsSorted( Func1<PagePreview, Boolean> pagesFilter )
-	{
-		return ionPages.getPagePreviewsSorted( pagesFilter );
-	}
 
 	// Loading media files
 

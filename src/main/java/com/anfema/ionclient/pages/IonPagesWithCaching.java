@@ -10,7 +10,6 @@ import com.anfema.ionclient.caching.MemoryCache;
 import com.anfema.ionclient.caching.PageCacheIndex;
 import com.anfema.ionclient.exceptions.CollectionNotAvailableException;
 import com.anfema.ionclient.exceptions.NetworkRequestException;
-import com.anfema.ionclient.exceptions.NoIonPagesRequestException;
 import com.anfema.ionclient.exceptions.PageNotAvailableException;
 import com.anfema.ionclient.exceptions.ReadFromCacheException;
 import com.anfema.ionclient.pages.models.Collection;
@@ -28,7 +27,6 @@ import com.anfema.ionclient.utils.RunningDownloadHandler;
 import com.anfema.ionclient.utils.RxUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import okhttp3.Interceptor;
@@ -124,6 +122,30 @@ public class IonPagesWithCaching implements IonPages
 		}
 	}
 
+	@Override
+	public Observable<PagePreview> getPagePreview( String pageIdentifier )
+	{
+		return getCollection()
+				.map( collection -> collection.pages )
+				.flatMap( Observable::from )
+				.filter( PagesFilter.identifierEquals( pageIdentifier ) );
+	}
+
+	@Override
+	public Observable<PagePreview> getPagePreviews( Func1<PagePreview, Boolean> pagesFilter )
+	{
+		return getCollection()
+				.map( collection -> collection.pages )
+				.concatMap( Observable::from )
+				.filter( pagesFilter );
+	}
+
+	@Override
+	public Observable<PagePreview> getAllPagePreviews()
+	{
+		return getPagePreviews( PagesFilter.all() );
+	}
+
 	/**
 	 * Retrieve page with following priorities:
 	 * <p>
@@ -187,32 +209,7 @@ public class IonPagesWithCaching implements IonPages
 	 * Use collection identifier as specified in {@link this#config}
 	 */
 	@Override
-	public Observable<Page> getAllPages()
-	{
-		return getPages( pagePreview -> true );
-	}
-
-	/**
-	 * A set of pages is "returned" by emitting multiple events.<br/>
-	 * Use collection identifier as specified in {@link this#config}
-	 */
-	@Override
 	public Observable<Page> getPages( Func1<PagePreview, Boolean> pagesFilter )
-	{
-		return getCollection()
-				.map( collection -> collection.pages )
-				.flatMap( Observable::from )
-				.filter( pagesFilter )
-				.map( page -> page.identifier )
-				.flatMap( this::getPage );
-	}
-
-	/**
-	 * A set of pages is "returned" by emitting multiple events.<br/>
-	 * Use default collection identifier as specified in {@link this#config}
-	 */
-	@Override
-	public Observable<Page> getPagesSorted( Func1<PagePreview, Boolean> pagesFilter )
 	{
 		return getCollection()
 				.map( collection -> collection.pages )
@@ -222,31 +219,14 @@ public class IonPagesWithCaching implements IonPages
 				.concatMap( this::getPage );
 	}
 
+	/**
+	 * A set of pages is "returned" by emitting multiple events.<br/>
+	 * Use collection identifier as specified in {@link this#config}
+	 */
 	@Override
-	public Observable<PagePreview> getPagePreviews( Func1<PagePreview, Boolean> pagesFilter )
+	public Observable<Page> getAllPages()
 	{
-		return getCollection()
-				.map( collection -> collection.pages )
-				.flatMap( Observable::from )
-				.filter( pagesFilter );
-	}
-
-	@Override
-	public Observable<PagePreview> getPagePreviewsSorted( Func1<PagePreview, Boolean> pagesFilter )
-	{
-		return getCollection()
-				.map( collection -> collection.pages )
-				.concatMap( Observable::from )
-				.filter( pagesFilter );
-	}
-
-	@Override
-	public Observable<PagePreview> getPagePreview( String pageIdentifier )
-	{
-		return getCollection()
-				.map( collection -> collection.pages )
-				.flatMap( Observable::from )
-				.filter( PagesFilter.identifierEquals( pageIdentifier ) );
+		return getPages( PagesFilter.all() );
 	}
 
 
@@ -266,24 +246,18 @@ public class IonPagesWithCaching implements IonPages
 
 		// retrieve from file cache
 		Log.i( "File Cache Lookup", collectionUrl );
-		try
-		{
-			File filePath = FilePaths.getCollectionJsonPath( collectionUrl, config, context );
-			return FileUtils
-					.readTextFromFile( filePath )
-					.map( collectionsString -> GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class ) )
-					.map( CollectionResponse::getCollection )
-					// save to memory cache
-					.doOnNext( memoryCache::setCollection )
-					.compose( RxUtils.runOnIoThread() )
-					.onErrorResumeNext( throwable -> {
-						return handleUnsuccessfulCollectionCacheReading( collectionUrl, cacheIndex, serverCallAsBackup, throwable );
-					} );
-		}
-		catch ( IOException | NoIonPagesRequestException e )
-		{
-			return handleUnsuccessfulCollectionCacheReading( collectionUrl, cacheIndex, serverCallAsBackup, e );
-		}
+
+		File filePath = FilePaths.getCollectionJsonPath( collectionUrl, config, context );
+		return FileUtils
+				.readTextFromFile( filePath )
+				.map( collectionsString -> GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class ) )
+				.map( CollectionResponse::getCollection )
+				// save to memory cache
+				.doOnNext( memoryCache::setCollection )
+				.compose( RxUtils.runOnIoThread() )
+				.onErrorResumeNext( throwable -> {
+					return handleUnsuccessfulCollectionCacheReading( collectionUrl, cacheIndex, serverCallAsBackup, throwable );
+				} );
 	}
 
 	private Observable<Collection> handleUnsuccessfulCollectionCacheReading( String collectionUrl, CollectionCacheIndex cacheIndex, boolean serverCallAsBackup, Throwable e )
@@ -379,24 +353,18 @@ public class IonPagesWithCaching implements IonPages
 
 		// retrieve from file cache
 		Log.i( "File Cache Lookup", pageUrl );
-		try
-		{
-			File filePath = FilePaths.getPageJsonPath( pageUrl, pageIdentifier, config, context );
-			return FileUtils
-					.readTextFromFile( filePath )
-					.map( pagesString -> GsonHolder.getInstance().fromJson( pagesString, PageResponse.class ) )
-					.map( PageResponse::getPage )
-					// save to memory cache
-					.doOnNext( page -> memoryCache.savePage( page, config ) )
-					.compose( RxUtils.runOnIoThread() )
-					.onErrorResumeNext( throwable -> {
-						return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, throwable );
-					} );
-		}
-		catch ( IOException | NoIonPagesRequestException e )
-		{
-			return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, e );
-		}
+		
+		File filePath = FilePaths.getPageJsonPath( pageUrl, pageIdentifier, config, context );
+		return FileUtils
+				.readTextFromFile( filePath )
+				.map( pagesString -> GsonHolder.getInstance().fromJson( pagesString, PageResponse.class ) )
+				.map( PageResponse::getPage )
+				// save to memory cache
+				.doOnNext( page -> memoryCache.savePage( page, config ) )
+				.compose( RxUtils.runOnIoThread() )
+				.onErrorResumeNext( throwable -> {
+					return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, throwable );
+				} );
 	}
 
 	private Observable<Page> handleUnsuccessfulPageCacheReading( String pageIdentifier, boolean serverCallAsBackup, String pageUrl, Throwable e )

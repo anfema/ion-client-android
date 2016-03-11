@@ -11,17 +11,15 @@ public interface IonPages extends ConfigUpdatable
 {
 	Observable<Collection> getCollection();
 
-	Observable<Page> getPage( String pageIdentifier );
-
-	Observable<Page> getAllPages();
-
-	Observable<Page> getPages( Func1<PagePreview, Boolean> pagesFilter );
-
-	Observable<Page> getPagesSorted( Func1<PagePreview, Boolean> pagesFilter );
-
 	Observable<PagePreview> getPagePreview( String pageIdentifier );
 
 	Observable<PagePreview> getPagePreviews( Func1<PagePreview, Boolean> pagesFilter );
 
-	Observable<PagePreview> getPagePreviewsSorted( Func1<PagePreview, Boolean> pagesFilter );
+	Observable<PagePreview> getAllPagePreviews();
+
+	Observable<Page> getPage( String pageIdentifier );
+
+	Observable<Page> getPages( Func1<PagePreview, Boolean> pagesFilter );
+
+	Observable<Page> getAllPages();
 }
