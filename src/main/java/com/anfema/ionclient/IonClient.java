@@ -92,7 +92,9 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	public void updateConfig( IonConfig config )
 	{
 		ionPages.updateConfig( config );
-
+		ionFiles.updateConfig( config );
+		ionArchive.updateConfig( config );
+		ionFts.updateConfig( config );
 	}
 
 	/// Collection and page calls
