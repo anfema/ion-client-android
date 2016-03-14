@@ -6,8 +6,8 @@ import android.net.Uri;
 import android.webkit.URLUtil;
 import android.widget.ImageView;
 
-import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.IonClient;
+import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
 import com.anfema.ionclient.utils.Log;
@@ -30,11 +30,19 @@ import rx.functions.Func1;
 public class IonPicassoWithCaching implements IonPicasso
 {
 	private final IonFiles ionFiles;
-	private final Picasso  picasso;
+	private final Context  context;
+	private       Picasso  picasso;
 
 	public IonPicassoWithCaching( IonFiles ionFiles, IonConfig config, Context context )
 	{
 		this.ionFiles = ionFiles;
+		this.context = context;
+		this.picasso = createPicassoInstance( config.authorizationHeaderValue, context );
+	}
+
+	@Override
+	public void updateConfig( IonConfig config )
+	{
 		this.picasso = createPicassoInstance( config.authorizationHeaderValue, context );
 	}
 

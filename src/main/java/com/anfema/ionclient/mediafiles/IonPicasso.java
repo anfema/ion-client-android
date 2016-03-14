@@ -3,6 +3,7 @@ package com.anfema.ionclient.mediafiles;
 import android.net.Uri;
 import android.widget.ImageView;
 
+import com.anfema.ionclient.pages.ConfigUpdatable;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
@@ -11,7 +12,7 @@ import rx.functions.Func1;
 /**
  * Wraps load methods of {@link Picasso} to apply ION's caching mechanism. Also provides direct access to picasso instance via {@link #getPicassoInstance()}.
  */
-public interface IonPicasso
+public interface IonPicasso extends ConfigUpdatable
 {
 	/**
 	 * Wraps Picasso's load method {@link Picasso#load(Uri)}.
