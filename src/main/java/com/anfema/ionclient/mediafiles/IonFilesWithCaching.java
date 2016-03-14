@@ -127,7 +127,7 @@ public class IonFilesWithCaching implements IonFiles
 
 	private boolean isFileUpToDate( HttpUrl url, String checksum )
 	{
-		FileCacheIndex fileCacheIndex = FileCacheIndex.retrieve( url.toString(), config.collectionIdentifier, context );
+		FileCacheIndex fileCacheIndex = FileCacheIndex.retrieve( url.toString(), config, context );
 		if ( fileCacheIndex == null )
 		{
 			return false;

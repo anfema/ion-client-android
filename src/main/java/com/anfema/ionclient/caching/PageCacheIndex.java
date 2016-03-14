@@ -49,9 +49,9 @@ public class PageCacheIndex extends CacheIndex
 
 	// save & retrieve
 
-	public static PageCacheIndex retrieve( String requestUrl, String collectionIdentifier, Context context )
+	public static PageCacheIndex retrieve( String requestUrl, IonConfig config, Context context )
 	{
-		return CacheIndexStore.retrieve( requestUrl, PageCacheIndex.class, collectionIdentifier, context );
+		return CacheIndexStore.retrieve( requestUrl, PageCacheIndex.class, config, context );
 	}
 
 	public static void save( Page page, IonConfig config, Context context )

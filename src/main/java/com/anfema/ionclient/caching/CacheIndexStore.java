@@ -14,10 +14,10 @@ import java.io.File;
 
 public class CacheIndexStore
 {
-	public static <T extends CacheIndex> T retrieve( String requestUrl, Class<T> cacheIndexSubclass, String collectionIdentifier, Context context )
+	public static <T extends CacheIndex> T retrieve( String requestUrl, Class<T> cacheIndexSubclass, IonConfig config, Context context )
 	{
 		// check memory cache
-		T index = MemoryCacheIndex.get( requestUrl, collectionIdentifier, cacheIndexSubclass );
+		T index = MemoryCacheIndex.get( requestUrl, cacheIndexSubclass );
 		if ( index != null )
 		{
 			Log.d( "Index Lookup", requestUrl + " from memory" );
@@ -26,13 +26,13 @@ public class CacheIndexStore
 
 		// check shared preferences
 		Log.d( "Index Lookup", requestUrl + " from shared preferences" );
-		SharedPreferences prefs = getPrefs( collectionIdentifier, context );
+		SharedPreferences prefs = getPrefs( config, context );
 		String json = prefs.getString( requestUrl, null );
 		index = GsonHolder.getInstance().fromJson( json, cacheIndexSubclass );
 		// save to memory cache
 		if ( index != null )
 		{
-			MemoryCacheIndex.put( requestUrl, collectionIdentifier, index );
+			MemoryCacheIndex.put( requestUrl, index );
 		}
 		return index;
 	}
@@ -48,10 +48,10 @@ public class CacheIndexStore
 			if ( file.exists() && file.length() > 0 /* TODO assert file size is just as big as response body length */ )
 			{
 				// save to memory cache
-				MemoryCacheIndex.put( requestUrl, config.collectionIdentifier, cacheIndex );
+				MemoryCacheIndex.put( requestUrl, cacheIndex );
 
 				// save to shared preferences
-				SharedPreferences prefs = getPrefs( config.collectionIdentifier, context );
+				SharedPreferences prefs = getPrefs( config, context );
 				Editor editor = prefs.edit();
 				editor.putString( requestUrl, GsonHolder.getInstance().toJson( cacheIndex ) );
 				editor.apply();
@@ -69,18 +69,18 @@ public class CacheIndexStore
 	}
 
 	@SuppressLint("CommitPrefEdits")
-	public static void clear( String collectionIdentifier, Context context )
+	public static void clear( IonConfig config, Context context )
 	{
-		// clear memory cache
-		MemoryCacheIndex.clear( collectionIdentifier );
+		// clear entire memory cache
+		MemoryCacheIndex.clear();
 
 		// clear shared preferences
-		SharedPreferences prefs = getPrefs( collectionIdentifier, context );
+		SharedPreferences prefs = getPrefs( config, context );
 		prefs.edit().clear().commit();
 	}
 
-	public static SharedPreferences getPrefs( String collectionIdentifier, Context context )
+	public static SharedPreferences getPrefs( IonConfig config, Context context )
 	{
-		return context.getSharedPreferences( "prefs_cache_index_" + collectionIdentifier, 0 );
+		return context.getSharedPreferences( "cache_index_" + config.collectionIdentifier + "_" + config.locale + "_" + config.variation, 0 );
 	}
 }

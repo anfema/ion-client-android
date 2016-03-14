@@ -69,9 +69,9 @@ public class FileCacheIndex extends CacheIndex
 
 	// save & retrieve
 
-	public static FileCacheIndex retrieve( String requestUrl, String collectionIdentifier, Context context )
+	public static FileCacheIndex retrieve( String requestUrl, IonConfig config, Context context )
 	{
-		return CacheIndexStore.retrieve( requestUrl, FileCacheIndex.class, collectionIdentifier, context );
+		return CacheIndexStore.retrieve( requestUrl, FileCacheIndex.class, config, context );
 	}
 
 	/**

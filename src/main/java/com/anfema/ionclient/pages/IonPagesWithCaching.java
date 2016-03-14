@@ -62,14 +62,11 @@ public class IonPagesWithCaching implements IonPages
 	 */
 	private final IonPagesApi ionApi;
 
-	private final MemoryCache memoryCache;
-
 	public IonPagesWithCaching( IonConfig config, Context context, List<Interceptor> interceptors )
 	{
 		this.config = config;
 		this.context = context;
 		ionApi = ApiFactory.newInstance( config.baseUrl, interceptors, IonPagesApi.class );
-		memoryCache = new MemoryCache();
 		runningCollectionDownload = new RunningDownloadHandler<>();
 		runningPageDownloads = new RunningDownloadHandler<>();
 	}
@@ -93,8 +90,7 @@ public class IonPagesWithCaching implements IonPages
 	@Override
 	public Observable<Collection> fetchCollection()
 	{
-		String collectionUrl = IonPageUrls.getCollectionUrl( config );
-		CollectionCacheIndex cacheIndex = CollectionCacheIndex.retrieve( collectionUrl, config.collectionIdentifier, context );
+		CollectionCacheIndex cacheIndex = CollectionCacheIndex.retrieve( config, context );
 
 		boolean currentCacheEntry = cacheIndex != null && !cacheIndex.isOutdated( config );
 		boolean networkConnected = NetworkUtils.isConnected( context );
@@ -162,7 +158,7 @@ public class IonPagesWithCaching implements IonPages
 	public Observable<Page> fetchPage( String pageIdentifier )
 	{
 		String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
-		PageCacheIndex pageCacheIndex = PageCacheIndex.retrieve( pageUrl, config.collectionIdentifier, context );
+		PageCacheIndex pageCacheIndex = PageCacheIndex.retrieve( pageUrl, config, context );
 
 		if ( pageCacheIndex == null )
 		{
@@ -237,7 +233,7 @@ public class IonPagesWithCaching implements IonPages
 		String collectionUrl = IonPageUrls.getCollectionUrl( config );
 
 		// retrieve from memory cache
-		Collection collection = memoryCache.getCollection();
+		Collection collection = MemoryCache.getCollection( collectionUrl );
 		if ( collection != null )
 		{
 			Log.i( "Memory Cache Lookup", collectionUrl );
@@ -253,7 +249,7 @@ public class IonPagesWithCaching implements IonPages
 				.map( collectionsString -> GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class ) )
 				.map( CollectionResponse::getCollection )
 				// save to memory cache
-				.doOnNext( memoryCache::setCollection )
+				.doOnNext( collection1 -> MemoryCache.saveCollection( collection1, collectionUrl ) )
 				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
 					return handleUnsuccessfulCollectionCacheReading( collectionUrl, cacheIndex, serverCallAsBackup, throwable );
@@ -300,7 +296,7 @@ public class IonPagesWithCaching implements IonPages
 						// parse collection data from response and write cache index and memory cache
 						return Observable.just( serverResponse.body() )
 								.map( CollectionResponse::getCollection )
-								.doOnNext( memoryCache::setCollection )
+								.doOnNext( collection1 -> MemoryCache.saveCollection( collection1, config ) )
 								.doOnNext( saveCollectionCacheIndex( lastModifiedReceived ) )
 								.doOnNext( collection -> {
 									if ( collectionListener != null )
@@ -344,7 +340,7 @@ public class IonPagesWithCaching implements IonPages
 		String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 
 		// retrieve from memory cache
-		Page memPage = memoryCache.getPage( pageUrl );
+		Page memPage = MemoryCache.getPage( pageUrl );
 		if ( memPage != null )
 		{
 			Log.i( "Memory Cache Lookup", pageUrl );
@@ -360,7 +356,7 @@ public class IonPagesWithCaching implements IonPages
 				.map( pagesString -> GsonHolder.getInstance().fromJson( pagesString, PageResponse.class ) )
 				.map( PageResponse::getPage )
 				// save to memory cache
-				.doOnNext( page -> memoryCache.savePage( page, config ) )
+				.doOnNext( page -> MemoryCache.savePage( page, config ) )
 				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
 					return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, throwable );
@@ -387,7 +383,7 @@ public class IonPagesWithCaching implements IonPages
 		Observable<Page> pageObservable = ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.variation, config.authorizationHeaderValue )
 				.map( PageResponse::getPage )
 				.doOnNext( savePageCacheIndex() )
-				.doOnNext( page -> memoryCache.savePage( page, config ) )
+				.doOnNext( page -> MemoryCache.savePage( page, config ) )
 				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
 					String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
@@ -422,10 +418,5 @@ public class IonPagesWithCaching implements IonPages
 	public void setCollectionListener( CollectionDownloadedListener collectionListener )
 	{
 		this.collectionListener = collectionListener;
-	}
-
-	public MemoryCache getMemoryCache()
-	{
-		return memoryCache;
 	}
 }

@@ -44,13 +44,13 @@ class ArchiveUtils
 {
 	private static final String TAG = "ArchiveUtils";
 
-	static Observable<File> unTar( File archiveFile, Collection collection, String lastModified, IonConfig config, MemoryCache memoryCache, Context context )
+	static Observable<File> unTar( File archiveFile, Collection collection, String lastModified, IonConfig config, Context context )
 	{
 		return Observable.just( null )
 				.flatMap( o -> {
 					try
 					{
-						return Observable.from( performUnTar( archiveFile, config, collection, lastModified, memoryCache, context ) )
+						return Observable.from( performUnTar( archiveFile, config, collection, lastModified, context ) )
 								// write cache index entries
 								.doOnNext( fileWithType -> saveCacheIndex( fileWithType, collection, lastModified, config, context ) )
 								.map( fileWithType -> fileWithType.file );
@@ -73,11 +73,10 @@ class ArchiveUtils
 	 * @param config
 	 * @param collection
 	 * @param lastModified
-	 * @param memoryCache  @return The {@link List} of {@link File}s with the untared content.  @throws IOException
 	 * @throws FileNotFoundException
 	 * @throws ArchiveException
 	 */
-	private static List<FileWithMeta> performUnTar( File archiveFile, IonConfig config, Collection collection, String lastModified, MemoryCache memoryCache, Context context ) throws FileNotFoundException, IOException, ArchiveException
+	private static List<FileWithMeta> performUnTar( File archiveFile, IonConfig config, Collection collection, String lastModified, Context context ) throws FileNotFoundException, IOException, ArchiveException
 	{
 		File collectionFolder = FilePaths.getCollectionFolderPath( config, context );
 		File collectionFolderTemp = FilePaths.getTempFilePath( collectionFolder );
@@ -152,14 +151,14 @@ class ArchiveUtils
 		// if lastModified date was not passed, look if cache index entry exists for collection and retrieve it from there
 		if ( collection != null && lastModified == null )
 		{
-			CollectionCacheIndex collectionCacheIndex = CollectionCacheIndex.retrieve( IonPageUrls.getCollectionUrl( config ), config.collectionIdentifier, context );
+			CollectionCacheIndex collectionCacheIndex = CollectionCacheIndex.retrieve( config, context );
 			lastModified = collectionCacheIndex == null ? null : collectionCacheIndex.getLastModified();
 			Log.d( TAG, "Restoring last_modified from cache index: " + lastModified );
 		}
 
 		// delete old cache index entries of the collection in shared preferences and in memory cache
-		CacheIndexStore.clear( config.collectionIdentifier, context );
-		memoryCache.clearPagesMemCache();
+		CacheIndexStore.clear( config, context );
+		MemoryCache.clearMemoryCache();
 
 		// replace collection folder (containing json files) - deletes old file cache
 		boolean jsonWriteSuccess = FileUtils.move( collectionFolderTemp, collectionFolder, true );
@@ -187,7 +186,7 @@ class ArchiveUtils
 		// add collection to file cache again
 		if ( collection != null )
 		{
-			memoryCache.setCollection( collection );
+			MemoryCache.saveCollection( collection, config );
 			try
 			{
 				saveCollectionToFileCache( config, collection, context );

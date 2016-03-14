@@ -88,15 +88,10 @@ public class CollectionCacheIndex extends CacheIndex
 
 	// save & retrieve
 
-	public static CollectionCacheIndex retrieve( String requestUrl, String collectionIdentifier, Context context )
-	{
-		return CacheIndexStore.retrieve( requestUrl, CollectionCacheIndex.class, collectionIdentifier, context );
-	}
-
 	public static CollectionCacheIndex retrieve( IonConfig config, Context context )
 	{
 		String requestUrl = IonPageUrls.getCollectionUrl( config );
-		return CacheIndexStore.retrieve( requestUrl, CollectionCacheIndex.class, config.collectionIdentifier, context );
+		return CacheIndexStore.retrieve( requestUrl, CollectionCacheIndex.class, config, context );
 	}
 
 	public static void save( IonConfig config, Context context, String lastModified )

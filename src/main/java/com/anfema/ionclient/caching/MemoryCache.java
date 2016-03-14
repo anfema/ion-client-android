@@ -9,34 +9,37 @@ import com.anfema.ionclient.pages.models.Page;
 
 public class MemoryCache
 {
-	///  current collection
-	private Collection collection;
+	// key: collection/page URL, value: either of type Collection or Page
+	private static volatile LruCache<String, Object> collectionsPagesMemoryCache = new LruCache<>( IonConfig.pagesMemCacheSize );
 
-	// key: page URL
-	private LruCache<String, Page> pagesMemCache;
-
-	public MemoryCache()
+	public static Collection getCollection( String collectionUrl )
 	{
-		collection = null;
-		pagesMemCache = new LruCache<>( IonConfig.pagesMemCacheSize );
+		return Collection.class.cast( collectionsPagesMemoryCache.get( collectionUrl ) );
 	}
 
-	public Collection getCollection()
+	public static Collection getCollection( IonConfig config )
 	{
-		return collection;
+		String collectionUrl = IonPageUrls.getCollectionUrl( config );
+		return getCollection( collectionUrl );
 	}
 
-	public void setCollection( Collection collection )
+	public static void saveCollection( Collection collection, String collectionUrl )
 	{
-		this.collection = collection;
+		collectionsPagesMemoryCache.put( collectionUrl, collection );
 	}
 
-	public Page getPage( String pageUrl )
+	public static void saveCollection( Collection collection, IonConfig config )
 	{
-		return pagesMemCache.get( pageUrl );
+		String collectionUrl = IonPageUrls.getCollectionUrl( config );
+		saveCollection( collection, collectionUrl );
 	}
 
-	public Page getPage( String pageIdentifier, IonConfig config )
+	public static Page getPage( String pageUrl )
+	{
+		return Page.class.cast( collectionsPagesMemoryCache.get( pageUrl ) );
+	}
+
+	public static Page getPage( String pageIdentifier, IonConfig config )
 	{
 		String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 		return getPage( pageUrl );
@@ -46,16 +49,15 @@ public class MemoryCache
 	 * Save page to memory cache
 	 *
 	 * @param page page which should be saved
-	 * @return the previous page mapped to the URL
 	 */
-	public Page savePage( Page page, IonConfig config )
+	public static void savePage( Page page, IonConfig config )
 	{
 		String pageUrl = IonPageUrls.getPageUrl( config, page.identifier );
-		return pagesMemCache.put( pageUrl, page );
+		collectionsPagesMemoryCache.put( pageUrl, page );
 	}
 
-	public void clearPagesMemCache()
+	public static void clearMemoryCache()
 	{
-		pagesMemCache.evictAll();
+		collectionsPagesMemoryCache.evictAll();
 	}
 }

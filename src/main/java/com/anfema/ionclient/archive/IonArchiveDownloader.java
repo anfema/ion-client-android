@@ -4,7 +4,6 @@ import android.content.Context;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.caching.FilePaths;
-import com.anfema.ionclient.caching.MemoryCache;
 import com.anfema.ionclient.mediafiles.IonFiles;
 import com.anfema.ionclient.pages.CollectionDownloadedListener;
 import com.anfema.ionclient.pages.IonPages;
@@ -20,11 +19,10 @@ import rx.Observable;
 
 class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 {
-	private final IonPages    ionPages;
-	private final IonFiles    ionFiles;
-	private       IonConfig   config;
-	private final Context     context;
-	private final MemoryCache memoryCache;
+	private final IonPages  ionPages;
+	private final IonFiles  ionFiles;
+	private       IonConfig config;
+	private final Context   context;
 
 	public IonArchiveDownloader( IonPages ionPages, IonFiles ionFiles, IonConfig config, Context context )
 	{
@@ -38,11 +36,6 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 		{
 			IonPagesWithCaching ionPagesWithCaching = ( IonPagesWithCaching ) ionPages;
 			ionPagesWithCaching.setCollectionListener( this );
-			memoryCache = ionPagesWithCaching.getMemoryCache();
-		}
-		else
-		{
-			memoryCache = null;
 		}
 	}
 
@@ -101,7 +94,7 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 				.map( collection -> collection.archive )
 				.flatMap( archiveUrl -> ionFiles.request( HttpUrl.parse( archiveUrl ), null, true, archivePath ) );
 
-		return RxUtils.flatCombineLatest( collectionObs, archiveObs, ( collection, archivePath2 ) -> ArchiveUtils.unTar( archivePath2, collection, lastModified, config, memoryCache, context ) )
+		return RxUtils.flatCombineLatest( collectionObs, archiveObs, ( collection, archivePath2 ) -> ArchiveUtils.unTar( archivePath2, collection, lastModified, config, context ) )
 				.doOnNext( file -> activeArchiveDownload = false )
 				.compose( RxUtils.runOnIoThread() );
 	}
