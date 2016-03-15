@@ -4,10 +4,11 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import com.anfema.ionclient.IonConfig;
+import com.anfema.ionclient.IonConfig.CachingStrategy;
+import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.caching.index.CollectionCacheIndex;
 import com.anfema.ionclient.caching.index.FileCacheIndex;
-import com.anfema.ionclient.caching.FilePaths;
-import com.anfema.ionclient.exceptions.MediaFileNotAvailableException;
+import com.anfema.ionclient.exceptions.FileNotAvailableException;
 import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
 import com.anfema.ionclient.utils.FileUtils;
@@ -61,7 +62,6 @@ public class IonFilesWithCaching implements IonFiles
 	}
 
 	// TODO pass content instead of checksum
-	// TODO global flag for offline mode
 
 	/**
 	 * Wraps {@link this#performRequest(HttpUrl, File)} so that it runs completely async.
@@ -78,12 +78,20 @@ public class IonFilesWithCaching implements IonFiles
 	@Override
 	public Observable<File> request( HttpUrl url, String checksum, boolean ignoreCaching, @Nullable File inTargetFile )
 	{
+		boolean networkAvailable = NetworkUtils.isConnected( context ) && IonConfig.cachingStrategy != CachingStrategy.STRICT_OFFLINE;
 		final File targetFile = getTargetFilePath( url, inTargetFile );
 
 		if ( ignoreCaching )
 		{
-			// force new download, do not create cache index entry
-			return requestWithoutCaching( url, targetFile );
+			if ( networkAvailable )
+			{
+				// force new download, do not create cache index entry
+				return requestWithoutCaching( url, targetFile );
+			}
+			else
+			{
+				return Observable.error( new FileNotAvailableException( url ) );
+			}
 		}
 
 		// fetch file from local storage or download it?
@@ -94,27 +102,30 @@ public class IonFilesWithCaching implements IonFiles
 			Log.i( "File Cache Lookup", url.toString() );
 			return Observable.just( targetFile );
 		}
-		else if ( NetworkUtils.isConnected( context ) )
-		{
-			// download media file
-			Observable<File> downloadObservable = Observable.just( null )
-					.flatMap( o -> performRequest( url, targetFile ) )
-					.doOnNext( file -> FileCacheIndex.save( url.toString(), file, config, null, context ) )
-					.compose( RxUtils.runOnIoThread() )
-					.doOnNext( file -> runningDownloads.finished( url ) );
-			return runningDownloads.starting( url, downloadObservable );
-		}
-		else if ( targetFile.exists() )
-		{
-			// TODO notify app that data might be outdated
-			// no network: use old version from cache (even if no cache index entry exists)
-			Log.i( "File Cache Lookup", url.toString() );
-			return Observable.just( targetFile );
-		}
 		else
 		{
-			// media file can neither be downloaded nor be found in cache
-			return Observable.error( new MediaFileNotAvailableException( url ) );
+			if ( networkAvailable )
+			{
+				// download media file
+				Observable<File> downloadObservable = Observable.just( null )
+						.flatMap( o -> performRequest( url, targetFile ) )
+						.doOnNext( file -> FileCacheIndex.save( url.toString(), file, config, null, context ) )
+						.compose( RxUtils.runOnIoThread() )
+						.doOnNext( file -> runningDownloads.finished( url ) );
+				return runningDownloads.starting( url, downloadObservable );
+			}
+			else if ( targetFile.exists() )
+			{
+				// TODO notify app that data might be outdated
+				// no network: use old version from cache (even if no cache index entry exists)
+				Log.i( "File Cache Lookup", url.toString() );
+				return Observable.just( targetFile );
+			}
+			else
+			{
+				// media file can neither be downloaded nor be found in cache
+				return Observable.error( new FileNotAvailableException( url ) );
+			}
 		}
 	}
 

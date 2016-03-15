@@ -4,9 +4,10 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.anfema.ionclient.IonConfig;
-import com.anfema.ionclient.caching.index.CollectionCacheIndex;
+import com.anfema.ionclient.IonConfig.CachingStrategy;
 import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.caching.MemoryCache;
+import com.anfema.ionclient.caching.index.CollectionCacheIndex;
 import com.anfema.ionclient.caching.index.PageCacheIndex;
 import com.anfema.ionclient.exceptions.CollectionNotAvailableException;
 import com.anfema.ionclient.exceptions.NetworkRequestException;
@@ -78,14 +79,8 @@ public class IonPagesWithCaching implements IonPages
 	}
 
 	/**
-	 * Retrieve collection with following priorities:
-	 * <p>
-	 * 1. Look if there is a current version in cache
-	 * 2. Download from server if internet connection available
-	 * 3. If no internet connection: return cached version (even if outdated)
-	 * 4. Collection is not retrievable at all: emit error
-	 * <p>
-	 * Use default collection identifier as specified in {@link this#config}
+	 * Retrieve collection. Strategy depends on {@link IonConfig#cachingStrategy}.
+	 * Use default collection identifier as specified in {@link #config}
 	 */
 	@Override
 	public Observable<Collection> fetchCollection()
@@ -93,14 +88,14 @@ public class IonPagesWithCaching implements IonPages
 		CollectionCacheIndex cacheIndex = CollectionCacheIndex.retrieve( config, context );
 
 		boolean currentCacheEntry = cacheIndex != null && !cacheIndex.isOutdated( config );
-		boolean networkConnected = NetworkUtils.isConnected( context );
+		boolean networkAvailable = NetworkUtils.isConnected( context ) && IonConfig.cachingStrategy != CachingStrategy.STRICT_OFFLINE;
 
 		if ( currentCacheEntry )
 		{
 			// retrieve current version from cache
-			return getCollectionFromCache( cacheIndex, networkConnected );
+			return getCollectionFromCache( cacheIndex, networkAvailable );
 		}
-		else if ( networkConnected )
+		else if ( networkAvailable )
 		{
 			// download collection
 			return getCollectionFromServer( cacheIndex, false );
@@ -181,13 +176,13 @@ public class IonPagesWithCaching implements IonPages
 				// compare last_changed date of cached page with that of collection
 				.map( pageCacheIndex::isOutdated )
 				.flatMap( isOutdated -> {
-					boolean networkConnected = NetworkUtils.isConnected( context );
+					boolean networkAvailable = NetworkUtils.isConnected( context ) && IonConfig.cachingStrategy != CachingStrategy.STRICT_OFFLINE;
 					if ( !isOutdated )
 					{
 						// current version available
-						return getPageFromCache( pageIdentifier, networkConnected );
+						return getPageFromCache( pageIdentifier, networkAvailable );
 					}
-					else if ( networkConnected )
+					else if ( networkAvailable )
 					{
 						// download page
 						return getPageFromServer( pageIdentifier, false );
@@ -244,6 +239,11 @@ public class IonPagesWithCaching implements IonPages
 		Log.i( "File Cache Lookup", collectionUrl );
 
 		File filePath = FilePaths.getCollectionJsonPath( collectionUrl, config, context );
+		if ( !filePath.exists() )
+		{
+			return Observable.error( new CollectionNotAvailableException() );
+		}
+
 		return FileUtils
 				.readTextFromFile( filePath )
 				.map( collectionsString -> GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class ) )
@@ -351,6 +351,11 @@ public class IonPagesWithCaching implements IonPages
 		Log.i( "File Cache Lookup", pageUrl );
 
 		File filePath = FilePaths.getPageJsonPath( pageUrl, pageIdentifier, config, context );
+		if ( !filePath.exists() )
+		{
+			return Observable.error( new PageNotAvailableException() );
+		}
+
 		return FileUtils
 				.readTextFromFile( filePath )
 				.map( pagesString -> GsonHolder.getInstance().fromJson( pagesString, PageResponse.class ) )
