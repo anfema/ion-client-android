@@ -1,4 +1,4 @@
-package com.anfema.ionclient.caching;
+package com.anfema.ionclient.caching.index;
 
 import android.util.LruCache;
 

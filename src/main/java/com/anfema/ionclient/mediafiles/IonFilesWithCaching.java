@@ -4,8 +4,8 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import com.anfema.ionclient.IonConfig;
-import com.anfema.ionclient.caching.CollectionCacheIndex;
-import com.anfema.ionclient.caching.FileCacheIndex;
+import com.anfema.ionclient.caching.index.CollectionCacheIndex;
+import com.anfema.ionclient.caching.index.FileCacheIndex;
 import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.exceptions.MediaFileNotAvailableException;
 import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;

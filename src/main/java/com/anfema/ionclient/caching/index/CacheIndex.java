@@ -1,4 +1,6 @@
-package com.anfema.ionclient.caching;
+package com.anfema.ionclient.caching.index;
+
+import com.anfema.ionclient.caching.FilePaths;
 
 import okhttp3.HttpUrl;
 

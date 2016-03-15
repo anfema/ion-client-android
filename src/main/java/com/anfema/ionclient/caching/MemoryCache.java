@@ -56,7 +56,7 @@ public class MemoryCache
 		collectionsPagesMemoryCache.put( pageUrl, page );
 	}
 
-	public static void clearMemoryCache()
+	public static void clear()
 	{
 		collectionsPagesMemoryCache.evictAll();
 	}

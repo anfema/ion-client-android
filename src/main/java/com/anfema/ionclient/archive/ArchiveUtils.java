@@ -4,12 +4,12 @@ import android.content.Context;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.archive.models.ArchiveIndex;
-import com.anfema.ionclient.caching.CacheIndexStore;
-import com.anfema.ionclient.caching.CollectionCacheIndex;
-import com.anfema.ionclient.caching.FileCacheIndex;
+import com.anfema.ionclient.caching.index.CacheIndexStore;
+import com.anfema.ionclient.caching.index.CollectionCacheIndex;
+import com.anfema.ionclient.caching.index.FileCacheIndex;
 import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.caching.MemoryCache;
-import com.anfema.ionclient.caching.PageCacheIndex;
+import com.anfema.ionclient.caching.index.PageCacheIndex;
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException;
 import com.anfema.ionclient.exceptions.PageNotInCollectionException;
 import com.anfema.ionclient.pages.IonPageUrls;
@@ -157,8 +157,8 @@ class ArchiveUtils
 		}
 
 		// delete old cache index entries of the collection in shared preferences and in memory cache
-		CacheIndexStore.clear( config, context );
-		MemoryCache.clearMemoryCache();
+		CacheIndexStore.clearCollection( config, context );
+		MemoryCache.clear();
 
 		// replace collection folder (containing json files) - deletes old file cache
 		boolean jsonWriteSuccess = FileUtils.move( collectionFolderTemp, collectionFolder, true );

@@ -4,10 +4,10 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.anfema.ionclient.IonConfig;
-import com.anfema.ionclient.caching.CollectionCacheIndex;
+import com.anfema.ionclient.caching.index.CollectionCacheIndex;
 import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.caching.MemoryCache;
-import com.anfema.ionclient.caching.PageCacheIndex;
+import com.anfema.ionclient.caching.index.PageCacheIndex;
 import com.anfema.ionclient.exceptions.CollectionNotAvailableException;
 import com.anfema.ionclient.exceptions.NetworkRequestException;
 import com.anfema.ionclient.exceptions.PageNotAvailableException;

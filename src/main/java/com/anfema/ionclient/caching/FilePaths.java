@@ -124,7 +124,7 @@ public class FilePaths
 	@NonNull
 	public static File getMediaFolderPath( IonConfig config, Context context, boolean tempCollectionFolder )
 	{
-		return new File( getBaseFilePath( config, context ) + FileUtils.SLASH + MEDIA + appendTemp( tempCollectionFolder ) );
+		return new File( getBasicCollectionFilePath( config, context ) + FileUtils.SLASH + MEDIA + appendTemp( tempCollectionFolder ) );
 	}
 
 	/**
@@ -132,7 +132,7 @@ public class FilePaths
 	 */
 	public static File getCollectionFolderPath( IonConfig config, Context context )
 	{
-		File folder = new File( getBaseFilePath( config, context ) + FileUtils.SLASH + config.locale + FileUtils.SLASH + config.variation );
+		File folder = new File( getBasicCollectionFilePath( config, context ) + FileUtils.SLASH + config.locale + FileUtils.SLASH + config.variation );
 		if ( !folder.exists() )
 		{
 			folder.mkdirs();
@@ -142,19 +142,31 @@ public class FilePaths
 
 	public static File getArchiveFilePath( IonConfig config, Context context )
 	{
-		return new File( getBaseFilePath( config, context ) + FileUtils.SLASH + config.locale + FileUtils.SLASH + config.variation + ".archive" );
+		return new File( getBasicCollectionFilePath( config, context ) + FileUtils.SLASH + config.locale + FileUtils.SLASH + config.variation + ".archive" );
 	}
 
 	@NonNull
-	private static String getBaseFilePath( IonConfig config, Context context )
+	private static String getBasicCollectionFilePath( IonConfig config, Context context )
 	{
-		return getBaseFilePath( config.collectionIdentifier, context );
+		return getBasicCollectionFilePath( config.collectionIdentifier, context );
 	}
 
 	@NonNull
-	private static String getBaseFilePath( String collectionIdentifier, Context context )
+	private static String getBasicCollectionFilePath( String collectionIdentifier, Context context )
 	{
-		return context.getFilesDir() + FileUtils.SLASH + collectionIdentifier;
+		return getFilesDir( context ) + FileUtils.SLASH + collectionIdentifier;
+	}
+
+	@NonNull
+	public static File getSharedPrefsFile( String sharedPrefsName, Context context )
+	{
+		String appFolder = FilePaths.getFilesDir( context ).getParent();
+		return new File( appFolder + "/shared_prefs", sharedPrefsName + ".xml" );
+	}
+
+	public static File getFilesDir( Context context )
+	{
+		return context.getFilesDir();
 	}
 
 	@NonNull
