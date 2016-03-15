@@ -1,6 +1,6 @@
 package com.anfema.ionclient.pages.models.contents;
 
-public class ImageContent extends Content
+public class ImageContent extends Content implements Downloadable
 {
 	public String mime_type;
 
@@ -33,4 +33,16 @@ public class ImageContent extends Content
 	public String translation_y;
 
 	public String scale;
+
+	@Override
+	public String getUrl()
+	{
+		return image;
+	}
+
+	@Override
+	public String getChecksum()
+	{
+		return checksum;
+	}
 }

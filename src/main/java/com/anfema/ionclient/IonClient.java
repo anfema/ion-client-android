@@ -18,6 +18,7 @@ import com.anfema.ionclient.pages.IonPagesFactory;
 import com.anfema.ionclient.pages.models.Collection;
 import com.anfema.ionclient.pages.models.Page;
 import com.anfema.ionclient.pages.models.PagePreview;
+import com.anfema.ionclient.pages.models.contents.Downloadable;
 import com.anfema.ionclient.utils.ContextUtils;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
@@ -165,6 +166,15 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 
 
 	// Loading media files
+
+	/**
+	 * @see IonFiles#request(Downloadable)
+	 */
+	@Override
+	public Observable<File> request( Downloadable content )
+	{
+		return ionFiles.request( content );
+	}
 
 	/**
 	 * @see IonFiles#request(HttpUrl, String)

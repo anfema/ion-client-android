@@ -11,6 +11,7 @@ import com.anfema.ionclient.caching.index.FileCacheIndex;
 import com.anfema.ionclient.exceptions.FileNotAvailableException;
 import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
+import com.anfema.ionclient.pages.models.contents.Downloadable;
 import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.Log;
 import com.anfema.ionclient.utils.NetworkUtils;
@@ -63,8 +64,14 @@ public class IonFilesWithCaching implements IonFiles
 
 	// TODO pass content instead of checksum
 
+	@Override
+	public Observable<File> request( Downloadable content )
+	{
+		return request( HttpUrl.parse( content.getUrl() ), content.getChecksum() );
+	}
+
 	/**
-	 * Wraps {@link this#performRequest(HttpUrl, File)} so that it runs completely async.
+	 * Wraps {@link #performRequest(HttpUrl, File)} so that it runs completely async.
 	 */
 	@Override
 	public Observable<File> request( HttpUrl url, String checksum )
@@ -73,7 +80,7 @@ public class IonFilesWithCaching implements IonFiles
 	}
 
 	/**
-	 * Wraps {@link this#performRequest(HttpUrl, File)} so that it runs completely async.
+	 * Wraps {@link #performRequest(HttpUrl, File)} so that it runs completely async.
 	 */
 	@Override
 	public Observable<File> request( HttpUrl url, String checksum, boolean ignoreCaching, @Nullable File inTargetFile )

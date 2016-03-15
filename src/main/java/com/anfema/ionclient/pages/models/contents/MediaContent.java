@@ -1,6 +1,6 @@
 package com.anfema.ionclient.pages.models.contents;
 
-public class MediaContent extends Content
+public class MediaContent extends Content implements Downloadable
 {
 	public String original_checksum;
 
@@ -31,4 +31,16 @@ public class MediaContent extends Content
 	public String original_height;
 
 	public String original_length;
+
+	@Override
+	public String getUrl()
+	{
+		return file;
+	}
+
+	@Override
+	public String getChecksum()
+	{
+		return checksum;
+	}
 }
