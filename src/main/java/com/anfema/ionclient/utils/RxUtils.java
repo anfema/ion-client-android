@@ -1,6 +1,6 @@
 package com.anfema.ionclient.utils;
 
-import retrofit2.HttpException;
+import retrofit2.adapter.rxjava.HttpException;
 import rx.Observable;
 import rx.Observable.Transformer;
 import rx.android.schedulers.AndroidSchedulers;

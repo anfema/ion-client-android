@@ -8,10 +8,10 @@ import java.util.Collection;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
-import retrofit2.GsonConverterFactory;
 import retrofit2.Retrofit;
 import retrofit2.Retrofit.Builder;
-import retrofit2.RxJavaCallAdapterFactory;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiFactory
 {

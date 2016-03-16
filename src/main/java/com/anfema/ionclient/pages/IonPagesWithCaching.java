@@ -32,7 +32,7 @@ import java.io.File;
 import java.util.List;
 
 import okhttp3.Interceptor;
-import retrofit2.HttpException;
+import retrofit2.adapter.rxjava.HttpException;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -293,7 +293,7 @@ public class IonPagesWithCaching implements IonPages
 								// update cache index again (last updated needs to be reset to now)
 								.doOnNext( saveCollectionCacheIndex( lastModified ) );
 					}
-					else if ( serverResponse.isSuccess() )
+					else if ( serverResponse.isSuccessful() )
 					{
 						String lastModifiedReceived = serverResponse.headers().get( "Last-Modified" );
 
