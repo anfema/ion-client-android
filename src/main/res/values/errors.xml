@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="pdf_display_error">PDF file can not be diplayed.</string>
+    <string name="pdf_display_error">PDF file can not be displayed.</string>
     <string name="fts_not_available">The search database is not available yet.</string>
 </resources>

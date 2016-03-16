@@ -5,7 +5,7 @@ import java.util.Map;
 
 import rx.Observable;
 
-public class RunningDownloadHandler<K, T>
+public class PendingDownloadHandler<K, T>
 {
 	private volatile Map<K, Observable<T>> runningDownloads = new HashMap<>();
 

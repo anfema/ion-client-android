@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.IonConfig.CachingStrategy;
+import com.anfema.ionclient.caching.CacheCompatManager;
 import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.caching.index.CollectionCacheIndex;
 import com.anfema.ionclient.caching.index.FileCacheIndex;
@@ -15,7 +16,7 @@ import com.anfema.ionclient.pages.models.contents.Downloadable;
 import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.Log;
 import com.anfema.ionclient.utils.NetworkUtils;
-import com.anfema.ionclient.utils.RunningDownloadHandler;
+import com.anfema.ionclient.utils.PendingDownloadHandler;
 import com.anfema.ionclient.utils.RxUtils;
 
 import org.joda.time.DateTime;
@@ -43,7 +44,7 @@ public class IonFilesWithCaching implements IonFiles
 	private       IonConfig                             config;
 	private       Context                               context;
 	private final OkHttpClient                          client;
-	private       RunningDownloadHandler<HttpUrl, File> runningDownloads;
+	private       PendingDownloadHandler<HttpUrl, File> runningDownloads;
 
 	public IonFilesWithCaching( IonConfig config, Context context )
 	{
@@ -53,7 +54,7 @@ public class IonFilesWithCaching implements IonFiles
 		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( config.authorizationHeaderValue ) );
 		okHttpClientBuilder.addInterceptor( new RequestLogger( "Network Request" ) );
 		client = okHttpClientBuilder.build();
-		runningDownloads = new RunningDownloadHandler<>();
+		runningDownloads = new PendingDownloadHandler<>();
 	}
 
 	@Override
@@ -61,8 +62,6 @@ public class IonFilesWithCaching implements IonFiles
 	{
 		this.config = config;
 	}
-
-	// TODO pass content instead of checksum
 
 	@Override
 	public Observable<File> request( Downloadable content )
@@ -85,6 +84,9 @@ public class IonFilesWithCaching implements IonFiles
 	@Override
 	public Observable<File> request( HttpUrl url, String checksum, boolean ignoreCaching, @Nullable File inTargetFile )
 	{
+		// clear incompatible cache
+		CacheCompatManager.cleanUp( context );
+
 		boolean networkAvailable = NetworkUtils.isConnected( context ) && IonConfig.cachingStrategy != CachingStrategy.STRICT_OFFLINE;
 		final File targetFile = getTargetFilePath( url, inTargetFile );
 

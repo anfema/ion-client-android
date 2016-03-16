@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.IonConfig.CachingStrategy;
+import com.anfema.ionclient.caching.CacheCompatManager;
 import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.caching.MemoryCache;
 import com.anfema.ionclient.caching.index.CollectionCacheIndex;
@@ -24,7 +25,7 @@ import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.Log;
 import com.anfema.ionclient.utils.NetworkUtils;
 import com.anfema.ionclient.utils.PagesFilter;
-import com.anfema.ionclient.utils.RunningDownloadHandler;
+import com.anfema.ionclient.utils.PendingDownloadHandler;
 import com.anfema.ionclient.utils.RxUtils;
 
 import java.io.File;
@@ -48,8 +49,8 @@ public class IonPagesWithCaching implements IonPages
 	public static final int COLLECTION_NOT_MODIFIED = 304;
 	private CollectionDownloadedListener collectionListener;
 
-	private RunningDownloadHandler<String, Collection> runningCollectionDownload; //key: collection identifier
-	private RunningDownloadHandler<String, Page>       runningPageDownloads; //key: page identifier
+	private PendingDownloadHandler<String, Collection> runningCollectionDownload; //key: collection identifier
+	private PendingDownloadHandler<String, Page>       runningPageDownloads; //key: page identifier
 
 	private final Context context;
 
@@ -68,8 +69,8 @@ public class IonPagesWithCaching implements IonPages
 		this.config = config;
 		this.context = context;
 		ionApi = ApiFactory.newInstance( config.baseUrl, interceptors, IonPagesApi.class );
-		runningCollectionDownload = new RunningDownloadHandler<>();
-		runningPageDownloads = new RunningDownloadHandler<>();
+		runningCollectionDownload = new PendingDownloadHandler<>();
+		runningPageDownloads = new PendingDownloadHandler<>();
 	}
 
 	@Override
@@ -85,6 +86,9 @@ public class IonPagesWithCaching implements IonPages
 	@Override
 	public Observable<Collection> fetchCollection()
 	{
+		// clear incompatible cache
+		CacheCompatManager.cleanUp( context );
+
 		CollectionCacheIndex cacheIndex = CollectionCacheIndex.retrieve( config, context );
 
 		boolean currentCacheEntry = cacheIndex != null && !cacheIndex.isOutdated( config );
@@ -337,6 +341,9 @@ public class IonPagesWithCaching implements IonPages
 	 */
 	private Observable<Page> getPageFromCache( String pageIdentifier, boolean serverCallAsBackup )
 	{
+		// clear incompatible cache
+		CacheCompatManager.cleanUp( context );
+
 		String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 
 		// retrieve from memory cache

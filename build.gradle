@@ -38,8 +38,10 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        // The versionCode to which the current version's cache is backwards compatible with. Update after breaking changes that require a cache reset.
+        buildConfigField "int", "CACHE_COMPATIBILITY", "2"
+        versionName "2.0.0"
 
         // in this files proguard rules are exposed and can be used by the application project
         consumerProguardFiles 'proguard-library-consumer.pro'

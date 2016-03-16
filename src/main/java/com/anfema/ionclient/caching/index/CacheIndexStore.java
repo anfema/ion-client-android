@@ -76,6 +76,9 @@ public class CacheIndexStore
 		}
 	}
 
+	/**
+	 * clear entire cache index in memory and file cache for a specific collection defined through {@param config}
+	 */
 	@SuppressLint("CommitPrefEdits")
 	public static void clearCollection( IonConfig config, Context context )
 	{
@@ -92,6 +95,9 @@ public class CacheIndexStore
 				.apply();
 	}
 
+	/**
+	 * clears cache index in both memory and file cache
+	 */
 	@SuppressLint("CommitPrefEdits")
 	public static void clear( Context context )
 	{
