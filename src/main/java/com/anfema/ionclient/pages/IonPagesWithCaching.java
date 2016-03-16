@@ -97,18 +97,18 @@ public class IonPagesWithCaching implements IonPages
 		if ( currentCacheEntry )
 		{
 			// retrieve current version from cache
-			return getCollectionFromCache( cacheIndex, networkAvailable );
+			return fetchCollectionFromCache( cacheIndex, networkAvailable );
 		}
 		else if ( networkAvailable )
 		{
 			// download collection
-			return getCollectionFromServer( cacheIndex, false );
+			return fetchCollectionFromServer( cacheIndex, false );
 		}
 		else if ( cacheIndex != null )
 		{
 			// no network: use old version from cache
 			// TODO notify app that data might be outdated
-			return getCollectionFromCache( cacheIndex, false );
+			return fetchCollectionFromCache( cacheIndex, false );
 		}
 		else
 		{
@@ -165,7 +165,7 @@ public class IonPagesWithCaching implements IonPages
 			if ( NetworkUtils.isConnected( context ) )
 			{
 				// download page
-				return getPageFromServer( pageIdentifier, false );
+				return fetchPageFromServer( pageIdentifier, false );
 			}
 			else
 			{
@@ -184,17 +184,17 @@ public class IonPagesWithCaching implements IonPages
 					if ( !isOutdated )
 					{
 						// current version available
-						return getPageFromCache( pageIdentifier, networkAvailable );
+						return fetchPageFromCache( pageIdentifier, networkAvailable );
 					}
 					else if ( networkAvailable )
 					{
 						// download page
-						return getPageFromServer( pageIdentifier, false );
+						return fetchPageFromServer( pageIdentifier, false );
 					}
 					else
 					{
 						// no network available, but an old cached version exists
-						return getPageFromCache( pageIdentifier, false );
+						return fetchPageFromCache( pageIdentifier, false );
 					}
 				} );
 	}
@@ -227,7 +227,7 @@ public class IonPagesWithCaching implements IonPages
 
 	/// Get collection methods
 
-	private Observable<Collection> getCollectionFromCache( CollectionCacheIndex cacheIndex, boolean serverCallAsBackup )
+	private Observable<Collection> fetchCollectionFromCache( CollectionCacheIndex cacheIndex, boolean serverCallAsBackup )
 	{
 		String collectionUrl = IonPageUrls.getCollectionUrl( config );
 
@@ -266,7 +266,7 @@ public class IonPagesWithCaching implements IonPages
 		{
 			Log.w( "Backup Request", "Cache lookup " + collectionUrl + " failed. Trying network request instead..." );
 			Log.ex( "Cache Lookup", e );
-			return getCollectionFromServer( cacheIndex, false );
+			return fetchCollectionFromServer( cacheIndex, false );
 		}
 		else
 		{
@@ -280,7 +280,7 @@ public class IonPagesWithCaching implements IonPages
 	 * Adds collection identifier and authorization token to request.<br/>
 	 * Uses default collection identifier as specified in {@link this#config}
 	 */
-	private Observable<Collection> getCollectionFromServer( CollectionCacheIndex cacheIndex, boolean cacheAsBackup )
+	private Observable<Collection> fetchCollectionFromServer( CollectionCacheIndex cacheIndex, boolean cacheAsBackup )
 	{
 		final String lastModified = cacheIndex != null ? cacheIndex.getLastModified() : null;
 
@@ -289,7 +289,7 @@ public class IonPagesWithCaching implements IonPages
 					if ( serverResponse.code() == COLLECTION_NOT_MODIFIED )
 					{
 						// collection has not changed, return cached version
-						return getCollectionFromCache( cacheIndex, false )
+						return fetchCollectionFromCache( cacheIndex, false )
 								// update cache index again (last updated needs to be reset to now)
 								.doOnNext( saveCollectionCacheIndex( lastModified ) );
 					}
@@ -321,7 +321,7 @@ public class IonPagesWithCaching implements IonPages
 					{
 						Log.w( "Backup Request", "Network request " + collectionUrl + " failed. Trying cache request instead..." );
 						Log.ex( "Network Request", throwable );
-						return getCollectionFromCache( cacheIndex, false );
+						return fetchCollectionFromCache( cacheIndex, false );
 					}
 					Log.e( "Failed Request", "Network request " + collectionUrl + " failed." );
 					return Observable.error( new NetworkRequestException( collectionUrl, throwable ) );
@@ -339,7 +339,7 @@ public class IonPagesWithCaching implements IonPages
 	/**
 	 * @param serverCallAsBackup If reading from cache is not successful, should a server call be made?
 	 */
-	private Observable<Page> getPageFromCache( String pageIdentifier, boolean serverCallAsBackup )
+	private Observable<Page> fetchPageFromCache( String pageIdentifier, boolean serverCallAsBackup )
 	{
 		// clear incompatible cache
 		CacheCompatManager.cleanUp( context );
@@ -381,7 +381,7 @@ public class IonPagesWithCaching implements IonPages
 		{
 			Log.w( "Backup Request", "Cache lookup " + pageUrl + " failed. Trying network request instead..." );
 			Log.ex( "Cache Lookup", e );
-			return getPageFromServer( pageIdentifier, false );
+			return fetchPageFromServer( pageIdentifier, false );
 		}
 		Log.e( "Failed Request", "Cache lookup " + pageUrl + " failed." );
 		return Observable.error( new ReadFromCacheException( pageUrl, e ) );
@@ -390,7 +390,7 @@ public class IonPagesWithCaching implements IonPages
 	/**
 	 * @param cacheAsBackup If server call is not successful, should cached version be used (even if it might be old)?
 	 */
-	private Observable<Page> getPageFromServer( String pageIdentifier, boolean cacheAsBackup )
+	private Observable<Page> fetchPageFromServer( String pageIdentifier, boolean cacheAsBackup )
 	{
 		Observable<Page> pageObservable = ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.variation, config.authorizationHeaderValue )
 				.map( PageResponse::getPage )
@@ -403,7 +403,7 @@ public class IonPagesWithCaching implements IonPages
 					{
 						Log.w( "Backup Request", "Network request " + pageUrl + " failed. Trying cache request instead..." );
 						Log.ex( "Network Request", throwable );
-						return getPageFromCache( pageIdentifier, false );
+						return fetchPageFromCache( pageIdentifier, false );
 					}
 					Log.e( "Failed Request", "Network request " + pageUrl + " failed." );
 					return Observable.error( new NetworkRequestException( pageUrl, throwable ) );
