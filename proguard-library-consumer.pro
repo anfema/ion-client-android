@@ -27,7 +27,7 @@
 
 # ION client specific classes that will be serialized/deserialized over Gson
 -keep class com.anfema.ionclient.**.models.** { *; }
--keep class * extends com.anfema.ionclient.caching.CacheIndex { *; }
+-keep class * extends com.anfema.ionclient.**.CacheIndex { *; }
 
 
 # *** OkHttp3 ***
