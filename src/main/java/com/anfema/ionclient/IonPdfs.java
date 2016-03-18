@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.support.v4.content.FileProvider;
 import android.widget.Toast;
 
+import com.anfema.ionclient.utils.FileProviderUtils;
 import com.anfema.ionclient.utils.Log;
 
 import java.io.File;
@@ -34,7 +35,7 @@ public class IonPdfs
 		try
 		{
 			Intent intent = new Intent( Intent.ACTION_VIEW );
-			Uri contentUri = FileProvider.getUriForFile( context, context.getString( R.string.file_provider_authority ), pdfFile );
+			Uri contentUri = FileProvider.getUriForFile( context, FileProviderUtils.getAuthority(), pdfFile );
 			intent.setDataAndType( contentUri, "application/pdf" );
 			intent.setFlags( Intent.FLAG_GRANT_READ_URI_PERMISSION );
 			context.startActivity( intent );
