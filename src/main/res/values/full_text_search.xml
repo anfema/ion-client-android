@@ -17,12 +17,8 @@
         (length(off) - length(replace(off, \' \', \'\')) - 1) / 2 DESC
     </string>
 
-    <string name="fts_search_term_filter"
-            translatable="false">" AND s.search MATCH ? "
-    </string>
+    <string name="fts_search_term_filter" translatable="false">" AND s.search MATCH ? "</string>
 
-    <string name="fts_page_layout_filter"
-            translatable="false">" AND c.layout = ? "
-    </string>
+    <string name="fts_page_layout_filter" translatable="false">" AND c.layout = ? "</string>
 
 </resources>
