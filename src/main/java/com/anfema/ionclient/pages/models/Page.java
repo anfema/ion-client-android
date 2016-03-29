@@ -4,6 +4,7 @@ import com.anfema.ionclient.pages.models.contents.Content;
 
 import org.joda.time.DateTime;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,6 +45,39 @@ public class Page
 	public List<String> children;
 
 	public List<Content> contents;
+
+	public Content getContent( String outlet )
+	{
+		if ( outlet == null )
+		{
+			return null;
+		}
+
+		for ( Content content : contents )
+		{
+			if ( outlet.equals( content.outlet ) )
+			{
+				return content;
+			}
+		}
+		return null;
+	}
+
+	public List<Content> getContents( String outlet )
+	{
+		List<Content> contents = new ArrayList<>();
+		if ( outlet != null )
+		{
+			for ( Content content : this.contents )
+			{
+				if ( outlet.equals( content.outlet ) )
+				{
+					contents.add( content );
+				}
+			}
+		}
+		return contents;
+	}
 
 	@Override
 	public String toString()
