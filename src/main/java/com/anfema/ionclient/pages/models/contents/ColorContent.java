@@ -1,14 +1,15 @@
 package com.anfema.ionclient.pages.models.contents;
 
+/**
+ * Color components r, g, b, a are expected required to be in range 0..255
+ */
 public class ColorContent extends Content
 {
-	public String r;
+	public int r;
 
-	public String g;
+	public int g;
 
-	public String b;
+	public int b;
 
-	public String a;
-
-	public String position;
+	public int a;
 }
