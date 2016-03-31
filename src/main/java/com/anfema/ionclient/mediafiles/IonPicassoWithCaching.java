@@ -12,6 +12,7 @@ import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
 import com.anfema.ionclient.utils.Log;
 import com.jakewharton.picasso.OkHttp3Downloader;
+import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
@@ -30,6 +31,11 @@ import rx.functions.Func1;
  */
 public class IonPicassoWithCaching implements IonPicasso
 {
+	/**
+	 * Global image memory cache, shared across all picasso instances
+	 */
+	private static LruCache picassoMemCache;
+
 	private final IonFiles ionFiles;
 	private       Picasso  picasso;
 	private       String   authorizationHeaderValue;
@@ -57,7 +63,10 @@ public class IonPicassoWithCaching implements IonPicasso
 		okHttpClientBuilder.addInterceptor( new RequestLogger( "Picasso Request" ) );
 		OkHttpClient picassoClient = okHttpClientBuilder.build();
 
-		return new Picasso.Builder( context ).downloader( new OkHttp3Downloader( picassoClient ) ).build();
+		return new Picasso.Builder( context )
+				.downloader( new OkHttp3Downloader( picassoClient ) )
+				.memoryCache( getPicassoMemoryCache( context ) )
+				.build();
 	}
 
 	/**
@@ -136,5 +145,14 @@ public class IonPicassoWithCaching implements IonPicasso
 	public Picasso getPicassoInstance()
 	{
 		return picasso;
+	}
+
+	private static synchronized LruCache getPicassoMemoryCache( Context context )
+	{
+		if ( picassoMemCache == null )
+		{
+			picassoMemCache = new LruCache( context );
+		}
+		return picassoMemCache;
 	}
 }
