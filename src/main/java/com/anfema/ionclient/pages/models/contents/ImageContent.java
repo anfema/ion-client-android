@@ -6,11 +6,11 @@ public class ImageContent extends Content implements Downloadable
 
 	public String image;
 
-	public String width;
+	public int width;
 
-	public String height;
+	public int height;
 
-	public String file_size;
+	public int file_size;
 
 	public String checksum;
 
@@ -19,20 +19,20 @@ public class ImageContent extends Content implements Downloadable
 
 	public String original_image;
 
-	public String original_width;
+	public int original_width;
 
-	public String original_height;
+	public int original_height;
 
-	public String original_file_size;
+	public int original_file_size;
 
 	public String original_checksum;
 
 
-	public String translation_x;
+	public int translation_x;
 
-	public String translation_y;
+	public int translation_y;
 
-	public String scale;
+	public float scale;
 
 	@Override
 	public String getUrl()
