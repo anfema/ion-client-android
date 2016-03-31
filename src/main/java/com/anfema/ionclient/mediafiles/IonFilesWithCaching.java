@@ -53,6 +53,8 @@ public class IonFilesWithCaching implements IonFiles
 		OkHttpClient.Builder okHttpClientBuilder = new Builder();
 		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( () -> config.authorizationHeaderValue ) );
 		okHttpClientBuilder.addInterceptor( new RequestLogger( "Network Request" ) );
+		// disable okHttp disk cache because it would store duplicate and un-used data because ION client uses its own cache
+		okHttpClientBuilder.cache( null );
 		client = okHttpClientBuilder.build();
 		runningDownloads = new PendingDownloadHandler<>();
 	}
