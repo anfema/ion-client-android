@@ -51,7 +51,7 @@ public class IonFilesWithCaching implements IonFiles
 		this.config = config;
 		this.context = context;
 		OkHttpClient.Builder okHttpClientBuilder = new Builder();
-		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( config.authorizationHeaderValue ) );
+		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( () -> config.authorizationHeaderValue ) );
 		okHttpClientBuilder.addInterceptor( new RequestLogger( "Network Request" ) );
 		client = okHttpClientBuilder.build();
 		runningDownloads = new PendingDownloadHandler<>();

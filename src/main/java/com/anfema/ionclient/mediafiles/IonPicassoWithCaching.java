@@ -19,6 +19,7 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import rx.Observable;
+import rx.functions.Func0;
 import rx.functions.Func1;
 
 /**
@@ -30,29 +31,29 @@ import rx.functions.Func1;
 public class IonPicassoWithCaching implements IonPicasso
 {
 	private final IonFiles ionFiles;
-	private final Context  context;
 	private       Picasso  picasso;
+	private       String   authorizationHeaderValue;
 
 	public IonPicassoWithCaching( IonFiles ionFiles, IonConfig config, Context context )
 	{
 		this.ionFiles = ionFiles;
-		this.context = context;
-		this.picasso = createPicassoInstance( config.authorizationHeaderValue, context );
+		this.picasso = createPicassoInstance( () -> authorizationHeaderValue, context );
+		this.authorizationHeaderValue = config.authorizationHeaderValue;
 	}
 
 	@Override
 	public void updateConfig( IonConfig config )
 	{
-		this.picasso = createPicassoInstance( config.authorizationHeaderValue, context );
+		this.authorizationHeaderValue = config.authorizationHeaderValue;
 	}
 
 	/**
 	 * You may not want to acquire a Picasso instance via {@link IonClient}.
 	 */
-	public static Picasso createPicassoInstance( String authHeaderValue, Context context )
+	public static Picasso createPicassoInstance( Func0<String> authHeaderValueRetriever, Context context )
 	{
 		OkHttpClient.Builder okHttpClientBuilder = new Builder();
-		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( authHeaderValue ) );
+		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( authHeaderValueRetriever ) );
 		okHttpClientBuilder.addInterceptor( new RequestLogger( "Picasso Request" ) );
 		OkHttpClient picassoClient = okHttpClientBuilder.build();
 
@@ -68,7 +69,7 @@ public class IonPicassoWithCaching implements IonPicasso
 	 */
 	public static void setupDefaultPicasso( String authHeaderValue, Context context ) throws IllegalStateException
 	{
-		Picasso picasso = createPicassoInstance( authHeaderValue, context );
+		Picasso picasso = createPicassoInstance( () -> authHeaderValue, context );
 		Picasso.setSingletonInstance( picasso );
 	}
 
@@ -99,6 +100,7 @@ public class IonPicassoWithCaching implements IonPicasso
 	public void loadImage( Uri requestUri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
 	{
 		Log.i( "ION Picasso", "START: requestUri: " + requestUri );
+		// Log.d( "ION Picasso", "picasso instance: " + picasso + ", ion picasso instance: " + this );
 		fetchImageFile( requestUri )
 				.subscribe( fileUri -> showImage( fileUri, target, requestTransformation ), throwable -> Log.ex( "ION Picasso", throwable ) );
 	}

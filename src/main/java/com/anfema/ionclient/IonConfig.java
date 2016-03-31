@@ -159,6 +159,9 @@ public class IonConfig
 		}
 	}
 
+	/**
+	 * To check that attributes are identical which are ESSENTIAL for the IDENTITY of ION client
+	 */
 	@Override
 	public boolean equals( Object obj )
 	{
@@ -176,6 +179,22 @@ public class IonConfig
 				&& other.collectionIdentifier.equals( collectionIdentifier )
 				&& other.locale.equals( locale )
 				&& other.variation.equals( variation );
+	}
+
+	/**
+	 * To check that EVERY attribute is identical
+	 */
+	public boolean strictEquals( Object obj )
+	{
+		if ( !equals( obj ) )
+		{
+			return false;
+		}
+		IonConfig other = ( IonConfig ) obj;
+		return other.authorizationHeaderValue.equals( authorizationHeaderValue )
+				&& other.archiveDownloads == archiveDownloads
+				&& other.ftsDbDownloads == ftsDbDownloads
+				&& other.minutesUntilCollectionRefetch == minutesUntilCollectionRefetch;
 	}
 
 	@Override
