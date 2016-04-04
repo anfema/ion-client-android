@@ -5,6 +5,7 @@ import com.anfema.ionclient.pages.models.Page;
 import com.anfema.ionclient.pages.models.contents.ConnectionContent;
 import com.anfema.ionclient.pages.models.contents.ContainerContent;
 import com.anfema.ionclient.pages.models.contents.Content;
+import com.anfema.ionclient.utils.ListUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -18,7 +19,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 /**
- * Hook into deserialization of {@link Collection} to sort page previews by position.
+ * Hook into deserialization of {@link Page} to sort flatten content access and sort contents by position.
  */
 public class PageDeserializer implements JsonDeserializer<Page>
 {
@@ -46,6 +47,7 @@ public class PageDeserializer implements JsonDeserializer<Page>
 			if ( containerContent != null )
 			{
 				page.contents = containerContent.children;
+				ListUtils.sort( page.contents );
 			}
 		}
 		return page;

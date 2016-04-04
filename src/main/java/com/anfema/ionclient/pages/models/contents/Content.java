@@ -1,6 +1,6 @@
 package com.anfema.ionclient.pages.models.contents;
 
-public class Content
+public class Content implements Comparable<Content>
 {
 	public String variation;
 
@@ -21,5 +21,24 @@ public class Content
 	{
 		return "Content [class: " + getClass().getSimpleName() + ", outlet = " + outlet + ", variation = " + variation + ", position = " + position
 				+ ", is_searchable = " + is_searchable + "]";
+	}
+
+	/**
+	 * Sort by positions ascending
+	 */
+	@Override
+	public int compareTo( Content another )
+	{
+		if ( another == null )
+		{
+			// null objects shall be at the end
+			return -1;
+		}
+		// Alternatively, one long could be subtracted from the other resulting in a long in the right range. However, casting to int might not be safe.
+		if ( position == another.position )
+		{
+			return 0;
+		}
+		return position < another.position ? -1 : 1;
 	}
 }
