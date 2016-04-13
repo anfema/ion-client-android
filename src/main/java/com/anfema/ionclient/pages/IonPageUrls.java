@@ -35,13 +35,23 @@ public class IonPageUrls
 				throw new NoIonPagesRequestException( url );
 			}
 			String[] idPlusVariation = urlPathSegments[ urlPathSegments.length - 1 ].split( Pattern.quote( "?" ) );
-			if ( idPlusVariation.length != 2 )
+			String locale;
+			String variation;
+			if ( idPlusVariation.length == 2 )
+			{
+				locale = urlPathSegments[ 0 ];
+				variation = idPlusVariation[ 1 ];
+			}
+			else if ( idPlusVariation.length == 1 )
+			{
+				locale = urlPathSegments[ 0 ];
+				variation = IonConfig.DEFAULT_VARIATION;
+			}
+			else
 			{
 				throw new NoIonPagesRequestException( url );
 			}
 
-			String locale = urlPathSegments[ 0 ];
-			String variation = idPlusVariation[ 1 ];
 			String collectionIdentifier;
 
 			if ( urlPathSegments.length == 2 )
