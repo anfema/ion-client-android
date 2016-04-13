@@ -34,6 +34,7 @@ public class HashUtils
 				MessageDigest md = MessageDigest.getInstance( algorithm.toString() );
 				DigestInputStream dis = new DigestInputStream( fis, md );
 				byte[] buffer = new byte[ BUFFER_SIZE ];
+				//noinspection StatementWithEmptyBody
 				while ( dis.read( buffer ) != -1 )
 				{
 					// work is done in condition

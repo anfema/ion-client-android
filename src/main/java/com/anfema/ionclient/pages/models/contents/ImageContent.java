@@ -1,5 +1,6 @@
 package com.anfema.ionclient.pages.models.contents;
 
+@SuppressWarnings("unused")
 public class ImageContent extends Content implements Downloadable
 {
 	public String mime_type;

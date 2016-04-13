@@ -15,6 +15,7 @@ import java.util.Map;
 /**
  * Meta/preview information for pages. It does not hold the content for a page.
  */
+@SuppressWarnings("unused")
 public class PagePreview implements Comparable<PagePreview>
 {
 	/**

@@ -1,5 +1,6 @@
 package com.anfema.ionclient.pages.models.contents;
 
+@SuppressWarnings("unused")
 public class MediaContent extends Content implements Downloadable
 {
 	public String original_checksum;

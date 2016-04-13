@@ -4,6 +4,7 @@ import com.anfema.ionclient.pages.models.Page;
 
 public class PageResponse
 {
+	@SuppressWarnings("MismatchedReadAndWriteOfArray")
 	private Page[] page;
 
 	public Page getPage()

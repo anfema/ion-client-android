@@ -1,6 +1,5 @@
 package com.anfema.ionclient.serialization;
 
-import com.anfema.ionclient.pages.models.Collection;
 import com.anfema.ionclient.pages.models.Page;
 import com.anfema.ionclient.pages.models.contents.ConnectionContent;
 import com.anfema.ionclient.pages.models.contents.ContainerContent;

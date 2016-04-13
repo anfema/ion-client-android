@@ -156,9 +156,6 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 
 	/**
 	 * Appends '*' character at the end of every word
-	 *
-	 * @param searchTerm
-	 * @return
 	 */
 	String prepareSearchTerm( String searchTerm )
 	{

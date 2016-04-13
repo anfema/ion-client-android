@@ -4,11 +4,11 @@ import android.content.Context;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.archive.models.ArchiveIndex;
+import com.anfema.ionclient.caching.FilePaths;
+import com.anfema.ionclient.caching.MemoryCache;
 import com.anfema.ionclient.caching.index.CacheIndexStore;
 import com.anfema.ionclient.caching.index.CollectionCacheIndex;
 import com.anfema.ionclient.caching.index.FileCacheIndex;
-import com.anfema.ionclient.caching.FilePaths;
-import com.anfema.ionclient.caching.MemoryCache;
 import com.anfema.ionclient.caching.index.PageCacheIndex;
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException;
 import com.anfema.ionclient.exceptions.PageNotInCollectionException;
@@ -69,10 +69,8 @@ class ArchiveUtils
 	 * The output file is created in the output folder, having the same name
 	 * as the input file, minus the '.tar' extension.
 	 *
-	 * @param archiveFile
-	 * @param config
-	 * @param collection
-	 * @param lastModified
+	 * @param archiveFile  input TAR file
+	 * @param lastModified when collection has been last modified
 	 * @throws FileNotFoundException
 	 * @throws ArchiveException
 	 */
