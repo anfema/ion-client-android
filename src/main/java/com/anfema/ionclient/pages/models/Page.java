@@ -1,6 +1,7 @@
 package com.anfema.ionclient.pages.models;
 
 import com.anfema.ionclient.pages.models.contents.Content;
+import com.anfema.ionclient.pages.models.contents.TextContent;
 
 import org.joda.time.DateTime;
 
@@ -77,6 +78,19 @@ public class Page
 			}
 		}
 		return contents;
+	}
+
+	/**
+	 * Convenience method to obtain the text of a {@link com.anfema.ionclient.pages.models.contents.TextContent}.
+	 */
+	public String getText( String outlet )
+	{
+		Content content = getContent( outlet );
+		if ( content != null && content instanceof TextContent )
+		{
+			return ( ( TextContent ) content ).text;
+		}
+		return null;
 	}
 
 	@Override
