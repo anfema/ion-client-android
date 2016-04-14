@@ -146,6 +146,12 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 		return ionPages.fetchPage( pageIdentifier );
 	}
 
+	@Override
+	public Observable<Page> fetchPages( List<String> pageIdentifiers )
+	{
+		return ionPages.fetchPages( pageIdentifiers );
+	}
+
 	/**
 	 * A set of pages is "returned" by emitting multiple events.<br/>
 	 *

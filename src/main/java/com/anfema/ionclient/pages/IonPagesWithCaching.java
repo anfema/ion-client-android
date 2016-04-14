@@ -200,6 +200,16 @@ public class IonPagesWithCaching implements IonPages
 	}
 
 	/**
+	 * Fetch a set of pages by passing its page identifiers.
+	 * This is a convenience method for {@link #fetchPages(Func1)}.
+	 */
+	@Override
+	public Observable<Page> fetchPages( List<String> pageIdentifiers )
+	{
+		return fetchPages( PagesFilter.identifierIn( pageIdentifiers ) );
+	}
+
+	/**
 	 * A set of pages is "returned" by emitting multiple events.<br/>
 	 * Use collection identifier as specified in {@link this#config}
 	 */

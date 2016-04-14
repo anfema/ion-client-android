@@ -4,6 +4,8 @@ import com.anfema.ionclient.pages.models.Collection;
 import com.anfema.ionclient.pages.models.Page;
 import com.anfema.ionclient.pages.models.PagePreview;
 
+import java.util.List;
+
 import rx.Observable;
 import rx.functions.Func1;
 
@@ -18,6 +20,8 @@ public interface IonPages extends ConfigUpdatable
 	Observable<PagePreview> fetchAllPagePreviews();
 
 	Observable<Page> fetchPage( String pageIdentifier );
+
+	Observable<Page> fetchPages( List<String> pageIdentifiers );
 
 	Observable<Page> fetchPages( Func1<PagePreview, Boolean> pagesFilter );
 
