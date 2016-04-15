@@ -1,5 +1,7 @@
 package com.anfema.ionclient.pages.models;
 
+import android.support.annotation.NonNull;
+
 import com.anfema.ionclient.pages.models.contents.Connection;
 import com.anfema.ionclient.serialization.GsonHolder;
 import com.google.gson.JsonElement;
@@ -54,6 +56,32 @@ public class PagePreview implements Comparable<PagePreview>
 		return GsonHolder.getInstance().fromJson( meta.get( metaKey ), String.class );
 	}
 
+	public String getMetaStringOrNull( String metaKey )
+	{
+		try
+		{
+			return getMetaString( metaKey );
+		}
+		catch ( Exception e )
+		{
+			return null;
+		}
+	}
+
+	@NonNull
+	public String getMetaStringOrEmpty( String metaKey )
+	{
+		try
+		{
+			String text = getMetaString( metaKey );
+			return text != null ? text : "";
+		}
+		catch ( Exception e )
+		{
+			return "";
+		}
+	}
+
 	public List<String> getMetaList( String metaKey ) throws JsonSyntaxException
 	{
 		Type listType = new TypeToken<List<String>>()
@@ -62,9 +90,14 @@ public class PagePreview implements Comparable<PagePreview>
 		return GsonHolder.getInstance().fromJson( meta.get( metaKey ), listType );
 	}
 
-	public Connection getMetaConnection( String metaKey )
+	public Connection getMetaConnection( String metaKey ) throws JsonSyntaxException
 	{
 		return new Connection( getMetaString( metaKey ) );
+	}
+
+	public Connection getMetaConnectionOrNull( String metaKey )
+	{
+		return new Connection( getMetaStringOrNull( metaKey ) );
 	}
 
 	/**

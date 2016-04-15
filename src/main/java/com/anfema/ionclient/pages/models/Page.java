@@ -1,5 +1,7 @@
 package com.anfema.ionclient.pages.models;
 
+import android.support.annotation.NonNull;
+
 import com.anfema.ionclient.pages.models.contents.Content;
 import com.anfema.ionclient.pages.models.contents.TextContent;
 
@@ -82,8 +84,10 @@ public class Page
 
 	/**
 	 * Convenience method to obtain the text of a {@link com.anfema.ionclient.pages.models.contents.TextContent}.
+	 *
+	 * @return text if text content found, {@code null} otherwise
 	 */
-	public String getText( String outlet )
+	public String getTextOrNull( String outlet )
 	{
 		Content content = getContent( outlet );
 		if ( content != null && content instanceof TextContent )
@@ -91,6 +95,18 @@ public class Page
 			return ( ( TextContent ) content ).text;
 		}
 		return null;
+	}
+
+	/**
+	 * Convenience method to obtain the text of a {@link com.anfema.ionclient.pages.models.contents.TextContent}.
+	 *
+	 * @return text if text content found, empty string otherwise
+	 */
+	@NonNull
+	public String getTextOrEmpty( String outlet )
+	{
+		String text = getTextOrNull( outlet );
+		return text != null ? text : "";
 	}
 
 	@Override
