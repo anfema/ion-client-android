@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.widget.ImageView;
 
 import com.anfema.ionclient.pages.ConfigUpdatable;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
@@ -15,26 +16,40 @@ import rx.functions.Func1;
 public interface IonPicasso extends ConfigUpdatable
 {
 	/**
+	 * {@link #loadImage(int, ImageView, Func1, Callback)} without a callback
+	 */
+	void loadImage( int resourceId, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation );
+
+	/**
+	 * Convenience method for {@link #loadImage(Uri, ImageView, Func1, Callback)} which parses resource ID to {@link Uri}.
+	 */
+	void loadImage( int resourceId, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback );
+
+	/**
+	 * {@link #loadImage(String, ImageView, Func1, Callback)} without a callback
+	 */
+	void loadImage( String path, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation );
+
+	/**
+	 * Convenience method for {@link #loadImage(Uri, ImageView, Func1, Callback)} which parses path string to {@link Uri}.
+	 */
+	void loadImage( String path, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback );
+
+	/**
+	 * {@link #loadImage(Uri, ImageView, Func1, Callback)} without a callback
+	 */
+	void loadImage( Uri uri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation );
+
+	/**
 	 * Wraps Picasso's load method {@link Picasso#load(Uri)}.
 	 * If Uri is a HTTP link then it might be changed to a file link in case the cached version shall be used.
 	 *
 	 * @param uri                   the location of the image source. can be a network link, file link, or content link, see {@link Picasso#load(Uri)}
 	 * @param target                view where the image should be displayed
 	 * @param requestTransformation can be null, chained operations on {@link RequestCreator} (e.g. requestCreator -> requestCreator.fit().centerCrop())
+	 * @param callback              listener to onSuccess and onError events
 	 */
-	void loadImage( Uri uri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation );
-
-	/**
-	 * Convenience method for {@link #loadImage(Uri, ImageView, Func1)} which parses path into {@link Uri}
-	 */
-	void loadImage( String path, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation );
-
-	/**
-	 * Wraps Picasso's load method {@link Picasso#load(int)}.
-	 * The only reason it is wrapped is that the same Picasso instance and, thus, the same memory cache is used.
-	 * It is equivalent to calling {@link #getPicassoInstance()} followed by {@link Picasso#load(int)} and apply the operators on {@link RequestCreator}.
-	 */
-	void loadImage( int resourceId, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation );
+	void loadImage( Uri uri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback );
 
 	/**
 	 * loadImage methods are a shortcut for {@link Picasso}'s load methods. Get Picasso instance if you need more of its functions.

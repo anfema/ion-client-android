@@ -12,6 +12,7 @@ import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
 import com.anfema.ionclient.utils.Log;
 import com.jakewharton.picasso.OkHttp3Downloader;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
@@ -85,16 +86,28 @@ public class IonPicassoWithCaching implements IonPicasso
 	@Override
 	public void loadImage( int resourceId, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
 	{
+		loadImage( resourceId, target, requestTransformation, null );
+	}
+
+	@Override
+	public void loadImage( int resourceId, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	{
 		RequestCreator requestCreator = picasso.load( resourceId );
 		if ( requestTransformation != null )
 		{
 			requestCreator = requestTransformation.call( requestCreator );
 		}
-		requestCreator.into( target );
+		requestCreator.into( target, callback );
 	}
 
 	@Override
 	public void loadImage( String path, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
+	{
+		loadImage( path, target, requestTransformation, null );
+	}
+
+	@Override
+	public void loadImage( String path, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
 		if ( path == null || path.trim().length() == 0 )
 		{
@@ -102,16 +115,22 @@ public class IonPicassoWithCaching implements IonPicasso
 			picasso.load( path );
 			return;
 		}
-		loadImage( Uri.parse( path ), target, requestTransformation );
+		loadImage( Uri.parse( path ), target, requestTransformation, callback );
 	}
 
 	@Override
 	public void loadImage( Uri requestUri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
 	{
+		loadImage( requestUri, target, requestTransformation, null );
+	}
+
+	@Override
+	public void loadImage( Uri requestUri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	{
 		Log.i( "ION Picasso", "START: requestUri: " + requestUri );
 		// Log.d( "ION Picasso", "picasso instance: " + picasso + ", ion picasso instance: " + this );
 		fetchImageFile( requestUri )
-				.subscribe( fileUri -> showImage( fileUri, target, requestTransformation ), throwable -> Log.ex( "ION Picasso", throwable ) );
+				.subscribe( fileUri -> showImage( fileUri, target, requestTransformation, callback ), throwable -> Log.ex( "ION Picasso", throwable ) );
 	}
 
 	private Observable<Uri> fetchImageFile( Uri uri )
@@ -128,7 +147,7 @@ public class IonPicassoWithCaching implements IonPicasso
 		}
 	}
 
-	private void showImage( Uri uri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
+	private void showImage( Uri uri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
 		RequestCreator requestCreator = picasso.load( uri );
 
@@ -138,7 +157,7 @@ public class IonPicassoWithCaching implements IonPicasso
 			requestCreator = requestTransformation.call( requestCreator );
 		}
 
-		requestCreator.into( target );
+		requestCreator.into( target, callback );
 	}
 
 	@Override

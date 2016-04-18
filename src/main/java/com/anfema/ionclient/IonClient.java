@@ -21,6 +21,7 @@ import com.anfema.ionclient.pages.models.PagePreview;
 import com.anfema.ionclient.pages.models.contents.Downloadable;
 import com.anfema.ionclient.utils.ContextUtils;
 import com.anfema.ionclient.utils.Log;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
@@ -209,15 +210,33 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	}
 
 	@Override
+	public void loadImage( int resourceId, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	{
+		ionPicasso.loadImage( resourceId, target, requestTransformation, callback );
+	}
+
+	@Override
 	public void loadImage( String path, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
 	{
 		ionPicasso.loadImage( path, target, requestTransformation );
 	}
 
 	@Override
+	public void loadImage( String path, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	{
+		ionPicasso.loadImage( path, target, requestTransformation, callback );
+	}
+
+	@Override
 	public void loadImage( Uri uri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
 	{
 		ionPicasso.loadImage( uri, target, requestTransformation );
+	}
+
+	@Override
+	public void loadImage( Uri uri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	{
+		ionPicasso.loadImage( uri, target, requestTransformation, callback );
 	}
 
 	@Override
