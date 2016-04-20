@@ -37,7 +37,7 @@ public class ConnectionContentSerializer implements JsonDeserializer<ConnectionC
 			uriBuilder.appendPath( pageIdentifier );
 		}
 		Uri connectionUri = uriBuilder
-				.fragment( connection.getContentIdentifier() )
+				.fragment( connection.getOutletIdentifier() )
 				.build();
 		String connectionString = connectionUri.toString();
 		jsonObject.add( CONNECTION_STRING, new JsonPrimitive( connectionString ) );

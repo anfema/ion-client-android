@@ -49,9 +49,9 @@ public class ConnectionContent extends Content
 		return connection.pageIdentifier;
 	}
 
-	public String getContentIdentifier()
+	public String getOutletIdentifier()
 	{
-		return connection.contentIdentifier;
+		return connection.outletIdentifier;
 	}
 
 	@Override
@@ -60,8 +60,7 @@ public class ConnectionContent extends Content
 		String toString = super.toString();
 		if ( connection != null )
 		{
-			toString += " + [scheme = " + connection.scheme + ", collection = " + connection.collectionIdentifier + ", page = " + connection.pageIdentifier
-					+ ", content = " + connection.collectionIdentifier + "]";
+			toString += connection.toString();
 		}
 		return toString;
 	}

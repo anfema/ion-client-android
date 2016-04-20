@@ -33,7 +33,7 @@ public class ConnectionContentSerializerTest extends TestCase
 		pageIdentifierPath.add( pageIdentifier );
 		original.connection.pageIdentifierPath = pageIdentifierPath;
 		original.connection.pageIdentifier = pageIdentifier;
-		original.connection.contentIdentifier = "content_identifier";
+		original.connection.outletIdentifier = "outlet_identifier";
 		System.out.println( "original toString(): " + original );
 
 
@@ -52,7 +52,7 @@ public class ConnectionContentSerializerTest extends TestCase
 
 	public void testRoundtripAbsoluteUrl() throws Exception
 	{
-		String original = "ion://collection_identifier/page_identifier1/page_identifier2#content_identfier";
+		String original = "ion://collection_identifier/page_identifier1/page_identifier2#outlet_identfier";
 		roundtripUrl( original );
 	}
 

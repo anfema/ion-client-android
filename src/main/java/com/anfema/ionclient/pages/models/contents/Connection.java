@@ -12,7 +12,7 @@ public class Connection
 	public String       collectionIdentifier;
 	public List<String> pageIdentifierPath;
 	public String       pageIdentifier;
-	public String       contentIdentifier;
+	public String       outletIdentifier;
 
 	public Connection( String connectionContentString )
 	{
@@ -26,7 +26,7 @@ public class Connection
 			{
 				pageIdentifier = pageIdentifierPath.get( pageIdentifierPath.size() - 1 );
 			}
-			contentIdentifier = uri.getFragment();
+			outletIdentifier = uri.getFragment();
 		}
 	}
 
@@ -34,7 +34,7 @@ public class Connection
 	public String toString()
 	{
 		return "Connection [scheme = " + scheme + ", collection = " + collectionIdentifier + ", page = " + pageIdentifier
-				+ ", content = " + collectionIdentifier + "]";
+				+ ", outlet = " + outletIdentifier + "]";
 	}
 
 	@Override
@@ -47,7 +47,7 @@ public class Connection
 
 		Connection o = ( Connection ) other;
 		return equal( scheme, o.scheme ) && equal( collectionIdentifier, o.collectionIdentifier ) && equalPaths( o )
-				&& equal( pageIdentifier, o.pageIdentifier ) && equal( contentIdentifier, o.contentIdentifier );
+				&& equal( pageIdentifier, o.pageIdentifier ) && equal( outletIdentifier, o.outletIdentifier );
 	}
 
 	protected boolean equal( String s1, String s2 )
@@ -84,7 +84,7 @@ public class Connection
 	@Override
 	public int hashCode()
 	{
-		Object[] hashRelevantFields = { scheme, collectionIdentifier, pageIdentifierPath, pageIdentifier, contentIdentifier };
+		Object[] hashRelevantFields = { scheme, collectionIdentifier, pageIdentifierPath, pageIdentifier, outletIdentifier };
 		return Arrays.hashCode( hashRelevantFields );
 	}
 }
