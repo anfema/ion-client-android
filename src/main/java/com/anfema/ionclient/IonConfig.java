@@ -3,8 +3,13 @@ package com.anfema.ionclient;
 import android.content.Context;
 
 import com.anfema.ionclient.exceptions.IonConfigInvalidException;
+import com.anfema.ionclient.utils.Log;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import rx.Observable;
 
 public class IonConfig
 {
@@ -45,6 +50,9 @@ public class IonConfig
 	public static int pagesMemCacheSize = 100;
 
 
+	private static Map<IonConfig, String> authorizations = new HashMap<>();
+
+
 	// *** configuration of client instance ***
 
 	/**
@@ -68,9 +76,14 @@ public class IonConfig
 	public final String variation;
 
 	/**
-	 * authorization header value which is required to use the ION API
+	 * Authorization header value is required to use the ION API. Primary option: provide it directly by passing the value.
 	 */
-	public final String authorizationHeaderValue;
+	private String authorizationHeaderValue;
+
+	/**
+	 * Authorization header value is required to use the ION API. Secondary option: provide it indirectly through an async call.
+	 */
+	private final Observable<String> authorizationHeaderValueCall;
 
 	/**
 	 * Should the whole archive be downloaded when the collection is downloaded?
@@ -90,13 +103,14 @@ public class IonConfig
 	/**
 	 * Default constructor with high degree of configuration possibilities.
 	 */
-	public IonConfig( String baseUrl, String collectionIdentifier, String locale, String variation, String authorizationHeaderValue, boolean archiveDownloads, boolean ftsDbDownloads, int minutesUntilCollectionRefetch )
+	public IonConfig( String baseUrl, String collectionIdentifier, String locale, String variation, String authorizationHeaderValue, Observable<String> authorizationHeaderValueCall, boolean archiveDownloads, boolean ftsDbDownloads, int minutesUntilCollectionRefetch )
 	{
 		this.baseUrl = baseUrl;
 		this.collectionIdentifier = collectionIdentifier;
 		this.locale = locale;
 		this.variation = variation;
 		this.authorizationHeaderValue = authorizationHeaderValue;
+		this.authorizationHeaderValueCall = authorizationHeaderValueCall;
 		this.archiveDownloads = archiveDownloads;
 		this.ftsDbDownloads = ftsDbDownloads;
 		this.minutesUntilCollectionRefetch = minutesUntilCollectionRefetch;
@@ -104,30 +118,33 @@ public class IonConfig
 
 	/**
 	 * Config constructor taking default values for {@link #minutesUntilCollectionRefetch}.
+	 * Supports passing authentication calls.
 	 *
 	 * @param variation Set a variation - other than default
 	 */
-	public IonConfig( String baseUrl, String collectionIdentifier, String locale, String variation, String authorizationHeaderValue, boolean archiveDownloads, boolean ftsDbDownloads )
+	public IonConfig( String baseUrl, String collectionIdentifier, String locale, String variation, String authorizationHeaderValue, Observable<String> authorizationHeaderValueCall, boolean archiveDownloads, boolean ftsDbDownloads )
 	{
-		this( baseUrl, collectionIdentifier, locale, variation, authorizationHeaderValue, archiveDownloads, ftsDbDownloads, DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH );
+		this( baseUrl, collectionIdentifier, locale, variation, authorizationHeaderValue, authorizationHeaderValueCall, archiveDownloads, ftsDbDownloads, DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH );
 	}
 
 	/**
-	 * Config constructor taking default values for {@link #variation} and {@link #minutesUntilCollectionRefetch}..
+	 * Config constructor taking default values for {@link #variation} and {@link #minutesUntilCollectionRefetch}.
+	 * Does not support passing authentication calls.
 	 */
 	public IonConfig( String baseUrl, String collectionIdentifier, String locale, String authorizationHeaderValue, boolean archiveDownloads, boolean ftsDbDownloads )
 	{
-		this( baseUrl, collectionIdentifier, locale, DEFAULT_VARIATION, authorizationHeaderValue, archiveDownloads, ftsDbDownloads );
+		this( baseUrl, collectionIdentifier, locale, DEFAULT_VARIATION, authorizationHeaderValue, null, archiveDownloads, ftsDbDownloads );
 	}
 
 	/**
 	 * Config constructor taking default values for {@link #archiveDownloads}, {@link #ftsDbDownloads}, {@link #variation}, and {@link #minutesUntilCollectionRefetch}.
+	 * Does not support passing authentication calls.
 	 *
 	 * @param context is required to determine the current device locale
 	 */
 	public IonConfig( String baseUrl, String collectionIdentifier, String authorizationHeaderValue, Context context )
 	{
-		this( baseUrl, collectionIdentifier, context.getResources().getConfiguration().locale.toString(), DEFAULT_VARIATION, authorizationHeaderValue, false, false );
+		this( baseUrl, collectionIdentifier, context.getResources().getConfiguration().locale.toString(), authorizationHeaderValue, false, false );
 	}
 
 	public IonConfig( IonConfig otherConfig )
@@ -137,6 +154,7 @@ public class IonConfig
 		this.locale = otherConfig.locale;
 		this.variation = otherConfig.variation;
 		this.authorizationHeaderValue = otherConfig.authorizationHeaderValue;
+		this.authorizationHeaderValueCall = otherConfig.authorizationHeaderValueCall;
 		this.archiveDownloads = otherConfig.archiveDownloads;
 		this.ftsDbDownloads = otherConfig.ftsDbDownloads;
 		this.minutesUntilCollectionRefetch = otherConfig.minutesUntilCollectionRefetch;
@@ -160,7 +178,7 @@ public class IonConfig
 	}
 
 	/**
-	 * To check that attributes are identical which are ESSENTIAL for the IDENTITY of ION client
+	 * To check that attributes are equal which are ESSENTIAL for the IDENTITY of ION client
 	 */
 	@Override
 	public boolean equals( Object obj )
@@ -182,7 +200,7 @@ public class IonConfig
 	}
 
 	/**
-	 * To check that EVERY attribute is identical
+	 * To check that EVERY attribute is equal
 	 */
 	public boolean strictEquals( Object obj )
 	{
@@ -192,6 +210,7 @@ public class IonConfig
 		}
 		IonConfig other = ( IonConfig ) obj;
 		return other.authorizationHeaderValue.equals( authorizationHeaderValue )
+				&& other.authorizationHeaderValueCall.equals( authorizationHeaderValueCall )
 				&& other.archiveDownloads == archiveDownloads
 				&& other.ftsDbDownloads == ftsDbDownloads
 				&& other.minutesUntilCollectionRefetch == minutesUntilCollectionRefetch;
@@ -202,5 +221,39 @@ public class IonConfig
 	{
 		Object[] hashRelevantFields = { baseUrl, collectionIdentifier, locale, variation };
 		return Arrays.hashCode( hashRelevantFields );
+	}
+
+	public Observable<String> updateAuthorizationHeaderValue()
+	{
+		Log.w( "IonConfig", "UpdateAuthorization: authorizationHeaderValue != null: " + ( authorizationHeaderValue != null ) + ", call != null: " + ( authorizationHeaderValueCall != null ) );
+
+		if ( authorizationHeaderValue != null || authorizationHeaderValueCall == null )
+		{
+			return Observable.just( authorizationHeaderValue );
+		}
+
+		String authorizationFromCache = authorizations.get( this );
+		if ( authorizationFromCache != null )
+		{
+			return Observable.just( authorizationFromCache );
+		}
+
+		return authorizationHeaderValueCall
+				.map( authorizationHeaderValue -> {
+					authorizations.put( IonConfig.this, authorizationHeaderValue );
+					this.authorizationHeaderValue = authorizationHeaderValue;
+					return authorizationHeaderValue;
+				} );
+	}
+
+	public String getAuthorizationHeaderValue()
+	{
+		if ( authorizationHeaderValue == null && authorizationHeaderValueCall != null )
+		{
+			Log.i( "IonConfig", "lookup in authorizations" );
+			authorizationHeaderValue = authorizations.get( this );
+		}
+		Log.i( "IonConfig", "getAuthorizationHeaderValue: " + authorizationHeaderValue );
+		return authorizationHeaderValue;
 	}
 }

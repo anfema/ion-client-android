@@ -245,6 +245,12 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 		return ionPicasso.getPicassoInstance();
 	}
 
+	@Override
+	public Observable<Picasso> getPicassoInstanceDoAuthCall()
+	{
+		return ionPicasso.getPicassoInstanceDoAuthCall();
+	}
+
 
 	/// Archive download
 

@@ -8,6 +8,7 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
+import rx.Observable;
 import rx.functions.Func1;
 
 /**
@@ -53,6 +54,16 @@ public interface IonPicasso extends ConfigUpdatable
 
 	/**
 	 * loadImage methods are a shortcut for {@link Picasso}'s load methods. Get Picasso instance if you need more of its functions.
+	 * <p>
+	 * Warning: If authentication value is not provided directly, but through an async function, this method will return an un-initialized instance.
+	 * The safe option is {@link #getPicassoInstanceDoAuthCall()}.
 	 */
 	Picasso getPicassoInstance();
+
+	/**
+	 * @see #getPicassoInstanceDoAuthCall()
+	 * <p>
+	 * If authentication value is not provided directly, but through an async function, this method will return a guaranteed initialized instance.
+	 */
+	Observable<Picasso> getPicassoInstanceDoAuthCall();
 }

@@ -49,7 +49,7 @@ public class RxUtils
 	 * Use in compose operator to apply to every observable in the chain
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> Transformer<T, T> runOnComputionThread()
+	public static <T> Transformer<T, T> runOnComputationThread()
 	{
 		return tObservable -> tObservable.subscribeOn( Schedulers.computation() ).observeOn( AndroidSchedulers.mainThread() );
 	}

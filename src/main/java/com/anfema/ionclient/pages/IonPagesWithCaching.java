@@ -144,7 +144,6 @@ public class IonPagesWithCaching implements IonPages
 	/**
 	 * Retrieve page with following priorities:
 	 * <p>
-	 * <p>
 	 * 1. Look if there is a current version in cache
 	 * 2. Download from server if internet connection available
 	 * 3. If no internet connection: return cached version (even if outdated)
@@ -264,10 +263,10 @@ public class IonPagesWithCaching implements IonPages
 				.map( CollectionResponse::getCollection )
 				// save to memory cache
 				.doOnNext( collection1 -> MemoryCache.saveCollection( collection1, collectionUrl ) )
-				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
 					return handleUnsuccessfulCollectionCacheReading( collectionUrl, cacheIndex, serverCallAsBackup, throwable );
-				} );
+				} )
+				.compose( RxUtils.runOnIoThread() );
 	}
 
 	private Observable<Collection> handleUnsuccessfulCollectionCacheReading( String collectionUrl, CollectionCacheIndex cacheIndex, boolean serverCallAsBackup, Throwable e )
@@ -294,7 +293,8 @@ public class IonPagesWithCaching implements IonPages
 	{
 		final String lastModified = cacheIndex != null ? cacheIndex.getLastModified() : null;
 
-		Observable<Collection> collectionObservable = ionApi.getCollection( config.collectionIdentifier, config.locale, config.authorizationHeaderValue, config.variation, lastModified )
+		Observable<Collection> collectionObservable = config.updateAuthorizationHeaderValue()
+				.flatMap( o -> ionApi.getCollection( config.collectionIdentifier, config.locale, config.getAuthorizationHeaderValue(), config.variation, lastModified ) )
 				.flatMap( serverResponse -> {
 					if ( serverResponse.code() == COLLECTION_NOT_MODIFIED )
 					{
@@ -324,7 +324,6 @@ public class IonPagesWithCaching implements IonPages
 						return Observable.error( new HttpException( serverResponse ) );
 					}
 				} )
-				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
 					String collectionUrl = IonPageUrls.getCollectionUrl( config );
 					if ( cacheAsBackup )
@@ -336,6 +335,7 @@ public class IonPagesWithCaching implements IonPages
 					Log.e( "Failed Request", "Network request " + collectionUrl + " failed." );
 					return Observable.error( new NetworkRequestException( collectionUrl, throwable ) );
 				} )
+				.compose( RxUtils.runOnIoThread() )
 				.doOnNext( file -> runningCollectionDownload.finished( config.collectionIdentifier ) );
 		return runningCollectionDownload.starting( config.collectionIdentifier, collectionObservable );
 	}
@@ -379,10 +379,10 @@ public class IonPagesWithCaching implements IonPages
 				.map( PageResponse::getPage )
 				// save to memory cache
 				.doOnNext( page -> MemoryCache.savePage( page, config ) )
-				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
 					return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, throwable );
-				} );
+				} )
+				.compose( RxUtils.runOnIoThread() );
 	}
 
 	private Observable<Page> handleUnsuccessfulPageCacheReading( String pageIdentifier, boolean serverCallAsBackup, String pageUrl, Throwable e )
@@ -402,11 +402,11 @@ public class IonPagesWithCaching implements IonPages
 	 */
 	private Observable<Page> fetchPageFromServer( String pageIdentifier, boolean cacheAsBackup )
 	{
-		Observable<Page> pageObservable = ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.variation, config.authorizationHeaderValue )
+		Observable<Page> pageObservable = config.updateAuthorizationHeaderValue()
+				.flatMap( o -> ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.variation, config.getAuthorizationHeaderValue() ) )
 				.map( PageResponse::getPage )
 				.doOnNext( savePageCacheIndex() )
 				.doOnNext( page -> MemoryCache.savePage( page, config ) )
-				.compose( RxUtils.runOnIoThread() )
 				.onErrorResumeNext( throwable -> {
 					String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 					if ( cacheAsBackup )
@@ -418,6 +418,7 @@ public class IonPagesWithCaching implements IonPages
 					Log.e( "Failed Request", "Network request " + pageUrl + " failed." );
 					return Observable.error( new NetworkRequestException( pageUrl, throwable ) );
 				} )
+				.compose( RxUtils.runOnIoThread() )
 				.doOnNext( file -> runningPageDownloads.finished( pageIdentifier ) );
 		return runningPageDownloads.starting( pageIdentifier, pageObservable );
 	}

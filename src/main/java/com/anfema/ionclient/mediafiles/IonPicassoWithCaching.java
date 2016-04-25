@@ -37,21 +37,21 @@ public class IonPicassoWithCaching implements IonPicasso
 	 */
 	private static LruCache picassoMemCache;
 
-	private final IonFiles ionFiles;
-	private       Picasso  picasso;
-	private       String   authorizationHeaderValue;
+	private final IonFiles  ionFiles;
+	private final Picasso   picasso;
+	private       IonConfig config;
 
 	public IonPicassoWithCaching( IonFiles ionFiles, IonConfig config, Context context )
 	{
 		this.ionFiles = ionFiles;
-		this.picasso = createPicassoInstance( () -> authorizationHeaderValue, context );
-		this.authorizationHeaderValue = config.authorizationHeaderValue;
+		this.config = config;
+		this.picasso = createPicassoInstance( this.config::getAuthorizationHeaderValue, context );
 	}
 
 	@Override
 	public void updateConfig( IonConfig config )
 	{
-		this.authorizationHeaderValue = config.authorizationHeaderValue;
+		this.config = config;
 	}
 
 	/**
@@ -164,6 +164,13 @@ public class IonPicassoWithCaching implements IonPicasso
 	public Picasso getPicassoInstance()
 	{
 		return picasso;
+	}
+
+	@Override
+	public Observable<Picasso> getPicassoInstanceDoAuthCall()
+	{
+		return config.updateAuthorizationHeaderValue()
+				.map( o -> picasso );
 	}
 
 	private static synchronized LruCache getPicassoMemoryCache( Context context )

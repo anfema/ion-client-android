@@ -1,6 +1,7 @@
 package com.anfema.ionclient.mediafiles;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.anfema.ionclient.IonConfig;
@@ -51,7 +52,7 @@ public class IonFilesWithCaching implements IonFiles
 		this.config = config;
 		this.context = context;
 		OkHttpClient.Builder okHttpClientBuilder = new Builder();
-		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( () -> config.authorizationHeaderValue ) );
+		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( this.config::getAuthorizationHeaderValue ) );
 		okHttpClientBuilder.addInterceptor( new RequestLogger( "Network Request" ) );
 		// disable okHttp disk cache because it would store duplicate and un-used data because ION client uses its own cache
 		okHttpClientBuilder.cache( null );
@@ -72,7 +73,7 @@ public class IonFilesWithCaching implements IonFiles
 	}
 
 	/**
-	 * Wraps {@link #performRequest(HttpUrl, File)} so that it runs completely async.
+	 * Wraps {@link #updateAuthorizationAndRequest(HttpUrl, File)} so that it runs completely async.
 	 */
 	@Override
 	public Observable<File> request( HttpUrl url, String checksum )
@@ -81,7 +82,7 @@ public class IonFilesWithCaching implements IonFiles
 	}
 
 	/**
-	 * Wraps {@link #performRequest(HttpUrl, File)} so that it runs completely async.
+	 * Wraps {@link #updateAuthorizationAndRequest(HttpUrl, File)} so that it runs completely async.
 	 */
 	@Override
 	public Observable<File> request( HttpUrl url, String checksum, boolean ignoreCaching, @Nullable File inTargetFile )
@@ -118,8 +119,7 @@ public class IonFilesWithCaching implements IonFiles
 			if ( networkAvailable )
 			{
 				// download media file
-				Observable<File> downloadObservable = Observable.just( null )
-						.flatMap( o -> performRequest( url, targetFile ) )
+				Observable<File> downloadObservable = updateAuthorizationAndRequest( url, targetFile )
 						.doOnNext( file -> FileCacheIndex.save( url.toString(), file, config, null, context ) )
 						.compose( RxUtils.runOnIoThread() )
 						.doOnNext( file -> runningDownloads.finished( url ) );
@@ -142,8 +142,7 @@ public class IonFilesWithCaching implements IonFiles
 
 	private Observable<File> requestWithoutCaching( HttpUrl url, File finalTargetFile )
 	{
-		return Observable.just( null )
-				.flatMap( o -> performRequest( url, finalTargetFile ) )
+		return updateAuthorizationAndRequest( url, finalTargetFile )
 				.compose( RxUtils.runOnIoThread() );
 	}
 
@@ -170,6 +169,14 @@ public class IonFilesWithCaching implements IonFiles
 		}
 	}
 
+	private Observable<File> updateAuthorizationAndRequest( HttpUrl url, File targetFile )
+	{
+		// client.setReadTimeout( 30, TimeUnit.SECONDS );
+
+		return config.updateAuthorizationHeaderValue()
+				.flatMap( o -> performRequest( url, targetFile ) );
+	}
+
 	/**
 	 * Perform get request and store response body to local storage.
 	 *
@@ -177,13 +184,13 @@ public class IonFilesWithCaching implements IonFiles
 	 * @param targetFile path, where file is going to be stored. if null, default "/files" directory is used
 	 * @return the file with content
 	 */
-	private Observable<File> performRequest( HttpUrl url, File targetFile )
+	@NonNull
+	private Observable<? extends File> performRequest( HttpUrl url, File targetFile )
 	{
-		// client.setReadTimeout( 30, TimeUnit.SECONDS );
-
 		Request request = new Request.Builder()
 				.url( url )
 				.build();
+
 		try
 		{
 			Response response = client.newCall( request ).execute();
@@ -193,7 +200,7 @@ public class IonFilesWithCaching implements IonFiles
 				{
 					response.body().close();
 				}
-				throw new IOException( "Unexpected code: " + response );
+				return Observable.error( new IOException( "Unexpected code: " + response ) );
 			}
 
 			// use custom target file path
