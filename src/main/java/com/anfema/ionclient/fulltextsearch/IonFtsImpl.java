@@ -22,6 +22,7 @@ import java.util.List;
 
 import okhttp3.HttpUrl;
 import rx.Observable;
+import rx.util.async.Async;
 
 /**
  * Full text search on collectin data.
@@ -91,8 +92,7 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 	@Override
 	public Observable<List<SearchResult>> fullTextSearch( String searchTerm, String locale, String pageLayout )
 	{
-		return Observable.just( null )
-				.map( o -> performFts( searchTerm, locale, pageLayout ) )
+		return Async.start( () -> performFts( searchTerm, locale, pageLayout ) )
 				.compose( RxUtils.runOnComputationThread() );
 	}
 
