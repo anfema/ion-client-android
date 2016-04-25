@@ -100,9 +100,77 @@ public class IonConfig
 	 */
 	public final int minutesUntilCollectionRefetch;
 
-	/**
-	 * Default constructor with high degree of configuration possibilities.
-	 */
+	public static class Builder
+	{
+		private final String baseUrl;
+		private final String collectionIdentifier;
+		private       String locale;
+		private String             variation                     = DEFAULT_VARIATION;
+		private String             authorizationHeaderValue      = null;
+		private Observable<String> authorizationHeaderValueCall  = null;
+		private boolean            archiveDownloads              = false;
+		private boolean            ftsDbDownloads                = false;
+		private int                minutesUntilCollectionRefetch = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH;
+
+		public Builder( String baseUrl, String collectionIdentifier, String locale )
+		{
+			this.baseUrl = baseUrl;
+			this.collectionIdentifier = collectionIdentifier;
+			this.locale = locale;
+		}
+
+		public Builder( String baseUrl, String collectionIdentifier, Context contextForLocale )
+		{
+			this( baseUrl, collectionIdentifier, contextForLocale.getResources().getConfiguration().locale.toString() );
+		}
+
+		public Builder variation( String variation )
+		{
+			this.variation = variation;
+			return this;
+		}
+
+		public Builder authorization( String authorizationHeaderValue )
+		{
+			this.authorizationHeaderValue = authorizationHeaderValue;
+			return this;
+		}
+
+		public Builder authorization( Observable<String> authorizationHeaderValueCall )
+		{
+			this.authorizationHeaderValueCall = authorizationHeaderValueCall;
+			return this;
+		}
+
+		public Builder archiveDownloads( boolean archiveDownloads )
+		{
+			this.archiveDownloads = archiveDownloads;
+			return this;
+		}
+
+		public Builder ftsDbDownloads( boolean ftsDbDownloads )
+		{
+			this.ftsDbDownloads = ftsDbDownloads;
+			return this;
+		}
+
+		public Builder minutesUntilCollectionRefetch( int minutesUntilCollectionRefetch )
+		{
+			this.minutesUntilCollectionRefetch = minutesUntilCollectionRefetch;
+			return this;
+		}
+
+		public IonConfig build()
+		{
+			if ( authorizationHeaderValue == null && authorizationHeaderValueCall == null )
+			{
+				Log.w( "IonConfig.Builder", "Did you forget to provide an authorization?" );
+			}
+			return new IonConfig( baseUrl, collectionIdentifier, locale, variation, authorizationHeaderValue, authorizationHeaderValueCall,
+					archiveDownloads, ftsDbDownloads, minutesUntilCollectionRefetch );
+		}
+	}
+
 	public IonConfig( String baseUrl, String collectionIdentifier, String locale, String variation, String authorizationHeaderValue, Observable<String> authorizationHeaderValueCall, boolean archiveDownloads, boolean ftsDbDownloads, int minutesUntilCollectionRefetch )
 	{
 		this.baseUrl = baseUrl;
@@ -114,37 +182,6 @@ public class IonConfig
 		this.archiveDownloads = archiveDownloads;
 		this.ftsDbDownloads = ftsDbDownloads;
 		this.minutesUntilCollectionRefetch = minutesUntilCollectionRefetch;
-	}
-
-	/**
-	 * Config constructor taking default values for {@link #minutesUntilCollectionRefetch}.
-	 * Supports passing authentication calls.
-	 *
-	 * @param variation Set a variation - other than default
-	 */
-	public IonConfig( String baseUrl, String collectionIdentifier, String locale, String variation, String authorizationHeaderValue, Observable<String> authorizationHeaderValueCall, boolean archiveDownloads, boolean ftsDbDownloads )
-	{
-		this( baseUrl, collectionIdentifier, locale, variation, authorizationHeaderValue, authorizationHeaderValueCall, archiveDownloads, ftsDbDownloads, DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH );
-	}
-
-	/**
-	 * Config constructor taking default values for {@link #variation} and {@link #minutesUntilCollectionRefetch}.
-	 * Does not support passing authentication calls.
-	 */
-	public IonConfig( String baseUrl, String collectionIdentifier, String locale, String authorizationHeaderValue, boolean archiveDownloads, boolean ftsDbDownloads )
-	{
-		this( baseUrl, collectionIdentifier, locale, DEFAULT_VARIATION, authorizationHeaderValue, null, archiveDownloads, ftsDbDownloads );
-	}
-
-	/**
-	 * Config constructor taking default values for {@link #archiveDownloads}, {@link #ftsDbDownloads}, {@link #variation}, and {@link #minutesUntilCollectionRefetch}.
-	 * Does not support passing authentication calls.
-	 *
-	 * @param context is required to determine the current device locale
-	 */
-	public IonConfig( String baseUrl, String collectionIdentifier, String authorizationHeaderValue, Context context )
-	{
-		this( baseUrl, collectionIdentifier, context.getResources().getConfiguration().locale.toString(), authorizationHeaderValue, false, false );
 	}
 
 	public IonConfig( IonConfig otherConfig )
