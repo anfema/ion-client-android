@@ -93,7 +93,7 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 	public Observable<List<SearchResult>> fullTextSearch( String searchTerm, String locale, String pageLayout )
 	{
 		return Async.start( () -> performFts( searchTerm, locale, pageLayout ) )
-				.compose( RxUtils.runOnComputationThread() );
+				.compose( RxUtils.runOnIoThread() );
 	}
 
 	private List<SearchResult> performFts( String searchTerm, String locale, String pageLayout )

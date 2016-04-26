@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import rx.Observable;
+import rx.schedulers.Schedulers;
 
 public class FileUtils
 {
@@ -132,7 +133,7 @@ public class FileUtils
 					{
 						return Observable.error( e );
 					}
-				} ).compose( RxUtils.runOnIoThread() );
+				} ).subscribeOn( Schedulers.io() );
 	}
 
 	/**

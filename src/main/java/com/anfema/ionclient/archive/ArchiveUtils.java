@@ -59,8 +59,7 @@ class ArchiveUtils
 					{
 						return Observable.error( e );
 					}
-				} )
-				.compose( RxUtils.runOnComputationThread() );
+				} );
 	}
 
 	/**
