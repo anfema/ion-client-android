@@ -66,6 +66,11 @@ public class IonFilesWithCaching implements IonFiles
 		this.config = config;
 	}
 
+	/**
+	 * Convenience method: request a {@link Downloadable} content
+	 *
+	 * @see #request(HttpUrl, String)
+	 */
 	@Override
 	public Observable<File> request( Downloadable content )
 	{
@@ -73,7 +78,9 @@ public class IonFilesWithCaching implements IonFiles
 	}
 
 	/**
-	 * Wraps {@link #updateAuthorizationAndRequest(HttpUrl, File)} so that it runs completely async.
+	 * Convenience method: caching is enabled, custom destination file path is used.
+	 *
+	 * @see #request(HttpUrl, String, boolean, File)
 	 */
 	@Override
 	public Observable<File> request( HttpUrl url, String checksum )
@@ -82,7 +89,13 @@ public class IonFilesWithCaching implements IonFiles
 	}
 
 	/**
-	 * Wraps {@link #updateAuthorizationAndRequest(HttpUrl, File)} so that it runs completely async.
+	 * Retrieve a file through its URL either from file cache or with a network request. The result can be cached for further requests.
+	 *
+	 * @param url           File location is defined through a HTTP URL.
+	 * @param checksum      checksum of the current file on server
+	 * @param ignoreCaching If set to true file is retrieved through a network request and not stored in cache.
+	 * @param inTargetFile  Optionally, a custom file path can be provided. If {@code null}, the default scheme is used.
+	 * @return file is retrieved when subscribed to the the result of this async operation.
 	 */
 	@Override
 	public Observable<File> request( HttpUrl url, String checksum, boolean ignoreCaching, @Nullable File inTargetFile )
@@ -98,7 +111,8 @@ public class IonFilesWithCaching implements IonFiles
 			if ( networkAvailable )
 			{
 				// force new download, do not create cache index entry
-				return requestWithoutCaching( url, targetFile );
+				return authenticatedFileRequest( url, targetFile )
+						.compose( RxUtils.runOnIoThread() );
 			}
 			else
 			{
@@ -119,7 +133,7 @@ public class IonFilesWithCaching implements IonFiles
 			if ( networkAvailable )
 			{
 				// download media file
-				Observable<File> downloadObservable = updateAuthorizationAndRequest( url, targetFile )
+				Observable<File> downloadObservable = authenticatedFileRequest( url, targetFile )
 						.doOnNext( file -> FileCacheIndex.save( url.toString(), file, config, null, context ) )
 						.compose( RxUtils.runOnIoThread() )
 						.doOnNext( file -> runningDownloads.finished( url ) );
@@ -138,12 +152,6 @@ public class IonFilesWithCaching implements IonFiles
 				return Observable.error( new FileNotAvailableException( url ) );
 			}
 		}
-	}
-
-	private Observable<File> requestWithoutCaching( HttpUrl url, File finalTargetFile )
-	{
-		return updateAuthorizationAndRequest( url, finalTargetFile )
-				.compose( RxUtils.runOnIoThread() );
 	}
 
 	private boolean isFileUpToDate( HttpUrl url, String checksum )
@@ -169,27 +177,28 @@ public class IonFilesWithCaching implements IonFiles
 		}
 	}
 
-	private Observable<File> updateAuthorizationAndRequest( HttpUrl url, File targetFile )
-	{
-		// client.setReadTimeout( 30, TimeUnit.SECONDS );
-
-		return config.updateAuthorizationHeaderValue()
-				.flatMap( o -> performRequest( url, targetFile ) );
-	}
-
 	/**
-	 * Perform get request and store response body to local storage.
+	 * Request and store response body to local storage.
 	 *
 	 * @param url        source location of content
 	 * @param targetFile path, where file is going to be stored. if null, default "/files" directory is used
 	 * @return the file with content
 	 */
-	@NonNull
-	private Observable<? extends File> performRequest( HttpUrl url, File targetFile )
+	private Observable<File> authenticatedFileRequest( HttpUrl url, File targetFile )
 	{
-		Request request = new Request.Builder()
-				.url( url )
-				.build();
+		return config.authenticatedRequest( () -> performRequest( url ) )
+				.flatMap( response -> writeToLocalStorage( response, targetFile ) );
+	}
+
+	/**
+	 * Perform get request
+	 */
+	@NonNull
+	private Observable<Response> performRequest( HttpUrl url )
+	{
+		// client.setReadTimeout( 30, TimeUnit.SECONDS );
+
+		Request request = new Request.Builder().url( url ).build();
 
 		try
 		{
@@ -204,7 +213,7 @@ public class IonFilesWithCaching implements IonFiles
 			}
 
 			// use custom target file path
-			return Observable.just( writeToLocalStorage( response, targetFile ) );
+			return Observable.just( response );
 		}
 		catch ( IOException e )
 		{
@@ -215,13 +224,30 @@ public class IonFilesWithCaching implements IonFiles
 	/**
 	 * write from input stream to file
 	 */
-	private File writeToLocalStorage( Response response, File targetFile ) throws IOException
+	private Observable<File> writeToLocalStorage( Response response, File targetFile )
 	{
 		// Be aware: using this method empties the response body byte stream. It is not possible to read the response a second time.
 		InputStream inputStream = response.body().byteStream();
-		File file = FileUtils.writeToFile( inputStream, targetFile );
-		inputStream.close();
-		return file;
+		File file;
+		try
+		{
+			try
+			{
+				file = FileUtils.writeToFile( inputStream, targetFile );
+			}
+			finally
+			{
+				if ( inputStream != null )
+				{
+					inputStream.close();
+				}
+			}
+		}
+		catch ( IOException e )
+		{
+			return Observable.error( e );
+		}
+		return Observable.just( file );
 	}
 
 	/**

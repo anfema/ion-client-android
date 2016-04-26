@@ -32,6 +32,7 @@ import java.io.File;
 import java.util.List;
 
 import okhttp3.Interceptor;
+import retrofit2.Response;
 import retrofit2.adapter.rxjava.HttpException;
 import rx.Observable;
 import rx.functions.Action1;
@@ -293,8 +294,8 @@ public class IonPagesWithCaching implements IonPages
 	{
 		final String lastModified = cacheIndex != null ? cacheIndex.getLastModified() : null;
 
-		Observable<Collection> collectionObservable = config.updateAuthorizationHeaderValue()
-				.flatMap( o -> ionApi.getCollection( config.collectionIdentifier, config.locale, config.getAuthorizationHeaderValue(), config.variation, lastModified ) )
+		Observable<Collection> collectionObservable = config.authenticatedRequest(
+				authorizationHeaderValue -> ionApi.getCollection( config.collectionIdentifier, config.locale, authorizationHeaderValue, config.variation, lastModified ) )
 				.flatMap( serverResponse -> {
 					if ( serverResponse.code() == COLLECTION_NOT_MODIFIED )
 					{
@@ -402,8 +403,9 @@ public class IonPagesWithCaching implements IonPages
 	 */
 	private Observable<Page> fetchPageFromServer( String pageIdentifier, boolean cacheAsBackup )
 	{
-		Observable<Page> pageObservable = config.updateAuthorizationHeaderValue()
-				.flatMap( o -> ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.variation, config.getAuthorizationHeaderValue() ) )
+		Observable<Page> pageObservable = config.authenticatedRequest(
+				authorizationHeaderValue -> ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.variation, authorizationHeaderValue ) )
+				.map( Response::body )
 				.map( PageResponse::getPage )
 				.doOnNext( savePageCacheIndex() )
 				.doOnNext( page -> MemoryCache.savePage( page, config ) )

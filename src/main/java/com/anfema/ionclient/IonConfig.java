@@ -5,11 +5,15 @@ import android.content.Context;
 import com.anfema.ionclient.exceptions.IonConfigInvalidException;
 import com.anfema.ionclient.utils.Log;
 
+import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import okhttp3.Response;
 import rx.Observable;
+import rx.functions.Func0;
+import rx.functions.Func1;
 
 public class IonConfig
 {
@@ -50,7 +54,7 @@ public class IonConfig
 	public static int pagesMemCacheSize = 100;
 
 
-	private static Map<IonConfig, String> authorizations = new HashMap<>();
+	private static final Map<IonConfig, String> authorizations = new HashMap<>();
 
 
 	// *** configuration of client instance ***
@@ -112,16 +116,25 @@ public class IonConfig
 		private boolean            ftsDbDownloads                = false;
 		private int                minutesUntilCollectionRefetch = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH;
 
-		public Builder( String baseUrl, String collectionIdentifier, String locale )
+		public Builder( String baseUrl, String collectionIdentifier )
 		{
 			this.baseUrl = baseUrl;
 			this.collectionIdentifier = collectionIdentifier;
-			this.locale = locale;
 		}
 
-		public Builder( String baseUrl, String collectionIdentifier, Context contextForLocale )
+		public Builder locale( String locale )
 		{
-			this( baseUrl, collectionIdentifier, contextForLocale.getResources().getConfiguration().locale.toString() );
+			this.locale = locale;
+			return this;
+		}
+
+		/**
+		 * Set locale from device configuration
+		 */
+		public Builder locale( Context context )
+		{
+			this.locale = context.getResources().getConfiguration().locale.toString();
+			return this;
 		}
 
 		public Builder variation( String variation )
@@ -162,6 +175,10 @@ public class IonConfig
 
 		public IonConfig build()
 		{
+			if ( locale == null )
+			{
+				throw new IllegalStateException( "url == null" );
+			}
 			if ( authorizationHeaderValue == null && authorizationHeaderValueCall == null )
 			{
 				Log.w( "IonConfig.Builder", "Did you forget to provide an authorization?" );
@@ -260,19 +277,77 @@ public class IonConfig
 		return Arrays.hashCode( hashRelevantFields );
 	}
 
+	/**
+	 * @param requestFunc the in parameter is the authorization header value
+	 * @param <T>         return type of the request
+	 * @return observable of request is forwarded
+	 */
+	public <T> Observable<T> authenticatedRequest( Func0<Observable<T>> requestFunc )
+	{
+		return authenticatedRequest( authorizationHeaderValue -> requestFunc.call());
+	}
+
+	/**
+	 * @param requestFunc the in parameter is the authorization header value
+	 * @param <T>         return type of the request
+	 * @return observable of request is forwarded
+	 */
+	public <T> Observable<T> authenticatedRequest( Func1<String, Observable<T>> requestFunc )
+	{
+		return authenticatedRequest( requestFunc, true );
+	}
+
+	private <T> Observable<T> authenticatedRequest( Func1<String, Observable<T>> requestFunc, boolean tryAgain )
+	{
+		return updateAuthorizationHeaderValue( !tryAgain )
+				.flatMap( requestFunc::call )
+				.flatMap( response -> {
+					if ( tryAgain )
+					{
+						int responseCode = -1;
+						if ( response instanceof Response )
+						{
+							responseCode = ( ( Response ) response ).code();
+						}
+						else if ( response instanceof retrofit2.Response )
+						{
+							responseCode = ( ( retrofit2.Response ) response ).code();
+						}
+						else
+						{
+							Log.w( "IonConfig", "authenticatedRequest: could not determine if request was unauthorized." );
+						}
+
+						if ( responseCode == HttpURLConnection.HTTP_UNAUTHORIZED )
+						{
+							return authenticatedRequest( requestFunc, false );
+						}
+					}
+					return Observable.just( response );
+				} );
+	}
+
 	public Observable<String> updateAuthorizationHeaderValue()
 	{
-		Log.w( "IonConfig", "UpdateAuthorization: authorizationHeaderValue != null: " + ( authorizationHeaderValue != null ) + ", call != null: " + ( authorizationHeaderValueCall != null ) );
+		return updateAuthorizationHeaderValue( false );
+	}
 
-		if ( authorizationHeaderValue != null || authorizationHeaderValueCall == null )
+	public Observable<String> updateAuthorizationHeaderValue( boolean forceUpdate )
+	{
+		Log.d( "IonConfig", "UpdateAuthorization: authorizationHeaderValue != null: " + ( authorizationHeaderValue != null ) + ", call != null: " + ( authorizationHeaderValueCall != null ) );
+
+		if ( authorizationHeaderValueCall == null || ( authorizationHeaderValue != null && !forceUpdate ) )
 		{
 			return Observable.just( authorizationHeaderValue );
 		}
 
-		String authorizationFromCache = authorizations.get( this );
-		if ( authorizationFromCache != null )
+		if ( !forceUpdate )
 		{
-			return Observable.just( authorizationFromCache );
+			String authorizationFromCache = authorizations.get( this );
+			if ( authorizationFromCache != null )
+			{
+				return Observable.just( authorizationFromCache );
+			}
 		}
 
 		return authorizationHeaderValueCall
@@ -287,10 +362,8 @@ public class IonConfig
 	{
 		if ( authorizationHeaderValue == null && authorizationHeaderValueCall != null )
 		{
-			Log.i( "IonConfig", "lookup in authorizations" );
 			authorizationHeaderValue = authorizations.get( this );
 		}
-		Log.i( "IonConfig", "getAuthorizationHeaderValue: " + authorizationHeaderValue );
 		return authorizationHeaderValue;
 	}
 }
