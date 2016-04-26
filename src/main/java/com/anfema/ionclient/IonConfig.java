@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.anfema.ionclient.exceptions.IonConfigInvalidException;
 import com.anfema.ionclient.utils.Log;
+import com.anfema.ionclient.utils.PendingDownloadHandler;
 
 import java.net.HttpURLConnection;
 import java.util.Arrays;
@@ -54,7 +55,8 @@ public class IonConfig
 	public static int pagesMemCacheSize = 100;
 
 
-	private static final Map<IonConfig, String> authorizations = new HashMap<>();
+	private static final Map<IonConfig, String>                    authorizations = new HashMap<>();
+	private static final PendingDownloadHandler<IonConfig, String> pendingLogins  = new PendingDownloadHandler<>();
 
 
 	// *** configuration of client instance ***
@@ -350,12 +352,14 @@ public class IonConfig
 			}
 		}
 
-		return authorizationHeaderValueCall
+		Observable<String> updatedAuthorization = authorizationHeaderValueCall
 				.map( authorizationHeaderValue -> {
 					authorizations.put( IonConfig.this, authorizationHeaderValue );
 					this.authorizationHeaderValue = authorizationHeaderValue;
 					return authorizationHeaderValue;
-				} );
+				} )
+				.doOnNext( authorizationHeaderValue -> pendingLogins.finished( this ) );
+		return pendingLogins.starting( this, updatedAuthorization );
 	}
 
 	public String getAuthorizationHeaderValue()
