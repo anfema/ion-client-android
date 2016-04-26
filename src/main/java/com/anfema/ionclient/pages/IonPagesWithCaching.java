@@ -258,8 +258,7 @@ public class IonPagesWithCaching implements IonPages
 			return Observable.error( new CollectionNotAvailableException() );
 		}
 
-		return FileUtils
-				.readTextFromFile( filePath )
+		return FileUtils.readTextFromFile( filePath )
 				.map( collectionsString -> GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class ) )
 				.map( CollectionResponse::getCollection )
 				// save to memory cache
@@ -374,8 +373,7 @@ public class IonPagesWithCaching implements IonPages
 			return Observable.error( new PageNotAvailableException() );
 		}
 
-		return FileUtils
-				.readTextFromFile( filePath )
+		return FileUtils.readTextFromFile( filePath )
 				.map( pagesString -> GsonHolder.getInstance().fromJson( pagesString, PageResponse.class ) )
 				.map( PageResponse::getPage )
 				// save to memory cache

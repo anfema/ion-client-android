@@ -284,7 +284,7 @@ public class IonConfig
 	 */
 	public <T> Observable<T> authenticatedRequest( Func0<Observable<T>> requestFunc )
 	{
-		return authenticatedRequest( authorizationHeaderValue -> requestFunc.call());
+		return authenticatedRequest( authorizationHeaderValue -> requestFunc.call() );
 	}
 
 	/**
