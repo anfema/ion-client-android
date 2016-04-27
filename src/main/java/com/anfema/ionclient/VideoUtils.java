@@ -38,7 +38,7 @@ public class VideoUtils
 	/**
 	 * Set authorization header for video URI in {@link VideoView}.
 	 * <p>
-	 * Call this method AFTER {@link VideoView#setVideoURI(Uri)} because otherwise "mHeaders" field is set to null again!
+	 * Call this method INSTEAD OF {@link VideoView#setVideoURI(Uri)}. DO NOT CALL {@link VideoView#setVideoURI(Uri)} afterwards, in which case "mHeaders" field would be set to null again!
 	 *
 	 * @see #setVideoUri(VideoView, Uri, Map)
 	 */
