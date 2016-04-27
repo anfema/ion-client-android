@@ -16,6 +16,7 @@ import java.io.File;
 
 import okhttp3.HttpUrl;
 import rx.Observable;
+import rx.schedulers.Schedulers;
 
 class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 {
@@ -83,7 +84,7 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 		Observable<Collection> collectionObs;
 		if ( inCollection == null )
 		{
-			collectionObs = ionPages.fetchCollection();
+			collectionObs = ionPages.fetchCollection().observeOn( Schedulers.io() );
 		}
 		else
 		{

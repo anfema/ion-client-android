@@ -22,6 +22,7 @@ import java.util.List;
 
 import okhttp3.HttpUrl;
 import rx.Observable;
+import rx.schedulers.Schedulers;
 import rx.util.async.Async;
 
 /**
@@ -66,6 +67,7 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 		File dbTargetPath = FtsDbUtils.getPath( config.collectionIdentifier, context );
 		Log.i( "FTS Database", "about to download FTS database for collection " + config.collectionIdentifier );
 		return ionPages.fetchCollection()
+				.observeOn( Schedulers.io() )
 				.map( collection -> collection.fts_db )
 				.flatMap( searchDbUrl -> ionFiles.request( HttpUrl.parse( searchDbUrl ), null, true, dbTargetPath ) )
 				.doOnNext( file -> activeFtsDbDownload = false )

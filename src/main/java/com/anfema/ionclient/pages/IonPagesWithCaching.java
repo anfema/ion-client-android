@@ -37,6 +37,7 @@ import retrofit2.adapter.rxjava.HttpException;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 /**
  * A wrapper of "collections" and "pages" call of ION API.
@@ -175,6 +176,7 @@ public class IonPagesWithCaching implements IonPages
 		}
 
 		return fetchCollection()
+				.observeOn( Schedulers.io() )
 				// get page's last_changed date from collection
 				.flatMap( collection -> collection.getPageLastChangedAsync( pageIdentifier ) )
 				// compare last_changed date of cached page with that of collection
@@ -217,6 +219,7 @@ public class IonPagesWithCaching implements IonPages
 	public Observable<Page> fetchPages( Func1<PagePreview, Boolean> pagesFilter )
 	{
 		return fetchCollection()
+				.observeOn( Schedulers.io() )
 				.map( collection -> collection.pages )
 				.concatMap( Observable::from )
 				.filter( pagesFilter )

@@ -37,7 +37,7 @@ public class RxUtils
 	}
 
 	/**
-	 * Use in compose operator to apply to every observable in the chain
+	 * Use in compose operator to apply to an observable stream
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> Transformer<T, T> runOnIoThread()
@@ -46,7 +46,7 @@ public class RxUtils
 	}
 
 	/**
-	 * Use in compose operator to apply to every observable in the chain
+	 * Use in compose operator to apply to an observable stream
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> Transformer<T, T> runOnComputationThread()
