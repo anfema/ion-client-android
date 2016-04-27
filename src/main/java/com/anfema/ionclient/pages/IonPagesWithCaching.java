@@ -35,6 +35,7 @@ import okhttp3.Interceptor;
 import retrofit2.Response;
 import retrofit2.adapter.rxjava.HttpException;
 import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
@@ -198,7 +199,8 @@ public class IonPagesWithCaching implements IonPages
 						// no network available, but an old cached version exists
 						return fetchPageFromCache( pageIdentifier, false );
 					}
-				} );
+				} )
+				.observeOn( AndroidSchedulers.mainThread() );
 	}
 
 	/**
@@ -224,7 +226,8 @@ public class IonPagesWithCaching implements IonPages
 				.concatMap( Observable::from )
 				.filter( pagesFilter )
 				.map( page -> page.identifier )
-				.concatMap( this::fetchPage );
+				.concatMap( this::fetchPage )
+				.observeOn( AndroidSchedulers.mainThread() );
 	}
 
 	/**
