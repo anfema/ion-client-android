@@ -336,7 +336,7 @@ public class IonConfig
 
 	public Observable<String> updateAuthorizationHeaderValue( boolean forceUpdate )
 	{
-		Log.d( "IonConfig", "UpdateAuthorization: authorizationHeaderValue != null: " + ( authorizationHeaderValue != null ) + ", call != null: " + ( authorizationHeaderValueCall != null ) );
+		// Log.d( "IonConfig", "UpdateAuthorization: authorizationHeaderValue != null: " + ( authorizationHeaderValue != null ) + ", call != null: " + ( authorizationHeaderValueCall != null ) );
 
 		if ( authorizationHeaderValueCall == null || ( authorizationHeaderValue != null && !forceUpdate ) )
 		{
