@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import com.anfema.ionclient.pages.models.contents.Connection;
 import com.anfema.ionclient.serialization.GsonHolder;
+import com.anfema.ionclient.utils.TextFormatting;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -11,6 +12,7 @@ import com.google.gson.reflect.TypeToken;
 import org.joda.time.DateTime;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -51,38 +53,137 @@ public class PagePreview implements Comparable<PagePreview>
 	 */
 	public Map<String, JsonElement> meta;
 
-	public String getMetaString( String metaKey ) throws JsonSyntaxException
+	/**
+	 * Convenience method to obtain the formatted text of a string from meta data.
+	 * <p>
+	 * This method guesses the mime-type and formats the text respectively.
+	 *
+	 * @param metaKey JSON property name within "meta" object (e.g. "title" or "thumbnail")
+	 * @return formatted text
+	 * @throws NullPointerException if data does not exist
+	 * @throws JsonSyntaxException  if data is not valid
+	 */
+	public CharSequence getMetaTextOrThrow( String metaKey ) throws JsonSyntaxException, NullPointerException
+	{
+		return TextFormatting.format( getMetaStringOrThrow( metaKey ) );
+	}
+
+	/**
+	 * Convenience method to obtain the formatted text of a string from meta data.
+	 * <p>
+	 * This method guesses the mime-type and formats the text respectively.
+	 *
+	 * @param metaKey JSON property name within "meta" object (e.g. "title" or "thumbnail")
+	 * @return formatted text if exists, {@code null} otherwise
+	 */
+	public CharSequence getMetaTextOrNull( String metaKey )
+	{
+		String text = getMetaStringOrNull( metaKey );
+		return text != null ? TextFormatting.format( text ) : null;
+	}
+
+	/**
+	 * Convenience method to obtain the formatted text of a string from meta data.
+	 * <p>
+	 * This method guesses the mime-type and formats the text respectively.
+	 *
+	 * @param metaKey JSON property name within "meta" object (e.g. "title" or "thumbnail")
+	 * @return formatted text if exists, empty string otherwise
+	 */
+	@NonNull
+	public CharSequence getMetaTextOrEmpty( String metaKey )
+	{
+		CharSequence text = getMetaTextOrNull( metaKey );
+		return text != null ? text : "";
+	}
+
+	/**
+	 * Convenience method to obtain the text of a string from meta data.
+	 * <p>
+	 * Formatting tags are removed if mime-type (most probably) is not "text/plain".
+	 *
+	 * @param metaKey JSON property name within "meta" object (e.g. "title" or "thumbnail")
+	 * @return text without formatting
+	 * @throws NullPointerException if data does not exist
+	 * @throws JsonSyntaxException  if data is not valid
+	 */
+	public String getMetaPlainTextOrThrow( String metaKey ) throws JsonSyntaxException, NullPointerException
 	{
 		return GsonHolder.getInstance().fromJson( meta.get( metaKey ), String.class );
 	}
 
-	public String getMetaStringOrNull( String metaKey )
+	/**
+	 * Convenience method to obtain the text of a string from meta data.
+	 * <p>
+	 * Formatting tags are removed if mime-type (most probably) is not "text/plain".
+	 *
+	 * @param metaKey JSON property name within "meta" object (e.g. "title" or "thumbnail")
+	 * @return text without formatting if exists, {@code null} otherwise
+	 */
+	public String getMetaPlainTextOrNull( String metaKey )
 	{
+		CharSequence text = getMetaTextOrNull( metaKey );
+		return text != null ? text.toString() : null;
+	}
+
+	/**
+	 * Convenience method to obtain the text of a string from meta data.
+	 * <p>
+	 * Formatting tags are removed if mime-type (most probably) is not "text/plain".
+	 *
+	 * @param metaKey JSON property name within "meta" object (e.g. "title" or "thumbnail")
+	 * @return text without formatting if exists, empty string otherwise
+	 */
+	@NonNull
+	public String getMetaPlainTextOrEmpty( String metaKey )
+	{
+		return getMetaTextOrEmpty( metaKey ).toString();
+	}
+
+	/**
+	 * Parse string from meta properties
+	 *
+	 * @param metaKey JSON property name within "meta" object (e.g. "title" or "thumbnail")
+	 * @return value for JSON property
+	 * @throws NullPointerException if data does not exist
+	 * @throws JsonSyntaxException  if data is not valid
+	 */
+	private String getMetaStringOrThrow( String metaKey ) throws JsonSyntaxException, NullPointerException
+	{
+		return GsonHolder.getInstance().fromJson( meta.get( metaKey ), String.class );
+	}
+
+	/**
+	 * Parse string from meta properties
+	 *
+	 * @param metaKey JSON property name within "meta" object (e.g. "title" or "thumbnail")
+	 * @return value for JSON property if exists, {@code null} otherwise
+	 */
+	private String getMetaStringOrNull( String metaKey )
+	{
+		if ( meta == null || !meta.containsKey( metaKey ) )
+		{
+			return null;
+		}
 		try
 		{
-			return getMetaString( metaKey );
+			return getMetaStringOrThrow( metaKey );
 		}
-		catch ( Exception e )
+		catch ( JsonSyntaxException e )
 		{
 			return null;
 		}
 	}
 
-	@NonNull
-	public String getMetaStringOrEmpty( String metaKey )
-	{
-		try
-		{
-			String text = getMetaString( metaKey );
-			return text != null ? text : "";
-		}
-		catch ( Exception e )
-		{
-			return "";
-		}
-	}
-
-	public List<String> getMetaList( String metaKey ) throws JsonSyntaxException
+	/**
+	 * Parse list of strings from meta properties
+	 *
+	 * @param metaKey JSON property name within "meta" object
+	 * @return value for JSON property
+	 * @throws NullPointerException if data does not exist
+	 * @throws JsonSyntaxException  if data is not valid
+	 */
+	public List<String> getMetaListOrThrow( String metaKey ) throws JsonSyntaxException, NullPointerException
 	{
 		Type listType = new TypeToken<List<String>>()
 		{
@@ -90,11 +191,50 @@ public class PagePreview implements Comparable<PagePreview>
 		return GsonHolder.getInstance().fromJson( meta.get( metaKey ), listType );
 	}
 
-	public Connection getMetaConnection( String metaKey ) throws JsonSyntaxException
+	/**
+	 * Parse list of strings from meta properties
+	 *
+	 * @param metaKey JSON property name within "meta" object
+	 * @return value for JSON property if exists, {@code null} otherwise
+	 */
+	public List<String> getMetaListOrEmpty( String metaKey )
 	{
-		return new Connection( getMetaString( metaKey ) );
+		if ( meta == null || !meta.containsKey( metaKey ) )
+		{
+			return new ArrayList<>();
+		}
+		try
+		{
+			Type listType = new TypeToken<List<String>>()
+			{
+			}.getType();
+			return GsonHolder.getInstance().fromJson( meta.get( metaKey ), listType );
+		}
+		catch ( JsonSyntaxException e )
+		{
+			return new ArrayList<>();
+		}
 	}
 
+	/**
+	 * Parse connection from string
+	 *
+	 * @param metaKey JSON property name within "meta" object
+	 * @return link to another collection, page, content
+	 * @throws NullPointerException if data does not exist
+	 * @throws JsonSyntaxException  if data is not valid
+	 */
+	public Connection getMetaConnectionOrThrow( String metaKey ) throws JsonSyntaxException, NullPointerException
+	{
+		return new Connection( getMetaStringOrThrow( metaKey ) );
+	}
+
+	/**
+	 * Parse connection from string
+	 *
+	 * @param metaKey JSON property name within "meta" object
+	 * @return @return link to another collection, page, content if data exists, {@code null} otherwise
+	 */
 	public Connection getMetaConnectionOrNull( String metaKey )
 	{
 		return new Connection( getMetaStringOrNull( metaKey ) );
@@ -103,11 +243,11 @@ public class PagePreview implements Comparable<PagePreview>
 	/**
 	 * Convenience method to compare values from meta with other ones.
 	 *
-	 * @param metaKey      The key of meta value (e.g. "title" or "thumbnail")
+	 * @param metaKey      JSON property name within "meta" object (e.g. "title" or "thumbnail")
 	 * @param compareValue A value to compare the concerning meta value with.
 	 * @return true, if meta value exists and equals {@param compareValue}
 	 */
-	public boolean metaEquals( String metaKey, String compareValue )
+	public boolean metaTextEquals( String metaKey, String compareValue ) throws JsonSyntaxException
 	{
 		if ( meta == null || !meta.containsKey( metaKey ) )
 		{
@@ -116,7 +256,12 @@ public class PagePreview implements Comparable<PagePreview>
 
 		try
 		{
-			return getMetaString( metaKey ).equals( compareValue );
+			String text = getMetaPlainTextOrThrow( metaKey );
+			if ( text == null )
+			{
+				return compareValue == null;
+			}
+			return text.equals( compareValue );
 		}
 		catch ( JsonSyntaxException e )
 		{

@@ -179,7 +179,7 @@ public class IonConfig
 		{
 			if ( locale == null )
 			{
-				throw new IllegalStateException( "url == null" );
+				throw new IllegalStateException( "locale == null" );
 			}
 			if ( authorizationHeaderValue == null && authorizationHeaderValueCall == null )
 			{

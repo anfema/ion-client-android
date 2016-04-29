@@ -83,30 +83,60 @@ public class Page
 	}
 
 	/**
-	 * Convenience method to obtain the text of a {@link com.anfema.ionclient.pages.models.contents.TextContent}.
+	 * Convenience method to obtain the formatted text of a {@link com.anfema.ionclient.pages.models.contents.TextContent}.
+	 * <p>
+	 * This method considers the mime-type and formats the text respectively.
 	 *
-	 * @return text if text content found, {@code null} otherwise
+	 * @return formatted text if exists, {@code null} otherwise
 	 */
-	public String getTextOrNull( String outlet )
+	public CharSequence getTextOrNull( String outlet )
 	{
 		Content content = getContent( outlet );
 		if ( content != null && content instanceof TextContent )
 		{
-			return ( ( TextContent ) content ).text;
+			return ( ( TextContent ) content ).getTextFormatted();
 		}
 		return null;
 	}
 
 	/**
-	 * Convenience method to obtain the text of a {@link com.anfema.ionclient.pages.models.contents.TextContent}.
+	 * Convenience method to obtain the formatted text of a {@link com.anfema.ionclient.pages.models.contents.TextContent}.
+	 * <p>
+	 * This method considers the mime-type and formats the text respectively.
 	 *
-	 * @return text if text content found, empty string otherwise
+	 * @return formatted text if exists, empty string otherwise
 	 */
 	@NonNull
-	public String getTextOrEmpty( String outlet )
+	public CharSequence getTextOrEmpty( String outlet )
 	{
-		String text = getTextOrNull( outlet );
+		CharSequence text = getTextOrNull( outlet );
 		return text != null ? text : "";
+	}
+
+	/**
+	 * Convenience method to obtain the text of a {@link com.anfema.ionclient.pages.models.contents.TextContent}.
+	 * <p>
+	 * If mime-type is not "text/plain" formatting tags are removed.
+	 *
+	 * @return text without formatting if exists, {@code null} otherwise
+	 */
+	public String getPlainTextOrNull( String outlet )
+	{
+		CharSequence text = getTextOrNull( outlet );
+		return text != null ? text.toString() : null;
+	}
+
+	/**
+	 * Convenience method to obtain the text of a {@link com.anfema.ionclient.pages.models.contents.TextContent}.
+	 * <p>
+	 * If mime-type is not "text/plain" formatting tags are removed.
+	 *
+	 * @return text without formatting if exists, empty string otherwise
+	 */
+	@NonNull
+	public String getPlainTextOrEmpty( String outlet )
+	{
+		return getTextOrEmpty( outlet ).toString();
 	}
 
 	@Override
