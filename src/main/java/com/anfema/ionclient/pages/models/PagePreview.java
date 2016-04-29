@@ -40,7 +40,7 @@ public class PagePreview implements Comparable<PagePreview>
 	 * Since it is very application-specific the provided data is stored as key-value-pairs, simply consisting of strings.
 	 */
 	@NonNull
-	public Meta meta;
+	public Meta meta = new Meta();
 
 	/**
 	 * Sort by positions ascending

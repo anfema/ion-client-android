@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.anfema.ionclient.exceptions.IonConfigInvalidException;
 import com.anfema.ionclient.utils.Log;
+import com.anfema.ionclient.utils.MemoryUtils;
 import com.anfema.ionclient.utils.PendingDownloadHandler;
 
 import java.net.HttpURLConnection;
@@ -51,8 +52,26 @@ public class IonConfig
 
 	/**
 	 * How many pages are kept in LRU memory cache? (for all client instances accumulated), unit: no. of page entries
+	 * <p>
+	 * Value must be overwritten before first ION request is made, otherwise it won't have any effect.
+	 * It is recommended to set it as early as possible, e.g. in onCreate() of application (or first activity).
+	 * <p>
+	 * Must be set to a positive value.
 	 */
 	public static int pagesMemCacheSize = 100;
+
+	/**
+	 * Maximum size of memory cache, which all picasso instances share. The Unit is bytes.
+	 * <p>
+	 * Value must be overwritten before first ION request is made, otherwise it won't have any effect.
+	 * It is recommended to set it as early as possible, e.g. in onCreate() of application (or first activity).
+	 * <p>
+	 * Be careful not to exceed the available RAM of the application.
+	 * You might want to calculate the memory cache size using {@link MemoryUtils#calculateAvailableMemCache(Context)}.
+	 * <p>
+	 * If not set to a positive value, default cache size will be used.
+	 */
+	public static int picassoMemCacheSize = -1;
 
 
 	private static final Map<IonConfig, String>                    authorizations = new HashMap<>();

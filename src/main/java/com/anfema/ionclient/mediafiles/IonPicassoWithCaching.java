@@ -177,7 +177,16 @@ public class IonPicassoWithCaching implements IonPicasso
 	{
 		if ( picassoMemCache == null )
 		{
-			picassoMemCache = new LruCache( context );
+			if ( IonConfig.picassoMemCacheSize > 0 )
+			{
+				// use custom value
+				picassoMemCache = new LruCache( IonConfig.picassoMemCacheSize );
+			}
+			else
+			{
+				// let picasso calculate cache size
+				picassoMemCache = new LruCache( context );
+			}
 		}
 		return picassoMemCache;
 	}
