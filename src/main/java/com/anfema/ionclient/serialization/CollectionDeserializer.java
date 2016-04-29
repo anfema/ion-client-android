@@ -1,6 +1,7 @@
 package com.anfema.ionclient.serialization;
 
 import com.anfema.ionclient.pages.models.Collection;
+import com.anfema.ionclient.pages.models.Meta;
 import com.anfema.ionclient.utils.ListUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -21,6 +22,8 @@ public class CollectionDeserializer implements JsonDeserializer<Collection>
 	private static Gson gson = new GsonBuilder()
 			// parse datetime strings (trying two patterns)
 			.registerTypeAdapter( DateTime.class, new DateTimeSerializer() )
+			// parse meta data of page preview
+			.registerTypeAdapter( Meta.class, new MetaDeserializer() )
 			.create();
 
 	@Override

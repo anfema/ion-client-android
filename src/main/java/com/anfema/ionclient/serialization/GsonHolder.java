@@ -3,6 +3,7 @@ package com.anfema.ionclient.serialization;
 import android.support.annotation.NonNull;
 
 import com.anfema.ionclient.pages.models.Collection;
+import com.anfema.ionclient.pages.models.Meta;
 import com.anfema.ionclient.pages.models.Page;
 import com.anfema.ionclient.pages.models.contents.ConnectionContent;
 import com.anfema.ionclient.pages.models.contents.Content;
@@ -29,6 +30,8 @@ public class GsonHolder
 				.registerTypeAdapter( ConnectionContent.class, new ConnectionContentSerializer() )
 				// parse datetime strings (trying two patterns)
 				.registerTypeAdapter( DateTime.class, new DateTimeSerializer() )
+				// parse meta data of page preview
+				.registerTypeAdapter( Meta.class, new MetaDeserializer() )
 				.registerTypeAdapter( Collection.class, new CollectionDeserializer() )
 				.registerTypeAdapter( Page.class, new PageDeserializer() )
 				.create();
