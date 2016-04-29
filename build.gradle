@@ -1,19 +1,9 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:2.0.0'
-    }
-}
-
 apply plugin: 'com.android.library'
 apply plugin: 'me.tatarka.retrolambda' // apply last because it might interfere with android-apt commands
 apply plugin: 'de.mobilej.unmock'
 
 buildscript {
     repositories {
-        mavenCentral()
         jcenter()
     }
 
@@ -25,10 +15,6 @@ buildscript {
 
     // Exclude the version that the android plugin depends on.
     configurations.classpath.exclude group: 'com.android.tools.external.lombok'
-}
-
-repositories {
-    mavenCentral()
 }
 
 android {
