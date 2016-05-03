@@ -67,9 +67,10 @@ dependencies {
     compile 'io.reactivex:rxjava:1.0.14' // RxAndroid releases are few and far between, so depend on latest version for bug fixes and new features.
     compile 'io.reactivex:rxjava-async-util:0.21.0' // support of Async.start()
     compile 'com.artemzin.rxjava:proguard-rules:1.0.14.2' // ProGuard rules for RxJava
-    compile 'com.squareup.picasso:picasso:2.5.2' // ion client provides a picasso wrapper adding an authorization header to requests
-    compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.0.2'
-
+    // compile 'com.squareup.picasso:picasso:2.6.0-20160426.033545-9' // ion client provides a picasso wrapper adding an authorization header to requests
+    compile('com.jakewharton.picasso:picasso2-okhttp3-downloader:1.0.2') {
+        exclude group: "com.squareup.picasso", module: "picasso"
+    }
     compile 'org.apache.commons:commons-compress:1.2'
     compile 'joda-time:joda-time:2.9' // better DateTime handling
     compile 'com.google.guava:guava:18.0'
