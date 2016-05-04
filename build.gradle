@@ -58,7 +58,7 @@ android {
 dependencies {
     testCompile 'junit:junit:4.12'
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:23.1.0' // required for FileProvider and Annotations
+    compile 'com.android.support:appcompat-v7:23.3.0' // required for FileProvider and Annotations
 
     compile 'com.squareup.retrofit2:retrofit:2.0.0' // http requests
     compile 'com.squareup.retrofit2:converter-gson:2.0.0' // json parsing
