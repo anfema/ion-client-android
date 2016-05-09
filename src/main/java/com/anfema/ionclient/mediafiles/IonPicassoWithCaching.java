@@ -130,7 +130,7 @@ public class IonPicassoWithCaching implements IonPicasso
 		Log.i( "ION Picasso", "START: requestUri: " + requestUri );
 		// Log.d( "ION Picasso", "picasso instance: " + picasso + ", ion picasso instance: " + this );
 		fetchImageFile( requestUri )
-				.subscribe( fileUri -> showImage( fileUri, target, requestTransformation, callback ), throwable -> Log.ex( "ION Picasso", throwable ) );
+				.subscribe( fileUri -> showImage( fileUri, target, requestTransformation, callback ), throwable -> imageDownloadFailed( throwable, target, requestTransformation, callback ) );
 	}
 
 	private Observable<Uri> fetchImageFile( Uri uri )
@@ -158,6 +158,16 @@ public class IonPicassoWithCaching implements IonPicasso
 		}
 
 		requestCreator.into( target, callback );
+	}
+
+	private void imageDownloadFailed( Throwable throwable, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	{
+		Log.ex( "ION Picasso", throwable );
+		showImage( null, target, requestTransformation, null );
+		if ( callback != null )
+		{
+			callback.onError();
+		}
 	}
 
 	@Override
