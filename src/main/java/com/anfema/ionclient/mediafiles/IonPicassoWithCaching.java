@@ -112,7 +112,12 @@ public class IonPicassoWithCaching implements IonPicasso
 		if ( path == null || path.trim().length() == 0 )
 		{
 			// let picasso handle edge cases
-			picasso.load( path );
+			RequestCreator requestCreator = picasso.load( path );
+			if ( requestTransformation != null )
+			{
+				requestCreator = requestTransformation.call( requestCreator );
+			}
+			requestCreator.into( target, callback );
 			return;
 		}
 		loadImage( Uri.parse( path ), target, requestTransformation, callback );
