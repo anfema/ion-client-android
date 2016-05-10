@@ -4,10 +4,13 @@ import android.support.annotation.NonNull;
 
 import com.anfema.ionclient.pages.models.contents.Connection;
 import com.anfema.ionclient.serialization.GsonHolder;
+import com.anfema.ionclient.utils.DateTimeUtils;
 import com.anfema.ionclient.utils.TextFormatting;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+
+import org.joda.time.DateTime;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -25,6 +28,31 @@ public class Meta
 	 * Unparsed JSON data of meta
 	 */
 	public Map<String, JsonElement> json;
+
+	/**
+	 * Checks whether a non-null value exists for the key
+	 */
+	public boolean contains( String key )
+	{
+		return getRaw( key ) != null;
+	}
+
+	/**
+	 * Checks whether a value exists for the key, returns true even if the value is null
+	 */
+	public boolean containsAllowNullValue( String key )
+	{
+		return json != null && json.containsKey( key );
+	}
+
+	public JsonElement getRaw( String key )
+	{
+		if ( json == null )
+		{
+			return null;
+		}
+		return json.get( key );
+	}
 
 	/**
 	 * Convenience method to obtain the formatted text of a string from json data.
@@ -187,6 +215,30 @@ public class Meta
 		{
 			return new ArrayList<>();
 		}
+	}
+
+	/**
+	 * Parse connection from string
+	 *
+	 * @param metaKey JSON property name within "json" object
+	 * @return link to another collection, page, content
+	 * @throws NullPointerException if data does not exist
+	 * @throws JsonSyntaxException  if data is not valid
+	 */
+	public DateTime getDateTimeOrThrow( String metaKey ) throws JsonSyntaxException, NullPointerException, IllegalArgumentException
+	{
+		return DateTimeUtils.parseOrThrow( getStringOrThrow( metaKey ) );
+	}
+
+	/**
+	 * Parse connection from string
+	 *
+	 * @param metaKey JSON property name within "json" object
+	 * @return @return link to another collection, page, content if data exists, {@code null} otherwise
+	 */
+	public DateTime getDateTimeOrNull( String metaKey )
+	{
+		return DateTimeUtils.parseOrNull( getStringOrNull( metaKey ) );
 	}
 
 	/**

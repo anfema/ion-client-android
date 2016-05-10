@@ -15,7 +15,7 @@ public class DateTimeUtilsTest extends TestCase
 		System.out.println( "original toString(): " + original );
 		String intermediate = DateTimeUtils.toString( original );
 		System.out.println( "intermediate String: " + intermediate );
-		DateTime afterRoundtrip = DateTimeUtils.parseDateTime( intermediate );
+		DateTime afterRoundtrip = DateTimeUtils.parseOrThrow( intermediate );
 		System.out.println( "afterRoundtrip toString(): " + afterRoundtrip );
 		assertTrue( original.isEqual( afterRoundtrip ) );
 		assertEquals( original, afterRoundtrip );
@@ -25,7 +25,7 @@ public class DateTimeUtilsTest extends TestCase
 	{
 		String original = "2015-11-12T20:52:51Z";
 		System.out.println( "original String: " + original );
-		DateTime intermediate = DateTimeUtils.parseDateTime( original );
+		DateTime intermediate = DateTimeUtils.parseOrThrow( original );
 		System.out.println( "intermediate toString(): " + intermediate );
 		String afterRoundtrip = DateTimeUtils.toString( intermediate );
 		System.out.println( "afterRoundtrip String: " + afterRoundtrip );

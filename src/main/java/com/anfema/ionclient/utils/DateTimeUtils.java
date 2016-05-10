@@ -35,8 +35,13 @@ public class DateTimeUtils extends org.joda.time.DateTimeUtils
 
 	/**
 	 * Parse datetime strings by trying the two patterns Ion uses. As a third option try the RFC 1123 standard format.
+	 *
+	 * @param dateString string representation of a date
+	 * @return parsed {@link DateTime} object
+	 * @throws IllegalArgumentException if {@param dateString} is does not fit with the default datetime patterns of this class
+	 * @throws NullPointerException     if {@param dateString} is null
 	 */
-	public static DateTime parseDateTime( String dateString ) throws IllegalArgumentException
+	public static DateTime parseOrThrow( String dateString ) throws IllegalArgumentException, NullPointerException
 	{
 		try
 		{
@@ -56,17 +61,84 @@ public class DateTimeUtils extends org.joda.time.DateTimeUtils
 	}
 
 	/**
+	 * Parse datetime strings by trying the two patterns Ion uses. As a third option try the RFC 1123 standard format.
+	 *
+	 * @param dateString string representation of a date
+	 * @return parsed {@link DateTime} object or null if parsing was not successful
+	 */
+	public static DateTime parseOrNull( String dateString )
+	{
+		try
+		{
+			return parseOrThrow( dateString );
+		}
+		catch ( IllegalArgumentException | NullPointerException e )
+		{
+			return null;
+		}
+	}
+
+	/**
 	 * Parse datetime strings by applying {@param inputPattern} and assuming timezone UTC.
 	 *
+	 * @param dateString   string representation of a date
 	 * @param inputPattern e.g. "dd.MM.yy"
+	 * @return parsed {@link DateTime} object
+	 * @throws IllegalArgumentException if {@param dateString} is does not fit with the default datetime patterns of this class
+	 * @throws NullPointerException     if {@param dateString} is null
 	 */
-	public static DateTime parseDateTime( String dateString, String inputPattern ) throws IllegalArgumentException
+	public static DateTime parseOrThrow( String dateString, String inputPattern ) throws IllegalArgumentException, NullPointerException
 	{
 		return DateTimeFormat.forPattern( inputPattern ).withZoneUTC().withLocale( Locale.US ).parseDateTime( dateString );
 	}
 
 	/**
-	 * Return string respresentatin according to {@link DateTimeUtils#DATETIME_PATTERN}
+	 * Parse datetime strings by applying {@param inputPattern} and assuming timezone UTC.
+	 *
+	 * @param dateString   string representation of a date
+	 * @param inputPattern e.g. "dd.MM.yy"
+	 * @return parsed {@link DateTime} object or null if parsing was not successful
+	 */
+	public static DateTime parseOrNull( String dateString, String inputPattern )
+	{
+		try
+		{
+			return parseOrThrow( dateString, inputPattern );
+		}
+		catch ( IllegalArgumentException | NullPointerException e )
+		{
+			return null;
+		}
+	}
+
+	/**
+	 * @param outPattern e.g. "dd.MM.yy"
+	 * @return string representation of {@link DateTime} object or empty string if {@param dateTime} is not valid
+	 */
+	public static String format( DateTime dateTime, String outPattern )
+	{
+		if ( dateTime == null )
+		{
+			return "";
+		}
+		return dateTime.toString( outPattern );
+	}
+
+	/**
+	 * Convert one string representation of a date to another
+	 *
+	 * @param inDateString initial string representation of a date to be converted to another string
+	 * @param outPattern   e.g. "dd.MM.yy"
+	 * @return string representation of {@link DateTime} object or empty string if {@param dateTime} is not valid
+	 */
+	public static String format( String inDateString, String outPattern )
+	{
+		DateTime dateDeserialized = parseOrNull( inDateString );
+		return format( dateDeserialized, outPattern );
+	}
+
+	/**
+	 * Return string representation according to {@link DateTimeUtils#DATETIME_PATTERN}
 	 */
 	public static String toString( DateTime dateTime )
 	{

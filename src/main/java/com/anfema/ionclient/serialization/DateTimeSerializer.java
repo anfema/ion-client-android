@@ -32,9 +32,9 @@ public class DateTimeSerializer implements JsonDeserializer<DateTime>, JsonSeria
 		String dateString = json.getAsString();
 		try
 		{
-			return DateTimeUtils.parseDateTime( dateString );
+			return DateTimeUtils.parseOrThrow( dateString );
 		}
-		catch ( IllegalArgumentException e )
+		catch ( IllegalArgumentException | NullPointerException e )
 		{
 			Log.e( "ION Deserializer", json.toString() );
 			Log.ex( e );

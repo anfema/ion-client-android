@@ -64,7 +64,7 @@ public class CollectionCacheIndex extends CacheIndex
 		}
 		try
 		{
-			DateTime lastModifiedDate = DateTimeUtils.parseDateTime( lastModified );
+			DateTime lastModifiedDate = DateTimeUtils.parseOrThrow( lastModified );
 			Log.d( "Last Modified", "Successfully parsed " + lastModified );
 			return lastModifiedDate;
 		}
