@@ -46,13 +46,8 @@ public class PagePreview implements Comparable<PagePreview>
 	 * Sort by positions ascending
 	 */
 	@Override
-	public int compareTo( PagePreview another )
+	public int compareTo( @NonNull PagePreview another )
 	{
-		if ( another == null )
-		{
-			// null objects shall be at the end
-			return -1;
-		}
 		// Alternatively, one long could be subtracted from the other resulting in a long in the right range. However, casting to int might not be safe.
 		if ( position == another.position )
 		{

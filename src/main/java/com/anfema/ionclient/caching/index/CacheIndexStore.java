@@ -139,7 +139,7 @@ public class CacheIndexStore
 		return "cache_index_" + config.collectionIdentifier + "_" + config.locale + "_" + config.variation;
 	}
 
-	public static SharedPreferences getMetaPrefs( Context context )
+	private static SharedPreferences getMetaPrefs( Context context )
 	{
 		return context.getSharedPreferences( "cache_index_meta", 0 );
 	}

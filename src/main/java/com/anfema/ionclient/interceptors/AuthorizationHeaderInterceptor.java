@@ -45,7 +45,7 @@ public class AuthorizationHeaderInterceptor implements Interceptor
 		return requestWithAuthHeader( authHeaderValue, chain );
 	}
 
-	public static Response requestWithAuthHeader( String authHeaderValue, Chain chain ) throws IOException
+	private static Response requestWithAuthHeader( String authHeaderValue, Chain chain ) throws IOException
 	{
 		Request newRequest = chain.request().newBuilder()
 				.addHeader( "Authorization", authHeaderValue )

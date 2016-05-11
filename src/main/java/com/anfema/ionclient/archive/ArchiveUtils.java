@@ -20,7 +20,6 @@ import com.anfema.ionclient.pages.models.responses.CollectionResponse;
 import com.anfema.ionclient.serialization.GsonHolder;
 import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.Log;
-import com.anfema.ionclient.utils.RxUtils;
 
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
@@ -189,7 +188,7 @@ class ArchiveUtils
 				saveCollectionToFileCache( config, collection, context );
 				CollectionCacheIndex.save( config, context, lastModified );
 			}
-			catch ( NoIonPagesRequestException | IOException e )
+			catch ( IOException e )
 			{
 				Log.e( "ION Archive", "Collection could not be saved." );
 				Log.ex( e );
@@ -200,7 +199,7 @@ class ArchiveUtils
 		return untaredFiles;
 	}
 
-	private static void saveCollectionToFileCache( IonConfig config, Collection collection, Context context ) throws NoIonPagesRequestException, IOException
+	private static void saveCollectionToFileCache( IonConfig config, Collection collection, Context context ) throws IOException
 	{
 		String collectionUrl = IonPageUrls.getCollectionUrl( config );
 		File filePath = FilePaths.getCollectionJsonPath( collectionUrl, config, context );
