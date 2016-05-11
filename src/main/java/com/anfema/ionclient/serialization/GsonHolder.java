@@ -31,7 +31,7 @@ public class GsonHolder
 				// parse datetime strings (trying two patterns)
 				.registerTypeAdapter( DateTime.class, new DateTimeSerializer() )
 				// parse meta data of page preview
-				.registerTypeAdapter( Meta.class, new MetaDeserializer() )
+				.registerTypeAdapter( Meta.class, new MetaSerializer() )
 				.registerTypeAdapter( Collection.class, new CollectionDeserializer() )
 				.registerTypeAdapter( Page.class, new PageDeserializer() )
 				.create();

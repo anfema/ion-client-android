@@ -19,7 +19,6 @@ import java.lang.reflect.Type;
  */
 public class DateTimeSerializer implements JsonDeserializer<DateTime>, JsonSerializer<DateTime>
 {
-
 	@Override
 	public JsonElement serialize( DateTime src, Type typeOfSrc, JsonSerializationContext context )
 	{

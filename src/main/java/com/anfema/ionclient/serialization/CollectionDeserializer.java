@@ -20,10 +20,10 @@ import java.lang.reflect.Type;
 public class CollectionDeserializer implements JsonDeserializer<Collection>
 {
 	private static Gson gson = new GsonBuilder()
-			// parse datetime strings (trying two patterns)
+			// parse datetime strings
 			.registerTypeAdapter( DateTime.class, new DateTimeSerializer() )
 			// parse meta data of page preview
-			.registerTypeAdapter( Meta.class, new MetaDeserializer() )
+			.registerTypeAdapter( Meta.class, new MetaSerializer() )
 			.create();
 
 	@Override
