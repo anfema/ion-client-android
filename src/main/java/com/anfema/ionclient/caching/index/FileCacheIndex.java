@@ -3,6 +3,7 @@ package com.anfema.ionclient.caching.index;
 import android.content.Context;
 
 import com.anfema.ionclient.IonConfig;
+import com.anfema.ionclient.utils.DateTimeUtils;
 import com.anfema.ionclient.utils.HashUtils;
 import com.anfema.ionclient.utils.Log;
 
@@ -89,7 +90,7 @@ public class FileCacheIndex extends CacheIndex
 		{
 			checksum = "sha256:" + HashUtils.getSha256( file );
 		}
-		FileCacheIndex cacheIndex = new FileCacheIndex( requestUrl, checksum, DateTime.now() );
+		FileCacheIndex cacheIndex = new FileCacheIndex( requestUrl, checksum, DateTimeUtils.now() );
 		CacheIndexStore.save( requestUrl, cacheIndex, config, context );
 	}
 }

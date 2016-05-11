@@ -9,6 +9,10 @@ import org.joda.time.format.DateTimeFormatterBuilder;
 
 import java.util.Locale;
 
+/**
+ * These methods fully operate in UTC time zone.
+ * {@link DateTime} objects are parsed with UTC and format and toString methods print dates assuming not local time zone but UTC.
+ */
 public class DateTimeUtils extends org.joda.time.DateTimeUtils
 {
 	public static final String DATETIME_PATTERN             = "yyyy-MM-dd'T'HH:mm:ss";
@@ -121,7 +125,8 @@ public class DateTimeUtils extends org.joda.time.DateTimeUtils
 		{
 			return "";
 		}
-		return dateTime.toString( outPattern );
+		DateTimeFormatter dtf = new DateTimeFormatterBuilder().appendPattern( outPattern ).toFormatter().withZoneUTC();
+		return dtf.print( dateTime );
 	}
 
 	/**
