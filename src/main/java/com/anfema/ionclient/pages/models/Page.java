@@ -96,6 +96,8 @@ public class Page
 	}
 
 	/**
+	 * Filter contents by outlet identifier (for array contents).
+	 *
 	 * @param outlet outlet identifier to identify array of contents
 	 */
 	public List<Content> getContents( String outlet )
@@ -115,6 +117,8 @@ public class Page
 	}
 
 	/**
+	 * Filter contents by outlet identifier and type (for array contents).
+	 *
 	 * @param contentSubclass the type of the requested contents, it must be a subclass of {@link Content}
 	 * @param outlet          outlet identifier to identify array of contents
 	 */
@@ -151,12 +155,8 @@ public class Page
 	 */
 	public CharSequence getTextOrNull( String outlet )
 	{
-		Content content = getContent( outlet );
-		if ( content != null && content instanceof TextContent )
-		{
-			return ( ( TextContent ) content ).getTextFormatted();
-		}
-		return null;
+		TextContent content = getContent( outlet, TextContent.class );
+		return content != null ? content.getTextFormatted() : null;
 	}
 
 	/**
