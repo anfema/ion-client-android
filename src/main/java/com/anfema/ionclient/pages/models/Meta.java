@@ -1,8 +1,11 @@
 package com.anfema.ionclient.pages.models;
 
 import android.support.annotation.NonNull;
+import android.webkit.URLUtil;
 
 import com.anfema.ionclient.pages.models.contents.Connection;
+import com.anfema.ionclient.pages.models.contents.Downloadable;
+import com.anfema.ionclient.pages.models.contents.DownloadableResource;
 import com.anfema.ionclient.serialization.GsonHolder;
 import com.anfema.ionclient.utils.DateTimeUtils;
 import com.anfema.ionclient.utils.TextFormatting;
@@ -25,150 +28,164 @@ import java.util.Map;
 public class Meta
 {
 	/**
-	 * Unparsed JSON data of meta
+	 * Raw, unparsed JSON data of meta
 	 */
 	public Map<String, JsonElement> json;
 
 	/**
-	 * Checks whether a non-null value exists for the key
+	 * Checks whether a non-null value exists for an outlet identifier in meta data
+	 *
+	 * @param outlet identifier of outlet available in page meta data (e.g. "title" or "thumbnail")
+	 * @return true if value exists for outlet identifier and is not null
 	 */
-	public boolean contains( String key )
+	public boolean contains( String outlet )
 	{
-		return getRaw( key ) != null;
+		return getRaw( outlet ) != null;
 	}
 
 	/**
-	 * Checks whether a value exists for the key, returns true even if the value is null
+	 * Checks whether a value exists for for an outlet identifier in meta data, returns true even if the value is null
+	 *
+	 * @param outlet identifier of outlet available in page meta data (e.g. "title" or "thumbnail")
+	 * @return true if value exists for outlet identifier, value can be null
 	 */
-	public boolean containsAllowNullValue( String key )
+	public boolean containsAllowNullValue( String outlet )
 	{
-		return json != null && json.containsKey( key );
+		return json != null && json.containsKey( outlet );
 	}
 
-	public JsonElement getRaw( String key )
+	/**
+	 * Access meta data when value is not string based and none of the other access methods apply.
+	 *
+	 * @param outlet identifier of outlet available in page meta data (e.g. "title" or "thumbnail")
+	 * @return value is a {@link JsonElement} and needs to be deserialized.
+	 */
+	public JsonElement getRaw( String outlet )
 	{
 		if ( json == null )
 		{
 			return null;
 		}
-		return json.get( key );
+		return json.get( outlet );
 	}
 
 	/**
-	 * Convenience method to obtain the formatted text of a string from json data.
+	 * Convenience method to obtain the text of a {@link com.anfema.ionclient.pages.models.contents.TextContent} available in page's meta data.
 	 * <p>
 	 * This method guesses the mime-type and formats the text respectively.
 	 *
-	 * @param metaKey JSON property name within "json" object (e.g. "title" or "thumbnail")
+	 * @param outlet identifier of outlet available in page meta data (e.g. "title" or "thumbnail")
 	 * @return formatted text
 	 * @throws NullPointerException if data does not exist
 	 * @throws JsonSyntaxException  if data is not valid
 	 */
-	public CharSequence getTextOrThrow( String metaKey ) throws JsonSyntaxException, NullPointerException
+	public CharSequence getTextOrThrow( String outlet ) throws JsonSyntaxException, NullPointerException
 	{
-		return TextFormatting.format( getStringOrThrow( metaKey ) );
+		return TextFormatting.format( getStringOrThrow( outlet ) );
 	}
 
 	/**
-	 * Convenience method to obtain the formatted text of a string from json data.
+	 * Convenience method to obtain the text of a {@link com.anfema.ionclient.pages.models.contents.TextContent} available in page's meta data.
 	 * <p>
 	 * This method guesses the mime-type and formats the text respectively.
 	 *
-	 * @param metaKey JSON property name within "json" object (e.g. "title" or "thumbnail")
+	 * @param outlet identifier of outlet available in page meta data (e.g. "title" or "thumbnail")
 	 * @return formatted text if exists, {@code null} otherwise
 	 */
-	public CharSequence getTextOrNull( String metaKey )
+	public CharSequence getTextOrNull( String outlet )
 	{
-		String text = getStringOrNull( metaKey );
+		String text = getStringOrNull( outlet );
 		return text != null ? TextFormatting.format( text ) : null;
 	}
 
 	/**
-	 * Convenience method to obtain the formatted text of a string from json data.
+	 * Convenience method to obtain the text of a {@link com.anfema.ionclient.pages.models.contents.TextContent} available in page's meta data.
 	 * <p>
 	 * This method guesses the mime-type and formats the text respectively.
 	 *
-	 * @param metaKey JSON property name within "json" object (e.g. "title" or "thumbnail")
+	 * @param outlet identifier of outlet available in page meta data (e.g. "title" or "thumbnail")
 	 * @return formatted text if exists, empty string otherwise
 	 */
 	@NonNull
-	public CharSequence getTextOrEmpty( String metaKey )
+	public CharSequence getTextOrEmpty( String outlet )
 	{
-		CharSequence text = getTextOrNull( metaKey );
+		CharSequence text = getTextOrNull( outlet );
 		return text != null ? text : "";
 	}
 
 	/**
-	 * Convenience method to obtain the text of a string from json data.
+	 * Convenience method to obtain the text of a {@link com.anfema.ionclient.pages.models.contents.TextContent} available in page's meta data.
 	 * <p>
 	 * Formatting tags are removed if mime-type (most probably) is not "text/plain".
 	 *
-	 * @param metaKey JSON property name within "json" object (e.g. "title" or "thumbnail")
+	 * @param outlet identifier of outlet available in page meta data (e.g. "title" or "thumbnail")
 	 * @return text without formatting
 	 * @throws NullPointerException if data does not exist
 	 * @throws JsonSyntaxException  if data is not valid
 	 */
-	public String getPlainTextOrThrow( String metaKey ) throws JsonSyntaxException, NullPointerException
+	public String getPlainTextOrThrow( String outlet ) throws JsonSyntaxException, NullPointerException
 	{
-		return GsonHolder.getInstance().fromJson( json.get( metaKey ), String.class );
+		return GsonHolder.getInstance().fromJson( json.get( outlet ), String.class );
 	}
 
 	/**
-	 * Convenience method to obtain the text of a string from json data.
+	 * Convenience method to obtain the text of a {@link com.anfema.ionclient.pages.models.contents.TextContent} available in page's meta data.
 	 * <p>
 	 * Formatting tags are removed if mime-type (most probably) is not "text/plain".
 	 *
-	 * @param metaKey JSON property name within "json" object (e.g. "title" or "thumbnail")
+	 * @param outlet identifier of outlet available in page meta data (e.g. "title" or "thumbnail")
 	 * @return text without formatting if exists, {@code null} otherwise
 	 */
-	public String getPlainTextOrNull( String metaKey )
+	public String getPlainTextOrNull( String outlet )
 	{
-		CharSequence text = getTextOrNull( metaKey );
+		CharSequence text = getTextOrNull( outlet );
 		return text != null ? text.toString() : null;
 	}
 
 	/**
-	 * Convenience method to obtain the text of a string from json data.
+	 * Convenience method to obtain the text of a {@link com.anfema.ionclient.pages.models.contents.TextContent} available in page's meta data.
 	 * <p>
 	 * Formatting tags are removed if mime-type (most probably) is not "text/plain".
 	 *
-	 * @param metaKey JSON property name within "json" object (e.g. "title" or "thumbnail")
+	 * @param outlet identifier of outlet available in page meta data (e.g. "title" or "thumbnail")
 	 * @return text without formatting if exists, empty string otherwise
 	 */
 	@NonNull
-	public String getPlainTextOrEmpty( String metaKey )
+	public String getPlainTextOrEmpty( String outlet )
 	{
-		return getTextOrEmpty( metaKey ).toString();
+		return getTextOrEmpty( outlet ).toString();
 	}
 
 	/**
-	 * Parse string from json properties
+	 * Get raw content string from page's meta data.
+	 * If you want text, which does not contain formatting texts, better use {@link #getTextOrEmpty(String)} or {@link #getPlainTextOrEmpty(String)}
 	 *
-	 * @param metaKey JSON property name within "json" object (e.g. "title" or "thumbnail")
-	 * @return value for JSON property
+	 * @param outlet identifier of outlet available in page meta data (e.g. "title" or "thumbnail")
+	 * @return string value for outlet identifier
 	 * @throws NullPointerException if data does not exist
 	 * @throws JsonSyntaxException  if data is not valid
 	 */
-	private String getStringOrThrow( String metaKey ) throws JsonSyntaxException, NullPointerException
+	private String getStringOrThrow( String outlet ) throws JsonSyntaxException, NullPointerException
 	{
-		return GsonHolder.getInstance().fromJson( json.get( metaKey ), String.class );
+		return GsonHolder.getInstance().fromJson( json.get( outlet ), String.class );
 	}
 
 	/**
-	 * Parse string from json properties
+	 * Get raw content string from page's meta data.
+	 * If you want text, which does not contain formatting texts, better use {@link #getTextOrEmpty(String)} or {@link #getPlainTextOrEmpty(String)}
 	 *
-	 * @param metaKey JSON property name within "json" object (e.g. "title" or "thumbnail")
-	 * @return value for JSON property if exists, {@code null} otherwise
+	 * @param outlet identifier of outlet available in page meta data (e.g. "title" or "thumbnail")
+	 * @return string value for outlet identifier if exists in meta data, {@code null} otherwise
 	 */
-	private String getStringOrNull( String metaKey )
+	private String getStringOrNull( String outlet )
 	{
-		if ( json == null || !json.containsKey( metaKey ) )
+		if ( json == null || !json.containsKey( outlet ) )
 		{
 			return null;
 		}
 		try
 		{
-			return getStringOrThrow( metaKey );
+			return getStringOrThrow( outlet );
 		}
 		catch ( JsonSyntaxException e )
 		{
@@ -177,30 +194,38 @@ public class Meta
 	}
 
 	/**
-	 * Parse list of strings from json properties
+	 * Use to access a list of strings from page's meta data.
+	 * Be aware that strings are raw data in meta representing different content types. It makes probably sense to parse it into the desired format.
+	 * If you expect texts, which can contain formatting tags, call {@link TextFormatting#format(String)} on each string.
+	 * If you expect dates, call {@link DateTimeUtils#parseOrNull(String)}.
+	 * If you expect a cross-link, use {@link Connection#Connection(String)}.
 	 *
-	 * @param metaKey JSON property name within "json" object
-	 * @return value for JSON property
+	 * @param outlet identifier of outlet available in page meta data
+	 * @return values for outlet identifier as raw strings
 	 * @throws NullPointerException if data does not exist
 	 * @throws JsonSyntaxException  if data is not valid
 	 */
-	public List<String> getListOrThrow( String metaKey ) throws JsonSyntaxException, NullPointerException
+	public List<String> getStringListOrThrow( String outlet ) throws JsonSyntaxException, NullPointerException
 	{
 		Type listType = new TypeToken<List<String>>()
 		{
 		}.getType();
-		return GsonHolder.getInstance().fromJson( json.get( metaKey ), listType );
+		return GsonHolder.getInstance().fromJson( json.get( outlet ), listType );
 	}
 
 	/**
-	 * Parse list of strings from json properties
+	 * Use to access a list of strings from page's meta data.
+	 * Be aware that strings are raw data in meta representing different content types. It makes probably sense to parse it into the desired format.
+	 * If you expect texts, which can contain formatting tags, call {@link TextFormatting#format(String)} on each string.
+	 * If you expect dates, call {@link DateTimeUtils#parseOrNull(String)}.
+	 * If you expect a cross-link, use {@link Connection#Connection(String)}.
 	 *
-	 * @param metaKey JSON property name within "json" object
-	 * @return value for JSON property if exists, {@code null} otherwise
+	 * @param outlet identifier of outlet available in page meta data
+	 * @return values for outlet identifier as raw strings if exists in meta data, empty list otherwise
 	 */
-	public List<String> getListOrEmpty( String metaKey )
+	public List<String> getStringListOrEmpty( String outlet )
 	{
-		if ( json == null || !json.containsKey( metaKey ) )
+		if ( json == null || !json.containsKey( outlet ) )
 		{
 			return new ArrayList<>();
 		}
@@ -209,7 +234,7 @@ public class Meta
 			Type listType = new TypeToken<List<String>>()
 			{
 			}.getType();
-			return GsonHolder.getInstance().fromJson( json.get( metaKey ), listType );
+			return GsonHolder.getInstance().fromJson( json.get( outlet ), listType );
 		}
 		catch ( JsonSyntaxException e )
 		{
@@ -220,68 +245,84 @@ public class Meta
 	/**
 	 * Parse connection from string
 	 *
-	 * @param metaKey JSON property name within "json" object
+	 * @param outlet JSON property name within "json" object
 	 * @return link to another collection, page, content
 	 * @throws NullPointerException if data does not exist
 	 * @throws JsonSyntaxException  if data is not valid
 	 */
-	public DateTime getDateTimeOrThrow( String metaKey ) throws JsonSyntaxException, NullPointerException, IllegalArgumentException
+	public DateTime getDateTimeOrThrow( String outlet ) throws JsonSyntaxException, NullPointerException, IllegalArgumentException
 	{
-		return DateTimeUtils.parseOrThrow( getStringOrThrow( metaKey ) );
+		return DateTimeUtils.parseOrThrow( getStringOrThrow( outlet ) );
 	}
 
 	/**
 	 * Parse connection from string
 	 *
-	 * @param metaKey JSON property name within "json" object
+	 * @param outlet JSON property name within "json" object
 	 * @return @return link to another collection, page, content if data exists, {@code null} otherwise
 	 */
-	public DateTime getDateTimeOrNull( String metaKey )
+	public DateTime getDateTimeOrNull( String outlet )
 	{
-		return DateTimeUtils.parseOrNull( getStringOrNull( metaKey ) );
+		return DateTimeUtils.parseOrNull( getStringOrNull( outlet ) );
 	}
 
 	/**
 	 * Parse connection from string
 	 *
-	 * @param metaKey JSON property name within "json" object
+	 * @param outlet JSON property name within "json" object
 	 * @return link to another collection, page, content
 	 * @throws NullPointerException if data does not exist
 	 * @throws JsonSyntaxException  if data is not valid
 	 */
-	public Connection getConnectionOrThrow( String metaKey ) throws JsonSyntaxException, NullPointerException
+	public Connection getConnectionOrThrow( String outlet ) throws JsonSyntaxException, NullPointerException
 	{
-		return new Connection( getStringOrThrow( metaKey ) );
+		return new Connection( getStringOrThrow( outlet ) );
 	}
 
 	/**
 	 * Parse connection from string
 	 *
-	 * @param metaKey JSON property name within "json" object
+	 * @param outlet JSON property name within "json" object
 	 * @return @return link to another collection, page, content if data exists, {@code null} otherwise
 	 */
-	public Connection getConnectionOrNull( String metaKey )
+	public Connection getConnectionOrNull( String outlet )
 	{
-		return new Connection( getStringOrNull( metaKey ) );
+		return new Connection( getStringOrNull( outlet ) );
+	}
+
+	/**
+	 * Get downloadable content
+	 *
+	 * @param outlet outlet identifier to identify content
+	 * @return content if it is a {@link Downloadable} content, or {@code null} otherwise
+	 */
+	public Downloadable getDownloadableOrNull( String outlet )
+	{
+		String url = getStringOrNull( outlet );
+		if ( url == null || !URLUtil.isValidUrl( url ) )
+		{
+			return null;
+		}
+		return new DownloadableResource( url );
 	}
 
 	/**
 	 * Convenience method to compare values from json with other ones.
 	 *
-	 * @param metaKey      JSON property name within "json" object (e.g. "title" or "thumbnail")
+	 * @param outlet       JSON property name within "json" object (e.g. "title" or "thumbnail")
 	 * @param compareValue A value to compare the concerning json value with.
 	 * @return true, if json value exists and equals {@param compareValue}
 	 */
-	public boolean textEquals( String metaKey, String compareValue ) throws JsonSyntaxException
+	public boolean textEquals( String outlet, String compareValue ) throws JsonSyntaxException
 	{
-		if ( json == null || !json.containsKey( metaKey ) )
+		if ( json == null || !json.containsKey( outlet ) )
 		{
 			return false;
 		}
 
 		try
 		{
-			String text = getPlainTextOrThrow( metaKey );
+			String text = getPlainTextOrThrow( outlet );
 			if ( text == null )
 			{
 				return compareValue == null;
@@ -290,7 +331,7 @@ public class Meta
 		}
 		catch ( JsonSyntaxException e )
 		{
-			throw new JsonSyntaxException( "You tried to compare " + compareValue + " with a meta entry " + json.get( metaKey ) + " which could not be parsed to a String.", e );
+			throw new JsonSyntaxException( "You tried to compare " + compareValue + " with a meta entry " + json.get( outlet ) + " which could not be parsed to a String.", e );
 		}
 	}
 }

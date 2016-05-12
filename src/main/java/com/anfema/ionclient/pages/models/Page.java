@@ -6,6 +6,7 @@ import com.anfema.ionclient.pages.models.contents.Connection;
 import com.anfema.ionclient.pages.models.contents.ConnectionContent;
 import com.anfema.ionclient.pages.models.contents.Content;
 import com.anfema.ionclient.pages.models.contents.DatetimeContent;
+import com.anfema.ionclient.pages.models.contents.Downloadable;
 import com.anfema.ionclient.pages.models.contents.TextContent;
 
 import org.joda.time.DateTime;
@@ -224,6 +225,18 @@ public class Page
 	{
 		ConnectionContent content = getContent( outlet, ConnectionContent.class );
 		return content != null ? content.connection : null;
+	}
+
+	/**
+	 * Get downloadable content
+	 *
+	 * @param outlet outlet identifier to identify content
+	 * @return content if it is a {@link Downloadable} content, or {@code null} otherwise
+	 */
+	public Downloadable getDownloadableOrNull( String outlet )
+	{
+		Content content = getContent( outlet );
+		return content instanceof Downloadable ? ( Downloadable ) content : null;
 	}
 
 	@Override
