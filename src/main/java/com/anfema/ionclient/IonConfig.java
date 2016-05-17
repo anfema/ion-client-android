@@ -3,9 +3,9 @@ package com.anfema.ionclient;
 import android.content.Context;
 
 import com.anfema.ionclient.exceptions.IonConfigInvalidException;
+import com.anfema.ionclient.utils.IonLog;
 import com.anfema.ionclient.utils.MemoryUtils;
 import com.anfema.ionclient.utils.PendingDownloadHandler;
-import com.anfema.utils.Log;
 
 import java.net.HttpURLConnection;
 import java.util.Arrays;
@@ -73,7 +73,7 @@ public class IonConfig
 	 */
 	public static int picassoMemCacheSize = -1;
 
-	public static int logLevel = Log.NONE;
+	public static int logLevel = IonLog.NONE;
 
 
 	private static final Map<IonConfig, String>                    authorizations = new HashMap<>();
@@ -205,7 +205,7 @@ public class IonConfig
 			}
 			if ( authorizationHeaderValue == null && authorizationHeaderValueCall == null )
 			{
-				Log.w( "IonConfig.Builder", "Did you forget to provide an authorization?" );
+				IonLog.w( "IonConfig.Builder", "Did you forget to provide an authorization?" );
 			}
 			return new IonConfig( baseUrl, collectionIdentifier, locale, variation, authorizationHeaderValue, authorizationHeaderValueCall,
 					archiveDownloads, ftsDbDownloads, minutesUntilCollectionRefetch );
@@ -339,7 +339,7 @@ public class IonConfig
 						}
 						else
 						{
-							Log.w( "IonConfig", "authenticatedRequest: could not determine if request was unauthorized." );
+							IonLog.w( "IonConfig", "authenticatedRequest: could not determine if request was unauthorized." );
 						}
 
 						if ( responseCode == HttpURLConnection.HTTP_UNAUTHORIZED )
@@ -358,7 +358,7 @@ public class IonConfig
 
 	public Observable<String> updateAuthorizationHeaderValue( boolean forceUpdate )
 	{
-		// Log.d( "IonConfig", "UpdateAuthorization: authorizationHeaderValue != null: " + ( authorizationHeaderValue != null ) + ", call != null: " + ( authorizationHeaderValueCall != null ) );
+		// IonLog.d( "IonConfig", "UpdateAuthorization: authorizationHeaderValue != null: " + ( authorizationHeaderValue != null ) + ", call != null: " + ( authorizationHeaderValueCall != null ) );
 
 		if ( authorizationHeaderValueCall == null || ( authorizationHeaderValue != null && !forceUpdate ) )
 		{

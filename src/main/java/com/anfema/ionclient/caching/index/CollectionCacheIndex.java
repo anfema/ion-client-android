@@ -5,7 +5,7 @@ import android.content.Context;
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.pages.IonPageUrls;
 import com.anfema.ionclient.utils.DateTimeUtils;
-import com.anfema.utils.Log;
+import com.anfema.ionclient.utils.IonLog;
 
 import org.joda.time.DateTime;
 
@@ -59,19 +59,19 @@ public class CollectionCacheIndex extends CacheIndex
 	{
 		if ( lastModified == null )
 		{
-			Log.d( "Last Modified", "String is null" );
+			IonLog.d( "Last Modified", "String is null" );
 			return null;
 		}
 		try
 		{
 			DateTime lastModifiedDate = DateTimeUtils.parseOrThrow( lastModified );
-			Log.d( "Last Modified", "Successfully parsed " + lastModified );
+			IonLog.d( "Last Modified", "Successfully parsed " + lastModified );
 			return lastModifiedDate;
 		}
 		catch ( IllegalArgumentException e )
 		{
-			Log.e( "Last Modified", "Parse error for: " + lastModified );
-			Log.ex( "Last Modified", e );
+			IonLog.e( "Last Modified", "Parse error for: " + lastModified );
+			IonLog.ex( "Last Modified", e );
 			return null;
 		}
 	}

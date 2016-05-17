@@ -49,7 +49,7 @@ public class FileUtils
 		{
 			ongoingWriteOperations.remove( file );
 		}
-		// Log.d( "Lock Mechanism", "Released lock for file " + file.getPath() + ". counter: " + lock.counter );
+		// IonLog.d( "Lock Mechanism", "Released lock for file " + file.getPath() + ". counter: " + lock.counter );
 	}
 
 	private synchronized static LockWithCounter obtainLock( File file )
@@ -61,7 +61,7 @@ public class FileUtils
 			ongoingWriteOperations.put( file, lock );
 		}
 		lock.counter++;
-		// Log.d( "Lock Mechanism", "Obtained lock for file " + file.getPath() + ". counter: " + lock.counter );
+		// IonLog.d( "Lock Mechanism", "Obtained lock for file " + file.getPath() + ". counter: " + lock.counter );
 		return lock;
 	}
 
@@ -82,7 +82,7 @@ public class FileUtils
 		boolean writeSuccess;
 		synchronized ( obtainLock( targetFile ) )
 		{
-			Log.d( TAG, "write to file: " + targetFile.getPath() );
+			IonLog.d( TAG, "write to file: " + targetFile.getPath() );
 
 			File fileTemp = FilePaths.getTempFilePath( targetFile );
 
@@ -210,7 +210,7 @@ public class FileUtils
 		{
 			return false;
 		}
-		Log.d( TAG, "create dirs for: " + dir );
+		IonLog.d( TAG, "create dirs for: " + dir );
 		return dir.mkdirs();
 	}
 

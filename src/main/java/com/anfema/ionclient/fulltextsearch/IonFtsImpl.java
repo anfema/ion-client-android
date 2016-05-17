@@ -13,7 +13,7 @@ import com.anfema.ionclient.mediafiles.IonFiles;
 import com.anfema.ionclient.pages.CollectionDownloadedListener;
 import com.anfema.ionclient.pages.IonPages;
 import com.anfema.ionclient.pages.models.Collection;
-import com.anfema.utils.Log;
+import com.anfema.ionclient.utils.IonLog;
 import com.anfema.ionclient.utils.RxUtils;
 
 import java.io.File;
@@ -65,7 +65,7 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 		activeFtsDbDownload = true;
 
 		File dbTargetPath = FtsDbUtils.getPath( config.collectionIdentifier, context );
-		Log.i( "FTS Database", "about to download FTS database for collection " + config.collectionIdentifier );
+		IonLog.i( "FTS Database", "about to download FTS database for collection " + config.collectionIdentifier );
 		return ionPages.fetchCollection()
 				.observeOn( Schedulers.io() )
 				.map( collection -> collection.fts_db )
@@ -84,7 +84,7 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 		{
 			// archive needs to be downloaded again. Download runs in background and does not even inform UI when finished
 			downloadSearchDatabase()
-					.subscribe( RxUtils.NOTHING, RxUtils.DEFAULT_EXCEPTION_HANDLER, () -> Log.d( "ION FTS", "FTS database has been downloaded/updated in background" ) );
+					.subscribe( RxUtils.NOTHING, RxUtils.DEFAULT_EXCEPTION_HANDLER, () -> IonLog.d( "ION FTS", "FTS database has been downloaded/updated in background" ) );
 		}
 	}
 
@@ -150,7 +150,7 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 		}
 		catch ( SQLiteException e )
 		{
-			Log.ex( "Full Text Search", e );
+			IonLog.ex( "Full Text Search", e );
 			Toast.makeText( context, context.getString( R.string.fts_not_available ), Toast.LENGTH_SHORT ).show();
 			return null;
 		}
@@ -183,10 +183,10 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 					String eventLayout = "event-layout";
 					fullTextSearch( "Hab M", "de_DE", personLayout )
 							.subscribe( results -> {
-								Log.d( "****FTS***", "#results: " + results.size() );
+								IonLog.d( "****FTS***", "#results: " + results.size() );
 								for ( SearchResult result : results )
 								{
-									Log.d( "*******FTS********", result.pageIdentifier + ", " + result.text + ", " + result.pageLayout );
+									IonLog.d( "*******FTS********", result.pageIdentifier + ", " + result.text + ", " + result.pageLayout );
 								}
 							} );
 				}, RxUtils.DEFAULT_EXCEPTION_HANDLER );

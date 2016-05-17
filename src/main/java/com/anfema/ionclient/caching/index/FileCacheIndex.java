@@ -4,8 +4,8 @@ import android.content.Context;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.utils.DateTimeUtils;
+import com.anfema.ionclient.utils.IonLog;
 import com.anfema.utils.HashUtils;
-import com.anfema.utils.Log;
 
 import org.joda.time.DateTime;
 
@@ -82,7 +82,7 @@ public class FileCacheIndex extends CacheIndex
 	{
 		if ( file == null )
 		{
-			Log.e( "File Cache Index", "Could not save cache index for " + requestUrl + "\nBecause file is null." );
+			IonLog.e( "File Cache Index", "Could not save cache index for " + requestUrl + "\nBecause file is null." );
 			return;
 		}
 

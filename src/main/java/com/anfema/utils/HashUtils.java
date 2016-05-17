@@ -1,5 +1,7 @@
 package com.anfema.utils;
 
+import com.anfema.ionclient.utils.IonLog;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -91,7 +93,7 @@ public class HashUtils
 
 	private static String error( Exception e )
 	{
-		Log.ex( "HashUtils", e );
+		IonLog.ex( "HashUtils", e );
 		return "-1";
 	}
 }

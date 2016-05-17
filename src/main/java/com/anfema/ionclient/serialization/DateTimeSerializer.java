@@ -1,7 +1,7 @@
 package com.anfema.ionclient.serialization;
 
 import com.anfema.ionclient.utils.DateTimeUtils;
-import com.anfema.utils.Log;
+import com.anfema.ionclient.utils.IonLog;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -35,8 +35,8 @@ public class DateTimeSerializer implements JsonDeserializer<DateTime>, JsonSeria
 		}
 		catch ( IllegalArgumentException | NullPointerException e )
 		{
-			Log.e( "ION Deserializer", json.toString() );
-			Log.ex( e );
+			IonLog.e( "ION Deserializer", json.toString() );
+			IonLog.ex( e );
 			return null;
 		}
 	}

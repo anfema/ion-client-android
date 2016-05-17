@@ -2,7 +2,7 @@ package com.anfema.ionclient.authentication;
 
 import android.util.Base64;
 
-import com.anfema.utils.Log;
+import com.anfema.ionclient.utils.IonLog;
 
 import java.io.UnsupportedEncodingException;
 
@@ -24,7 +24,7 @@ public class BasicAuth
 		}
 		catch ( UnsupportedEncodingException e )
 		{
-			Log.ex( new Exception( "Could not get bytes of " + usernamePassword, e ) );
+			IonLog.ex( new Exception( "Could not get bytes of " + usernamePassword, e ) );
 		}
 		String base64 = Base64.encodeToString( data, Base64.NO_WRAP );
 		return "Basic " + base64;

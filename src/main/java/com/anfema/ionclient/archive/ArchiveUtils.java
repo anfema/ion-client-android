@@ -19,7 +19,7 @@ import com.anfema.ionclient.pages.models.Collection;
 import com.anfema.ionclient.pages.models.responses.CollectionResponse;
 import com.anfema.ionclient.serialization.GsonHolder;
 import com.anfema.ionclient.utils.FileUtils;
-import com.anfema.utils.Log;
+import com.anfema.ionclient.utils.IonLog;
 
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
@@ -83,7 +83,7 @@ class ArchiveUtils
 		TarArchiveInputStream debInputStream = null;
 		try
 		{
-			Log.d( TAG, String.format( "Untaring %s to dir %s.", archiveFile.getPath(), collectionFolder.getPath() ) );
+			IonLog.d( TAG, String.format( "Untaring %s to dir %s.", archiveFile.getPath(), collectionFolder.getPath() ) );
 
 			is = new FileInputStream( archiveFile );
 			debInputStream = ( TarArchiveInputStream ) new ArchiveStreamFactory().createArchiveInputStream( "tar", is );
@@ -109,11 +109,11 @@ class ArchiveUtils
 					ArchiveIndex fileInfo = ArchiveIndex.getByName( archiveFileName, index );
 					if ( fileInfo == null )
 					{
-						Log.w( TAG, "Skipping " + entry.getName() + " because it was not found in index.json." );
+						IonLog.w( TAG, "Skipping " + entry.getName() + " because it was not found in index.json." );
 						continue;
 					}
 
-					Log.i( TAG, fileInfo.url );
+					IonLog.i( TAG, fileInfo.url );
 					FileWithMeta fileWithMeta = getFilePath( fileInfo, collectionFolderTemp, config, context );
 					File targetFile = fileWithMeta.file;
 					FileUtils.createDir( targetFile.getParentFile() );
@@ -149,7 +149,7 @@ class ArchiveUtils
 		{
 			CollectionCacheIndex collectionCacheIndex = CollectionCacheIndex.retrieve( config, context );
 			lastModified = collectionCacheIndex == null ? null : collectionCacheIndex.getLastModified();
-			Log.d( TAG, "Restoring last_modified from cache index: " + lastModified );
+			IonLog.d( TAG, "Restoring last_modified from cache index: " + lastModified );
 		}
 
 		// delete old cache index entries of the collection in shared preferences and in memory cache
@@ -176,7 +176,7 @@ class ArchiveUtils
 		}
 		else
 		{
-			Log.w( TAG, "No media files were contained in archive." );
+			IonLog.w( TAG, "No media files were contained in archive." );
 		}
 
 		// add collection to file cache again
@@ -190,8 +190,8 @@ class ArchiveUtils
 			}
 			catch ( IOException e )
 			{
-				Log.e( "ION Archive", "Collection could not be saved." );
-				Log.ex( e );
+				IonLog.e( "ION Archive", "Collection could not be saved." );
+				IonLog.ex( e );
 			}
 		}
 
@@ -225,7 +225,7 @@ class ArchiveUtils
 
 		catch ( NoIonPagesRequestException e )
 		{
-			Log.w( TAG, "URL " + url + " cannot be handled properly. Is it invalid?" );
+			IonLog.w( TAG, "URL " + url + " cannot be handled properly. Is it invalid?" );
 			targetFile = new File( collectionFolderTemp, filename );
 		}
 		return new FileWithMeta( targetFile, type, fileInfo, pageIdentifier );
@@ -252,7 +252,7 @@ class ArchiveUtils
 		IonRequestType type = fileWithMeta.type;
 		if ( type == null )
 		{
-			Log.w( TAG, "It could not be determined of which kind the request " + fileWithMeta.archiveIndex.url + " is. Thus, do not create a cache index entry." );
+			IonLog.w( TAG, "It could not be determined of which kind the request " + fileWithMeta.archiveIndex.url + " is. Thus, do not create a cache index entry." );
 			return;
 		}
 
@@ -270,7 +270,7 @@ class ArchiveUtils
 				}
 				catch ( PageNotInCollectionException e )
 				{
-					Log.ex( TAG, e );
+					IonLog.ex( TAG, e );
 				}
 				PageCacheIndex.save( pageIdentifier, lastChanged, config, context );
 				break;

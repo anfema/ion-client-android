@@ -22,9 +22,9 @@ public class RxUtils
 		if ( exception instanceof HttpException )
 		{
 			HttpException httpException = ( HttpException ) exception;
-			Log.e( "HTTP request failed and returned status " + httpException.code() + "." );
+			IonLog.e( "HTTP request failed and returned status " + httpException.code() + "." );
 		}
-		Log.ex( exception );
+		IonLog.ex( exception );
 	}
 
 	/**

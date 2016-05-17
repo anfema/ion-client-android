@@ -3,7 +3,7 @@ package com.anfema.ionclient;
 import android.net.Uri;
 import android.widget.VideoView;
 
-import com.anfema.utils.Log;
+import com.anfema.ionclient.utils.IonLog;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -31,7 +31,7 @@ public class VideoUtils
 		}
 		catch ( Exception e )
 		{
-			Log.ex( e );
+			IonLog.ex( e );
 		}
 	}
 

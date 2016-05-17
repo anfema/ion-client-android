@@ -9,7 +9,7 @@ import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException;
 import com.anfema.ionclient.serialization.GsonHolder;
-import com.anfema.utils.Log;
+import com.anfema.ionclient.utils.IonLog;
 
 import java.io.File;
 import java.util.Map;
@@ -22,12 +22,12 @@ public class CacheIndexStore
 		T index = MemoryCacheIndex.get( requestUrl, cacheIndexSubclass );
 		if ( index != null )
 		{
-			Log.d( "Index Lookup", requestUrl + " from memory" );
+			IonLog.d( "Index Lookup", requestUrl + " from memory" );
 			return index;
 		}
 
 		// check shared preferences
-		Log.d( "Index Lookup", requestUrl + " from shared preferences" );
+		IonLog.d( "Index Lookup", requestUrl + " from shared preferences" );
 		SharedPreferences prefs = getPrefs( config, context );
 		String json = prefs.getString( requestUrl, null );
 		index = GsonHolder.getInstance().fromJson( json, cacheIndexSubclass );
@@ -41,7 +41,7 @@ public class CacheIndexStore
 
 	public static <T extends CacheIndex> void save( String requestUrl, T cacheIndex, IonConfig config, Context context )
 	{
-		Log.d( "Cache Index", "saving index for " + requestUrl );
+		IonLog.d( "Cache Index", "saving index for " + requestUrl );
 
 		try
 		{
@@ -66,13 +66,13 @@ public class CacheIndexStore
 			}
 			else
 			{
-				Log.e( "Cache Index", "Could not save cache index entry for " + requestUrl + "\nBecause file does not exist." );
+				IonLog.e( "Cache Index", "Could not save cache index entry for " + requestUrl + "\nBecause file does not exist." );
 			}
 		}
 		catch ( NoIonPagesRequestException e )
 		{
-			Log.e( "Cache Index", "Could not save cache index entry for " + requestUrl );
-			Log.ex( e );
+			IonLog.e( "Cache Index", "Could not save cache index entry for " + requestUrl );
+			IonLog.ex( e );
 		}
 	}
 
@@ -120,7 +120,7 @@ public class CacheIndexStore
 			}
 			else
 			{
-				Log.w( "Cache Index Store", "Clear: Shared Prefs File " + sharedPrefsFile.getPath() + " not found." );
+				IonLog.w( "Cache Index Store", "Clear: Shared Prefs File " + sharedPrefsFile.getPath() + " not found." );
 			}
 		}
 

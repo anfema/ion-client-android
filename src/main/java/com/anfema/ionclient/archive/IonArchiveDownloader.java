@@ -9,7 +9,7 @@ import com.anfema.ionclient.pages.CollectionDownloadedListener;
 import com.anfema.ionclient.pages.IonPages;
 import com.anfema.ionclient.pages.IonPagesWithCaching;
 import com.anfema.ionclient.pages.models.Collection;
-import com.anfema.utils.Log;
+import com.anfema.ionclient.utils.IonLog;
 import com.anfema.ionclient.utils.RxUtils;
 
 import java.io.File;
@@ -71,12 +71,12 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 		if ( inCollection != null && !inCollection.identifier.equals( config.collectionIdentifier ) )
 		{
 			Exception e = new Exception( "Archive download: inCollection.identifier: " + inCollection.identifier + " does not match config's collectionIdentifier: " + config.collectionIdentifier );
-			Log.ex( e );
+			IonLog.ex( e );
 			return Observable.error( e );
 		}
 
 		File archivePath = FilePaths.getArchiveFilePath( config, context );
-		Log.i( "ION Archive", "about to download archive for collection " + config.collectionIdentifier );
+		IonLog.i( "ION Archive", "about to download archive for collection " + config.collectionIdentifier );
 
 		activeArchiveDownload = true;
 
@@ -110,7 +110,7 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 		{
 			// archive needs to be downloaded again. Download runs in background and does not even inform UI when finished
 			downloadArchive( collection, lastModified )
-					.subscribe( RxUtils.NOTHING, RxUtils.DEFAULT_EXCEPTION_HANDLER, () -> Log.d( "ION Archive", "Archive has been downloaded/updated in background" ) );
+					.subscribe( RxUtils.NOTHING, RxUtils.DEFAULT_EXCEPTION_HANDLER, () -> IonLog.d( "ION Archive", "Archive has been downloaded/updated in background" ) );
 		}
 	}
 }

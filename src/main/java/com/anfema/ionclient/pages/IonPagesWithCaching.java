@@ -22,11 +22,11 @@ import com.anfema.ionclient.pages.models.responses.PageResponse;
 import com.anfema.ionclient.serialization.GsonHolder;
 import com.anfema.ionclient.utils.ApiFactory;
 import com.anfema.ionclient.utils.FileUtils;
-import com.anfema.utils.Log;
-import com.anfema.utils.NetworkUtils;
+import com.anfema.ionclient.utils.IonLog;
 import com.anfema.ionclient.utils.PagesFilter;
 import com.anfema.ionclient.utils.PendingDownloadHandler;
 import com.anfema.ionclient.utils.RxUtils;
+import com.anfema.utils.NetworkUtils;
 
 import java.io.File;
 import java.util.List;
@@ -251,12 +251,12 @@ public class IonPagesWithCaching implements IonPages
 		Collection collection = MemoryCache.getCollection( collectionUrl );
 		if ( collection != null )
 		{
-			Log.i( "Memory Cache Lookup", collectionUrl );
+			IonLog.i( "Memory Cache Lookup", collectionUrl );
 			return Observable.just( collection );
 		}
 
 		// retrieve from file cache
-		Log.i( "File Cache Lookup", collectionUrl );
+		IonLog.i( "File Cache Lookup", collectionUrl );
 
 		File filePath = FilePaths.getCollectionJsonPath( collectionUrl, config, context );
 		if ( !filePath.exists() )
@@ -279,13 +279,13 @@ public class IonPagesWithCaching implements IonPages
 	{
 		if ( serverCallAsBackup )
 		{
-			Log.w( "Backup Request", "Cache lookup " + collectionUrl + " failed. Trying network request instead..." );
-			Log.ex( "Cache Lookup", e );
+			IonLog.w( "Backup Request", "Cache lookup " + collectionUrl + " failed. Trying network request instead..." );
+			IonLog.ex( "Cache Lookup", e );
 			return fetchCollectionFromServer( cacheIndex, false );
 		}
 		else
 		{
-			Log.e( "Failed Request", "Cache lookup " + collectionUrl + " failed." );
+			IonLog.e( "Failed Request", "Cache lookup " + collectionUrl + " failed." );
 			return Observable.error( new ReadFromCacheException( collectionUrl, e ) );
 		}
 	}
@@ -334,11 +334,11 @@ public class IonPagesWithCaching implements IonPages
 					String collectionUrl = IonPageUrls.getCollectionUrl( config );
 					if ( cacheAsBackup )
 					{
-						Log.w( "Backup Request", "Network request " + collectionUrl + " failed. Trying cache request instead..." );
-						Log.ex( "Network Request", throwable );
+						IonLog.w( "Backup Request", "Network request " + collectionUrl + " failed. Trying cache request instead..." );
+						IonLog.ex( "Network Request", throwable );
 						return fetchCollectionFromCache( cacheIndex, false );
 					}
-					Log.e( "Failed Request", "Network request " + collectionUrl + " failed." );
+					IonLog.e( "Failed Request", "Network request " + collectionUrl + " failed." );
 					return Observable.error( new NetworkRequestException( collectionUrl, throwable ) );
 				} )
 				.compose( RxUtils.runOnIoThread() )
@@ -366,12 +366,12 @@ public class IonPagesWithCaching implements IonPages
 		Page memPage = MemoryCache.getPage( pageUrl );
 		if ( memPage != null )
 		{
-			Log.i( "Memory Cache Lookup", pageUrl );
+			IonLog.i( "Memory Cache Lookup", pageUrl );
 			return Observable.just( memPage );
 		}
 
 		// retrieve from file cache
-		Log.i( "File Cache Lookup", pageUrl );
+		IonLog.i( "File Cache Lookup", pageUrl );
 
 		File filePath = FilePaths.getPageJsonPath( pageUrl, pageIdentifier, config, context );
 		if ( !filePath.exists() )
@@ -394,11 +394,11 @@ public class IonPagesWithCaching implements IonPages
 	{
 		if ( serverCallAsBackup )
 		{
-			Log.w( "Backup Request", "Cache lookup " + pageUrl + " failed. Trying network request instead..." );
-			Log.ex( "Cache Lookup", e );
+			IonLog.w( "Backup Request", "Cache lookup " + pageUrl + " failed. Trying network request instead..." );
+			IonLog.ex( "Cache Lookup", e );
 			return fetchPageFromServer( pageIdentifier, false );
 		}
-		Log.e( "Failed Request", "Cache lookup " + pageUrl + " failed." );
+		IonLog.e( "Failed Request", "Cache lookup " + pageUrl + " failed." );
 		return Observable.error( new ReadFromCacheException( pageUrl, e ) );
 	}
 
@@ -417,11 +417,11 @@ public class IonPagesWithCaching implements IonPages
 					String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 					if ( cacheAsBackup )
 					{
-						Log.w( "Backup Request", "Network request " + pageUrl + " failed. Trying cache request instead..." );
-						Log.ex( "Network Request", throwable );
+						IonLog.w( "Backup Request", "Network request " + pageUrl + " failed. Trying cache request instead..." );
+						IonLog.ex( "Network Request", throwable );
 						return fetchPageFromCache( pageIdentifier, false );
 					}
-					Log.e( "Failed Request", "Network request " + pageUrl + " failed." );
+					IonLog.e( "Failed Request", "Network request " + pageUrl + " failed." );
 					return Observable.error( new NetworkRequestException( pageUrl, throwable ) );
 				} )
 				.compose( RxUtils.runOnIoThread() )

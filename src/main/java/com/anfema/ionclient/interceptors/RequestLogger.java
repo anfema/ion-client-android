@@ -1,6 +1,6 @@
 package com.anfema.ionclient.interceptors;
 
-import com.anfema.utils.Log;
+import com.anfema.ionclient.utils.IonLog;
 
 import java.io.IOException;
 
@@ -23,7 +23,7 @@ public class RequestLogger implements Interceptor
 	{
 		Request request = chain.request();
 		HttpUrl url = request.url();
-		Log.i( logTag, url.toString() + " Headers: " + request.headers().toString() );
+		IonLog.i( logTag, url.toString() + " Headers: " + request.headers().toString() );
 		return chain.proceed( request );
 	}
 }

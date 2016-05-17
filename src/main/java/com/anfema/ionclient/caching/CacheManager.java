@@ -6,7 +6,7 @@ import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.caching.index.CacheIndexStore;
 import com.anfema.ionclient.caching.index.MemoryCacheIndex;
 import com.anfema.ionclient.utils.FileUtils;
-import com.anfema.utils.Log;
+import com.anfema.ionclient.utils.IonLog;
 
 /**
  * Provides cache clearing functionality
@@ -18,7 +18,7 @@ public class CacheManager
 	 */
 	public static void clear( Context context )
 	{
-		Log.i( "Cache Clear", "Clear entire cache" );
+		IonLog.i( "Cache Clear", "Clear entire cache" );
 		// clears cache index in both memory and file cache
 		CacheIndexStore.clear( context );
 		MemoryCache.clear();
@@ -30,7 +30,7 @@ public class CacheManager
 	 */
 	public static void clearMemoryCache()
 	{
-		Log.i( "Cache Clear", "Clear memory cache" );
+		IonLog.i( "Cache Clear", "Clear memory cache" );
 		MemoryCache.clear();
 		MemoryCacheIndex.clear();
 	}
@@ -42,7 +42,7 @@ public class CacheManager
 	 */
 	public static void clearCollection( IonConfig config, Context context )
 	{
-		Log.i( "Cache Clear", "Clear collection cache for " + config.collectionIdentifier );
+		IonLog.i( "Cache Clear", "Clear collection cache for " + config.collectionIdentifier );
 		CacheIndexStore.clearCollection( config, context );
 		MemoryCache.clear();
 		FileUtils.deleteRecursive( FilePaths.getCollectionFolderPath( config, context ) );

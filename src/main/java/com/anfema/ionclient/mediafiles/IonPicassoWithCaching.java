@@ -10,7 +10,7 @@ import com.anfema.ionclient.IonClient;
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
-import com.anfema.utils.Log;
+import com.anfema.ionclient.utils.IonLog;
 import com.jakewharton.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.LruCache;
@@ -132,8 +132,8 @@ public class IonPicassoWithCaching implements IonPicasso
 	@Override
 	public void loadImage( Uri requestUri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
-		Log.i( "ION Picasso", "START: requestUri: " + requestUri );
-		// Log.d( "ION Picasso", "picasso instance: " + picasso + ", ion picasso instance: " + this );
+		IonLog.i( "ION Picasso", "START: requestUri: " + requestUri );
+		// IonLog.d( "ION Picasso", "picasso instance: " + picasso + ", ion picasso instance: " + this );
 		fetchImageFile( requestUri )
 				.subscribe( fileUri -> showImage( fileUri, target, requestTransformation, callback ), throwable -> imageDownloadFailed( throwable, target, requestTransformation, callback ) );
 	}
@@ -167,7 +167,7 @@ public class IonPicassoWithCaching implements IonPicasso
 
 	private void imageDownloadFailed( Throwable throwable, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
-		Log.ex( "ION Picasso", throwable );
+		IonLog.ex( "ION Picasso", throwable );
 		showImage( null, target, requestTransformation, null );
 		if ( callback != null )
 		{

@@ -20,7 +20,7 @@ public class MemoryUtils
 		ActivityManager am = ( ActivityManager ) context.getSystemService( ACTIVITY_SERVICE );
 		boolean largeHeap = ( context.getApplicationInfo().flags & FLAG_LARGE_HEAP ) != 0;
 		int memoryClass = largeHeap && SDK_INT >= HONEYCOMB ? am.getLargeMemoryClass() : am.getMemoryClass();
-		Log.i( "Memory Cache", "available Cache: " + memoryClass + " MB" );
+		IonLog.i( "Memory Cache", "available Cache: " + memoryClass + " MB" );
 		return 1024 * 1024 * memoryClass;
 	}
 }

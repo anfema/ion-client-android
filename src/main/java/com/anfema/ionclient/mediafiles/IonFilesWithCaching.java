@@ -15,10 +15,10 @@ import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
 import com.anfema.ionclient.pages.models.contents.Downloadable;
 import com.anfema.ionclient.utils.FileUtils;
-import com.anfema.utils.Log;
-import com.anfema.utils.NetworkUtils;
+import com.anfema.ionclient.utils.IonLog;
 import com.anfema.ionclient.utils.PendingDownloadHandler;
 import com.anfema.ionclient.utils.RxUtils;
+import com.anfema.utils.NetworkUtils;
 
 import org.joda.time.DateTime;
 
@@ -125,7 +125,7 @@ public class IonFilesWithCaching implements IonFiles
 		if ( targetFile.exists() && isFileUpToDate( url, checksum ) )
 		{
 			// retrieve current version from cache
-			Log.i( "File Cache Lookup", url.toString() );
+			IonLog.i( "File Cache Lookup", url.toString() );
 			return Observable.just( targetFile );
 		}
 		else
@@ -143,7 +143,7 @@ public class IonFilesWithCaching implements IonFiles
 			{
 				// TODO notify app that data might be outdated
 				// no network: use old version from cache (even if no cache index entry exists)
-				Log.i( "File Cache Lookup", url.toString() );
+				IonLog.i( "File Cache Lookup", url.toString() );
 				return Observable.just( targetFile );
 			}
 			else

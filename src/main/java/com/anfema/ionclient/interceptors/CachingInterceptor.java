@@ -7,7 +7,7 @@ import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException;
 import com.anfema.ionclient.utils.ContextUtils;
 import com.anfema.ionclient.utils.FileUtils;
-import com.anfema.utils.Log;
+import com.anfema.ionclient.utils.IonLog;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,7 +51,7 @@ public class CachingInterceptor implements Interceptor
 			}
 			catch ( NoIonPagesRequestException e )
 			{
-				Log.ex( e );
+				IonLog.ex( e );
 			}
 		}
 

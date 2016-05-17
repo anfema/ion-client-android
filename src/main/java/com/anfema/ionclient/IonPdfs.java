@@ -7,7 +7,7 @@ import android.net.Uri;
 import android.support.v4.content.FileProvider;
 import android.widget.Toast;
 
-import com.anfema.utils.Log;
+import com.anfema.ionclient.utils.IonLog;
 
 import java.io.File;
 
@@ -38,12 +38,12 @@ public class IonPdfs
 			intent.setDataAndType( contentUri, "application/pdf" );
 			intent.setFlags( Intent.FLAG_GRANT_READ_URI_PERMISSION );
 			context.startActivity( intent );
-			Log.i( "PDF Intent", "opening PDF " + logInfo );
+			IonLog.i( "PDF Intent", "opening PDF " + logInfo );
 		}
 		catch ( ActivityNotFoundException e )
 		{
 			Toast.makeText( context, R.string.pdf_display_error, Toast.LENGTH_SHORT ).show();
-			Log.ex( e );
+			IonLog.ex( e );
 		}
 	}
 

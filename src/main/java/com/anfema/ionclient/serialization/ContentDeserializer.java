@@ -2,7 +2,7 @@ package com.anfema.ionclient.serialization;
 
 import com.anfema.ionclient.pages.models.contents.Content;
 import com.anfema.ionclient.pages.models.contents.EmptyContent;
-import com.anfema.utils.Log;
+import com.anfema.ionclient.utils.IonLog;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -43,7 +43,7 @@ public class ContentDeserializer implements JsonDeserializer<Content>
 
 			if ( type == null )
 			{
-				Log.w( "Content deserialization failed because no type is registered for " + typeName + "." );
+				IonLog.w( "Content deserialization failed because no type is registered for " + typeName + "." );
 				return null;
 			}
 		}

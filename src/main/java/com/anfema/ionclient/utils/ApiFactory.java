@@ -48,7 +48,7 @@ public class ApiFactory
 		if ( !baseUrl.endsWith( FileUtils.SLASH ) )
 		{
 			baseUrl = baseUrl + FileUtils.SLASH;
-			Log.i( "API factory", "slash was appended to base URL" );
+			IonLog.i( "API factory", "slash was appended to base URL" );
 		}
 		return baseUrl;
 	}
