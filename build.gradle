@@ -35,15 +35,10 @@ android {
 
     buildTypes {
         debug {
-            // default build flags. do not change values here, but in Config.java
-            buildConfigField "boolean", "LOGGING_DEFAULT", "true"
         }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-
-            // default build flags. do not change values here, but in Config.java
-            buildConfigField "boolean", "LOGGING_DEFAULT", "false"
         }
     }
 
@@ -51,8 +46,6 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
-    publishNonDefault true
 }
 
 dependencies {

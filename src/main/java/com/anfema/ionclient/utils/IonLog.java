@@ -1,14 +1,16 @@
 package com.anfema.ionclient.utils;
 
+import android.util.Log;
+
 import com.anfema.ionclient.IonConfig;
 
 public class IonLog
 {
-	public static final int VERBOSE = android.util.Log.VERBOSE;
-	public static final int DEBUG   = android.util.Log.DEBUG;
-	public static final int INFO    = android.util.Log.INFO;
-	public static final int WARN    = android.util.Log.WARN;
-	public static final int ERROR   = android.util.Log.ERROR;
+	public static final int VERBOSE = Log.VERBOSE;
+	public static final int DEBUG   = Log.DEBUG;
+	public static final int INFO    = Log.INFO;
+	public static final int WARN    = Log.WARN;
+	public static final int ERROR   = Log.ERROR;
 	public static final int NONE    = Integer.MAX_VALUE;
 
 	private static String defaultTag = "IonClient";
@@ -22,7 +24,7 @@ public class IonLog
 	{
 		if ( IonConfig.logLevel == VERBOSE )
 		{
-			android.util.Log.v( tag, message );
+			Log.v( tag, message );
 		}
 	}
 
@@ -35,7 +37,7 @@ public class IonLog
 	{
 		if ( IonConfig.logLevel <= DEBUG && IonConfig.logLevel >= VERBOSE )
 		{
-			android.util.Log.d( tag, message );
+			Log.d( tag, message );
 		}
 	}
 
@@ -48,7 +50,7 @@ public class IonLog
 	{
 		if ( IonConfig.logLevel <= INFO && IonConfig.logLevel >= VERBOSE )
 		{
-			android.util.Log.i( tag, message );
+			Log.i( tag, message );
 		}
 	}
 
@@ -61,7 +63,7 @@ public class IonLog
 	{
 		if ( IonConfig.logLevel <= WARN && IonConfig.logLevel >= VERBOSE )
 		{
-			android.util.Log.w( tag, message );
+			Log.w( tag, message );
 		}
 	}
 
@@ -74,7 +76,7 @@ public class IonLog
 	{
 		if ( IonConfig.logLevel <= ERROR && IonConfig.logLevel >= VERBOSE )
 		{
-			android.util.Log.e( tag, message );
+			Log.e( tag, message );
 		}
 	}
 
@@ -87,7 +89,7 @@ public class IonLog
 	{
 		if ( IonConfig.logLevel <= ERROR && IonConfig.logLevel >= VERBOSE )
 		{
-			android.util.Log.e( tag, android.util.Log.getStackTraceString( exception ) );
+			Log.e( tag, Log.getStackTraceString( exception ) );
 		}
 	}
 
