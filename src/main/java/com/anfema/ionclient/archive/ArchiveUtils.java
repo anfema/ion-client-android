@@ -19,7 +19,7 @@ import com.anfema.ionclient.pages.models.Collection;
 import com.anfema.ionclient.pages.models.responses.CollectionResponse;
 import com.anfema.ionclient.serialization.GsonHolder;
 import com.anfema.ionclient.utils.FileUtils;
-import com.anfema.ionclient.utils.Log;
+import com.anfema.utils.Log;
 
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;

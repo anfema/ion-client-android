@@ -9,7 +9,7 @@ import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException;
 import com.anfema.ionclient.serialization.GsonHolder;
-import com.anfema.ionclient.utils.Log;
+import com.anfema.utils.Log;
 
 import java.io.File;
 import java.util.Map;

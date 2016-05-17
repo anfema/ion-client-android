@@ -1,4 +1,4 @@
-package com.anfema.ionclient.utils;
+package com.anfema.utils;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

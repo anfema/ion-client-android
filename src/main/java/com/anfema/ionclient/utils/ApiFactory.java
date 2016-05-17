@@ -3,6 +3,7 @@ package com.anfema.ionclient.utils;
 import android.support.annotation.NonNull;
 
 import com.anfema.ionclient.serialization.GsonHolder;
+import com.anfema.utils.Log;
 
 import java.util.Collection;
 

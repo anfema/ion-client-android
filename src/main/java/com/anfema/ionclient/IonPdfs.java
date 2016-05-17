@@ -7,7 +7,7 @@ import android.net.Uri;
 import android.support.v4.content.FileProvider;
 import android.widget.Toast;
 
-import com.anfema.ionclient.utils.Log;
+import com.anfema.utils.Log;
 
 import java.io.File;
 

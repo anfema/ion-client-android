@@ -1,17 +1,13 @@
-package com.anfema.ionclient.utils;
+package com.anfema.utils;
 
 public class Log
 {
-	/**
-	 * change setting via {@link Config#LOGCAT_LOGGING}
-	 */
-	static final boolean LOG = Config.loggingEnabled();
-
-	public static String DEFAULT_TAG = "IonClient";
+	public static int    logLevel   = android.util.Log.VERBOSE;
+	public static String defaultTag = "";
 
 	public static void v( String tag, String message )
 	{
-		if ( LOG )
+		if ( logLevel == android.util.Log.VERBOSE )
 		{
 			android.util.Log.v( tag, message );
 		}
@@ -19,12 +15,12 @@ public class Log
 
 	public static void v( String message )
 	{
-		v( DEFAULT_TAG, message );
+		v( defaultTag, message );
 	}
 
 	public static void d( String tag, String message )
 	{
-		if ( LOG )
+		if ( logLevel <= android.util.Log.DEBUG && logLevel >= android.util.Log.VERBOSE )
 		{
 			android.util.Log.d( tag, message );
 		}
@@ -32,12 +28,12 @@ public class Log
 
 	public static void d( String message )
 	{
-		d( DEFAULT_TAG, message );
+		d( defaultTag, message );
 	}
 
 	public static void i( String tag, String message )
 	{
-		if ( LOG )
+		if ( logLevel <= android.util.Log.INFO && logLevel >= android.util.Log.VERBOSE )
 		{
 			android.util.Log.i( tag, message );
 		}
@@ -45,12 +41,12 @@ public class Log
 
 	public static void i( String message )
 	{
-		i( DEFAULT_TAG, message );
+		i( defaultTag, message );
 	}
 
 	public static void w( String tag, String message )
 	{
-		if ( LOG )
+		if ( logLevel <= android.util.Log.WARN && logLevel >= android.util.Log.VERBOSE )
 		{
 			android.util.Log.w( tag, message );
 		}
@@ -58,12 +54,12 @@ public class Log
 
 	public static void w( String message )
 	{
-		w( DEFAULT_TAG, message );
+		w( defaultTag, message );
 	}
 
 	public static void e( String tag, String message )
 	{
-		if ( LOG )
+		if ( logLevel <= android.util.Log.ERROR && logLevel >= android.util.Log.VERBOSE )
 		{
 			android.util.Log.e( tag, message );
 		}
@@ -71,12 +67,12 @@ public class Log
 
 	public static void e( String message )
 	{
-		e( DEFAULT_TAG, message );
+		e( defaultTag, message );
 	}
 
 	public static void ex( String tag, Throwable exception )
 	{
-		if ( LOG )
+		if ( logLevel <= android.util.Log.ERROR && logLevel >= android.util.Log.VERBOSE )
 		{
 			android.util.Log.e( tag, android.util.Log.getStackTraceString( exception ) );
 		}
@@ -84,6 +80,6 @@ public class Log
 
 	public static void ex( Throwable exception )
 	{
-		ex( DEFAULT_TAG, exception );
+		ex( defaultTag, exception );
 	}
 }

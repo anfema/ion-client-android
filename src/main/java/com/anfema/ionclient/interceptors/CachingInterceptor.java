@@ -7,7 +7,7 @@ import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException;
 import com.anfema.ionclient.utils.ContextUtils;
 import com.anfema.ionclient.utils.FileUtils;
-import com.anfema.ionclient.utils.Log;
+import com.anfema.utils.Log;
 
 import java.io.File;
 import java.io.IOException;

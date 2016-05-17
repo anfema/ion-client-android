@@ -13,7 +13,7 @@ import com.anfema.ionclient.mediafiles.IonFiles;
 import com.anfema.ionclient.pages.CollectionDownloadedListener;
 import com.anfema.ionclient.pages.IonPages;
 import com.anfema.ionclient.pages.models.Collection;
-import com.anfema.ionclient.utils.Log;
+import com.anfema.utils.Log;
 import com.anfema.ionclient.utils.RxUtils;
 
 import java.io.File;

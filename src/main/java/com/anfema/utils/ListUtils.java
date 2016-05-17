@@ -1,4 +1,4 @@
-package com.anfema.ionclient.utils;
+package com.anfema.utils;
 
 import java.util.Collections;
 import java.util.List;
@@ -8,7 +8,7 @@ public class ListUtils
 	/**
 	 * Sort a list of elements.
 	 * <p>
-	 * Method handles null objects before referring to T's own compare method
+	 * Method handles null objects before referring to T's own compare method. Null objects will be put at the end of the list.
 	 *
 	 * @param elements the elements to be sorted of type T, where T implements {@link Comparable} interface
 	 * @return simply reference to {@param elements}

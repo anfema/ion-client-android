@@ -3,7 +3,7 @@ package com.anfema.ionclient;
 import android.net.Uri;
 import android.widget.VideoView;
 
-import com.anfema.ionclient.utils.Log;
+import com.anfema.utils.Log;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

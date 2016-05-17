@@ -1,7 +1,7 @@
 package com.anfema.ionclient.serialization;
 
 import com.anfema.ionclient.utils.DateTimeUtils;
-import com.anfema.ionclient.utils.Log;
+import com.anfema.utils.Log;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;

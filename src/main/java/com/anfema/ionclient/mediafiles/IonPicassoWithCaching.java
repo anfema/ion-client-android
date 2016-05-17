@@ -10,7 +10,7 @@ import com.anfema.ionclient.IonClient;
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
-import com.anfema.ionclient.utils.Log;
+import com.anfema.utils.Log;
 import com.jakewharton.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.LruCache;

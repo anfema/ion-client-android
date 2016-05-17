@@ -5,7 +5,7 @@ import android.content.Context;
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.pages.IonPageUrls;
 import com.anfema.ionclient.utils.DateTimeUtils;
-import com.anfema.ionclient.utils.Log;
+import com.anfema.utils.Log;
 
 import org.joda.time.DateTime;
 

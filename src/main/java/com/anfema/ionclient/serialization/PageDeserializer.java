@@ -4,7 +4,7 @@ import com.anfema.ionclient.pages.models.Page;
 import com.anfema.ionclient.pages.models.contents.ConnectionContent;
 import com.anfema.ionclient.pages.models.contents.ContainerContent;
 import com.anfema.ionclient.pages.models.contents.Content;
-import com.anfema.ionclient.utils.ListUtils;
+import com.anfema.utils.ListUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;

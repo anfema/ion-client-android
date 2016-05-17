@@ -1,6 +1,6 @@
 package com.anfema.ionclient.pages.models.contents;
 
-import com.anfema.ionclient.utils.TextFormatting;
+import com.anfema.utils.TextFormatting;
 
 @SuppressWarnings("unused")
 public class TextContent extends Content

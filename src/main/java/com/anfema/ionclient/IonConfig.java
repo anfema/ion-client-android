@@ -3,9 +3,9 @@ package com.anfema.ionclient;
 import android.content.Context;
 
 import com.anfema.ionclient.exceptions.IonConfigInvalidException;
-import com.anfema.ionclient.utils.Log;
 import com.anfema.ionclient.utils.MemoryUtils;
 import com.anfema.ionclient.utils.PendingDownloadHandler;
+import com.anfema.utils.Log;
 
 import java.net.HttpURLConnection;
 import java.util.Arrays;
@@ -73,6 +73,8 @@ public class IonConfig
 	 */
 	public static int picassoMemCacheSize = -1;
 
+	public static int logLevel = Log.NONE;
+
 
 	private static final Map<IonConfig, String>                    authorizations = new HashMap<>();
 	private static final PendingDownloadHandler<IonConfig, String> pendingLogins  = new PendingDownloadHandler<>();
@@ -125,6 +127,7 @@ public class IonConfig
 	 */
 	public final int minutesUntilCollectionRefetch;
 
+	@SuppressWarnings("unused")
 	public static class Builder
 	{
 		private final String baseUrl;

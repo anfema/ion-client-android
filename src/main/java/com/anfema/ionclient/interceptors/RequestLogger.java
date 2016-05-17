@@ -1,6 +1,6 @@
 package com.anfema.ionclient.interceptors;
 
-import com.anfema.ionclient.utils.Log;
+import com.anfema.utils.Log;
 
 import java.io.IOException;
 

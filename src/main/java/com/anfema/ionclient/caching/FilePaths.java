@@ -8,7 +8,7 @@ import com.anfema.ionclient.exceptions.NoIonPagesRequestException;
 import com.anfema.ionclient.pages.IonPageUrls;
 import com.anfema.ionclient.pages.IonPageUrls.IonRequestInfo;
 import com.anfema.ionclient.utils.FileUtils;
-import com.anfema.ionclient.utils.HashUtils;
+import com.anfema.utils.HashUtils;
 
 import java.io.File;
 

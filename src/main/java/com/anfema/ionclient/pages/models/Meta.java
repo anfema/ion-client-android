@@ -8,7 +8,7 @@ import com.anfema.ionclient.pages.models.contents.Downloadable;
 import com.anfema.ionclient.pages.models.contents.DownloadableResource;
 import com.anfema.ionclient.serialization.GsonHolder;
 import com.anfema.ionclient.utils.DateTimeUtils;
-import com.anfema.ionclient.utils.TextFormatting;
+import com.anfema.utils.TextFormatting;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;

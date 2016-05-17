@@ -2,6 +2,7 @@ package com.anfema.ionclient.utils;
 
 import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.exceptions.FileMoveException;
+import com.anfema.utils.Log;
 
 import org.apache.commons.compress.utils.IOUtils;
 

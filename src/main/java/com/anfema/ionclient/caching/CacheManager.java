@@ -6,7 +6,7 @@ import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.caching.index.CacheIndexStore;
 import com.anfema.ionclient.caching.index.MemoryCacheIndex;
 import com.anfema.ionclient.utils.FileUtils;
-import com.anfema.ionclient.utils.Log;
+import com.anfema.utils.Log;
 
 /**
  * Provides cache clearing functionality

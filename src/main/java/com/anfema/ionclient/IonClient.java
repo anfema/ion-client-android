@@ -20,7 +20,7 @@ import com.anfema.ionclient.pages.models.Page;
 import com.anfema.ionclient.pages.models.PagePreview;
 import com.anfema.ionclient.pages.models.contents.Downloadable;
 import com.anfema.ionclient.utils.ContextUtils;
-import com.anfema.ionclient.utils.Log;
+import com.anfema.utils.Log;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;

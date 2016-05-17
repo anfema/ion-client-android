@@ -4,8 +4,8 @@ import android.content.Context;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.utils.DateTimeUtils;
-import com.anfema.ionclient.utils.HashUtils;
-import com.anfema.ionclient.utils.Log;
+import com.anfema.utils.HashUtils;
+import com.anfema.utils.Log;
 
 import org.joda.time.DateTime;
 

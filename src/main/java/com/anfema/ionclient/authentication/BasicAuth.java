@@ -2,7 +2,7 @@ package com.anfema.ionclient.authentication;
 
 import android.util.Base64;
 
-import com.anfema.ionclient.utils.Log;
+import com.anfema.utils.Log;
 
 import java.io.UnsupportedEncodingException;
 

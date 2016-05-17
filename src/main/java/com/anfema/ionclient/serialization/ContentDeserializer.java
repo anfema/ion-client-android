@@ -2,7 +2,7 @@ package com.anfema.ionclient.serialization;
 
 import com.anfema.ionclient.pages.models.contents.Content;
 import com.anfema.ionclient.pages.models.contents.EmptyContent;
-import com.anfema.ionclient.utils.Log;
+import com.anfema.utils.Log;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;

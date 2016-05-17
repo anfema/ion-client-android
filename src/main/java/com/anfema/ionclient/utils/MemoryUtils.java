@@ -3,6 +3,8 @@ package com.anfema.ionclient.utils;
 import android.app.ActivityManager;
 import android.content.Context;
 
+import com.anfema.utils.Log;
+
 import static android.content.Context.ACTIVITY_SERVICE;
 import static android.content.pm.ApplicationInfo.FLAG_LARGE_HEAP;
 import static android.os.Build.VERSION.SDK_INT;

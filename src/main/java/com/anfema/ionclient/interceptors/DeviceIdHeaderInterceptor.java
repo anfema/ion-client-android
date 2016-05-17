@@ -2,7 +2,7 @@ package com.anfema.ionclient.interceptors;
 
 import android.content.Context;
 
-import com.anfema.ionclient.utils.Installation;
+import com.anfema.utils.Installation;
 
 import java.io.IOException;
 
