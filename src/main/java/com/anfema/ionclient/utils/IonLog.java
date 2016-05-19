@@ -13,7 +13,7 @@ public class IonLog
 	public static final int ERROR   = Log.ERROR;
 	public static final int NONE    = Integer.MAX_VALUE;
 
-	private static String defaultTag = "IonClient";
+	private static final String defaultTag = "IonClient";
 
 	// prevent initialization
 	private IonLog()

@@ -73,6 +73,9 @@ public class IonConfig
 	 */
 	public static int picassoMemCacheSize = -1;
 
+	/**
+	 * Set log level for ION client.
+	 */
 	public static int logLevel = IonLog.NONE;
 
 
