@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * A page holds all the information about its content.
  */
-public class Page
+public class Page implements SizeAware
 {
 	/**
 	 * Page identifier – matches the page_identifier header of the pages requests.
@@ -237,6 +237,14 @@ public class Page
 	{
 		Content content = getContent( outlet );
 		return content instanceof Downloadable ? ( Downloadable ) content : null;
+	}
+
+	public long byteCount;
+
+	@Override
+	public long byteCont()
+	{
+		return byteCount;
 	}
 
 	@Override

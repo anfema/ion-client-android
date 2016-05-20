@@ -51,14 +51,14 @@ public class IonConfig
 	public static CachingStrategy cachingStrategy = CachingStrategy.NORMAL;
 
 	/**
-	 * How many pages are kept in LRU memory cache? (for all client instances accumulated), unit: no. of page entries
+	 * Size of LRU memory cache (for all client instances accumulated). The Unit is bytes.
 	 * <p>
 	 * Value must be overwritten before first ION request is made, otherwise it won't have any effect.
 	 * It is recommended to set it as early as possible, e.g. in onCreate() of application (or first activity).
 	 * <p>
 	 * Must be set to a positive value.
 	 */
-	public static int pagesMemCacheSize = 100;
+	public static int pagesMemCacheSize = 50 * 1024 * 1024;
 
 	/**
 	 * Maximum size of memory cache, which all picasso instances share. The Unit is bytes.

@@ -6,15 +6,23 @@ import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.pages.IonPageUrls;
 import com.anfema.ionclient.pages.models.Collection;
 import com.anfema.ionclient.pages.models.Page;
+import com.anfema.ionclient.pages.models.SizeAware;
 
 public class MemoryCache
 {
 	// key: collection/page URL, value: either of type Collection or Page
-	private static volatile LruCache<String, Object> collectionsPagesMemoryCache = new LruCache<>( IonConfig.pagesMemCacheSize );
+	private static volatile LruCache<String, SizeAware> collectionsPagesMemoryCache = new LruCache<String, SizeAware>( IonConfig.pagesMemCacheSize )
+	{
+		@Override
+		protected int sizeOf( String key, SizeAware value )
+		{
+			return ( int ) value.byteCont();
+		}
+	};
 
 	public static Collection getCollection( String collectionUrl )
 	{
-		return Collection.class.cast( collectionsPagesMemoryCache.get( collectionUrl ) );
+		return ( Collection ) collectionsPagesMemoryCache.get( collectionUrl );
 	}
 
 	public static Collection getCollection( IonConfig config )
@@ -36,7 +44,7 @@ public class MemoryCache
 
 	public static Page getPage( String pageUrl )
 	{
-		return Page.class.cast( collectionsPagesMemoryCache.get( pageUrl ) );
+		return ( Page ) collectionsPagesMemoryCache.get( pageUrl );
 	}
 
 	public static Page getPage( String pageIdentifier, IonConfig config )

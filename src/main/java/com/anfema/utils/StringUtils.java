@@ -24,4 +24,17 @@ public class StringUtils
 		}
 		return sb.toString();
 	}
+
+	/**
+	 * Makes a ROUGH ESTIMATE about how much memory is required to store a string.
+	 * <p>
+	 * Since Java uses unicode, a character uses 2 bytes. Additional overhead is ignored here.
+	 *
+	 * @param string the string to be examined
+	 * @return no. of bytes
+	 */
+	public static long byteCount( String string )
+	{
+		return string.length() * 2;
+	}
 }

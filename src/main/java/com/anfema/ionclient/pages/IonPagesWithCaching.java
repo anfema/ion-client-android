@@ -27,6 +27,7 @@ import com.anfema.ionclient.utils.PagesFilter;
 import com.anfema.ionclient.utils.PendingDownloadHandler;
 import com.anfema.ionclient.utils.RxUtils;
 import com.anfema.utils.NetworkUtils;
+import com.anfema.utils.StringUtils;
 
 import java.io.File;
 import java.util.List;
@@ -265,8 +266,13 @@ public class IonPagesWithCaching implements IonPages
 		}
 
 		return FileUtils.readTextFromFile( filePath )
-				.map( collectionsString -> GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class ) )
-				.map( CollectionResponse::getCollection )
+				// deserialize collection and remember byte count
+				.map( collectionsString -> {
+					CollectionResponse collectionResponse = GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class );
+					Collection collection1 = collectionResponse.getCollection();
+					collection1.byteCount = StringUtils.byteCount( collectionsString );
+					return collection1;
+				} )
 				// save to memory cache
 				.doOnNext( collection1 -> MemoryCache.saveCollection( collection1, collectionUrl ) )
 				.onErrorResumeNext( throwable -> {
@@ -314,9 +320,14 @@ public class IonPagesWithCaching implements IonPages
 						String lastModifiedReceived = serverResponse.headers().get( "Last-Modified" );
 
 						// parse collection data from response and write cache index and memory cache
-						return Observable.just( serverResponse.body() )
-								.map( CollectionResponse::getCollection )
-								.doOnNext( collection1 -> MemoryCache.saveCollection( collection1, config ) )
+						return Observable.just( serverResponse )
+								// unwrap page and remember byte count
+								.map( ( response ) -> {
+									Collection collection = response.body().getCollection();
+									collection.byteCount = getContentByteCount( response );
+									return collection;
+								} )
+								.doOnNext( collection -> MemoryCache.saveCollection( collection, config ) )
 								.doOnNext( saveCollectionCacheIndex( lastModifiedReceived ) )
 								.doOnNext( collection -> {
 									if ( collectionListener != null )
@@ -380,8 +391,13 @@ public class IonPagesWithCaching implements IonPages
 		}
 
 		return FileUtils.readTextFromFile( filePath )
-				.map( pagesString -> GsonHolder.getInstance().fromJson( pagesString, PageResponse.class ) )
-				.map( PageResponse::getPage )
+				// deserialize page and remember byte count
+				.map( pagesString -> {
+					PageResponse pageResponse = GsonHolder.getInstance().fromJson( pagesString, PageResponse.class );
+					Page page = pageResponse.getPage();
+					page.byteCount = StringUtils.byteCount( pagesString );
+					return page;
+				} )
 				// save to memory cache
 				.doOnNext( page -> MemoryCache.savePage( page, config ) )
 				.onErrorResumeNext( throwable -> {
@@ -409,8 +425,12 @@ public class IonPagesWithCaching implements IonPages
 	{
 		Observable<Page> pageObservable = config.authenticatedRequest(
 				authorizationHeaderValue -> ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.variation, authorizationHeaderValue ) )
-				.map( Response::body )
-				.map( PageResponse::getPage )
+				// unwrap page and remember byte count
+				.map( response -> {
+					Page page = response.body().getPage();
+					page.byteCount = getContentByteCount( response );
+					return page;
+				} )
 				.doOnNext( savePageCacheIndex() )
 				.doOnNext( page -> MemoryCache.savePage( page, config ) )
 				.onErrorResumeNext( throwable -> {
@@ -427,6 +447,18 @@ public class IonPagesWithCaching implements IonPages
 				.compose( RxUtils.runOnIoThread() )
 				.doOnNext( file -> runningPageDownloads.finished( pageIdentifier ) );
 		return runningPageDownloads.starting( pageIdentifier, pageObservable );
+	}
+
+	/**
+	 * Find out size of response body and calculate how much space it takes in a Java string,
+	 * or - if header is not set - (conservatively) assume it is 300 KB.
+	 *
+	 * @return unit: bytes
+	 */
+	private static int getContentByteCount( Response response )
+	{
+		String contentLength = response.headers().get( "Content-Length" );
+		return contentLength != null ? Integer.valueOf( contentLength ) * 2 : 300 * 1024;
 	}
 
 	/// Get page methods END

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import rx.Observable;
 
-public class Collection
+public class Collection implements SizeAware
 {
 	/**
 	 * ION internal id of the collection
@@ -73,6 +73,14 @@ public class Collection
 			}
 		}
 		throw new PageNotInCollectionException( identifier, pageIdentifier );
+	}
+
+	public long byteCount;
+
+	@Override
+	public long byteCont()
+	{
+		return byteCount;
 	}
 
 	@Override
