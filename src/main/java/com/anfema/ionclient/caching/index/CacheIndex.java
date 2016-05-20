@@ -38,4 +38,5 @@ public abstract class CacheIndex
 		this.filename = filename;
 	}
 
+	public transient int byteCount;
 }

@@ -21,6 +21,7 @@ public class IonConfig
 {
 	public static final String DEFAULT_VARIATION                        = "default";
 	public static final int    DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH = 5;
+	public static final int    CALC_REASONABLE_SIZE                     = -1;
 
 	/**
 	 * Defines strategies, when to fetch data from cache and when to download it from internet.
@@ -58,7 +59,7 @@ public class IonConfig
 	 * <p>
 	 * Must be set to a positive value.
 	 */
-	public static int pagesMemCacheSize = 50 * 1024 * 1024;
+	public static int pagesMemCacheSize = CALC_REASONABLE_SIZE;
 
 	/**
 	 * Maximum size of memory cache, which all picasso instances share. The Unit is bytes.
@@ -71,7 +72,7 @@ public class IonConfig
 	 * <p>
 	 * If not set to a positive value, default cache size will be used.
 	 */
-	public static int picassoMemCacheSize = -1;
+	public static int picassoMemCacheSize = CALC_REASONABLE_SIZE;
 
 	/**
 	 * Set log level for ION client.
@@ -245,9 +246,7 @@ public class IonConfig
 	{
 		return baseUrl != null && baseUrl.contains( "://" )
 				&& collectionIdentifier != null
-				&& locale != null && locale.length() > 0
-				&& minutesUntilCollectionRefetch >= 0
-				&& pagesMemCacheSize >= 0;
+				&& locale != null && locale.length() > 0;
 	}
 
 	public static void assertConfigIsValid( IonConfig config )

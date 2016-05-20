@@ -274,7 +274,7 @@ public class IonPagesWithCaching implements IonPages
 					return collection1;
 				} )
 				// save to memory cache
-				.doOnNext( collection1 -> MemoryCache.saveCollection( collection1, collectionUrl ) )
+				.doOnNext( collection1 -> MemoryCache.saveCollection( collection1, collectionUrl, context ) )
 				.onErrorResumeNext( throwable -> {
 					return handleUnsuccessfulCollectionCacheReading( collectionUrl, cacheIndex, serverCallAsBackup, throwable );
 				} )
@@ -327,7 +327,7 @@ public class IonPagesWithCaching implements IonPages
 									collection.byteCount = getContentByteCount( response );
 									return collection;
 								} )
-								.doOnNext( collection -> MemoryCache.saveCollection( collection, config ) )
+								.doOnNext( collection -> MemoryCache.saveCollection( collection, config, context ) )
 								.doOnNext( saveCollectionCacheIndex( lastModifiedReceived ) )
 								.doOnNext( collection -> {
 									if ( collectionListener != null )
@@ -399,7 +399,7 @@ public class IonPagesWithCaching implements IonPages
 					return page;
 				} )
 				// save to memory cache
-				.doOnNext( page -> MemoryCache.savePage( page, config ) )
+				.doOnNext( page -> MemoryCache.savePage( page, config, context ) )
 				.onErrorResumeNext( throwable -> {
 					return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, throwable );
 				} )
@@ -432,7 +432,7 @@ public class IonPagesWithCaching implements IonPages
 					return page;
 				} )
 				.doOnNext( savePageCacheIndex() )
-				.doOnNext( page -> MemoryCache.savePage( page, config ) )
+				.doOnNext( page -> MemoryCache.savePage( page, config, context ) )
 				.onErrorResumeNext( throwable -> {
 					String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 					if ( cacheAsBackup )
@@ -451,14 +451,14 @@ public class IonPagesWithCaching implements IonPages
 
 	/**
 	 * Find out size of response body and calculate how much space it takes in a Java string,
-	 * or - if header is not set - (conservatively) assume it is 300 KB.
+	 * or - if header is not set - (conservatively) assume it is 100 KB.
 	 *
 	 * @return unit: bytes
 	 */
 	private static int getContentByteCount( Response response )
 	{
 		String contentLength = response.headers().get( "Content-Length" );
-		return contentLength != null ? Integer.valueOf( contentLength ) * 2 : 300 * 1024;
+		return contentLength != null ? Integer.valueOf( contentLength ) * 2 : 100 * 1024;
 	}
 
 	/// Get page methods END

@@ -182,7 +182,7 @@ class ArchiveUtils
 		// add collection to file cache again
 		if ( collection != null )
 		{
-			MemoryCache.saveCollection( collection, config );
+			MemoryCache.saveCollection( collection, config, context );
 			try
 			{
 				saveCollectionToFileCache( config, collection, context );

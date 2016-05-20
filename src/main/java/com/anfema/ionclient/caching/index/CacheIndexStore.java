@@ -10,6 +10,7 @@ import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException;
 import com.anfema.ionclient.serialization.GsonHolder;
 import com.anfema.ionclient.utils.IonLog;
+import com.anfema.utils.StringUtils;
 
 import java.io.File;
 import java.util.Map;
@@ -31,10 +32,13 @@ public class CacheIndexStore
 		SharedPreferences prefs = getPrefs( config, context );
 		String json = prefs.getString( requestUrl, null );
 		index = GsonHolder.getInstance().fromJson( json, cacheIndexSubclass );
+
 		// save to memory cache
 		if ( index != null )
 		{
-			MemoryCacheIndex.put( requestUrl, index );
+			// make cache index aware of its size by storing byte count to its field
+			index.byteCount = ( int ) StringUtils.byteCount( json );
+			MemoryCacheIndex.put( requestUrl, index, context );
 		}
 		return index;
 	}
@@ -49,13 +53,17 @@ public class CacheIndexStore
 
 			if ( file.exists() && file.length() > 0 )
 			{
+				// make cache index aware of its size by storing byte count to its field
+				String indexSerialized = GsonHolder.getInstance().toJson( cacheIndex );
+				cacheIndex.byteCount = ( int ) StringUtils.byteCount( indexSerialized );
+
 				// save to memory cache
-				MemoryCacheIndex.put( requestUrl, cacheIndex );
+				MemoryCacheIndex.put( requestUrl, cacheIndex, context );
 
 				// save to shared preferences
 				getPrefs( config, context )
 						.edit()
-						.putString( requestUrl, GsonHolder.getInstance().toJson( cacheIndex ) )
+						.putString( requestUrl, indexSerialized )
 						.apply();
 
 				// register shared prefs instance
