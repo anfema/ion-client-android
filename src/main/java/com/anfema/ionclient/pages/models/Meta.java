@@ -125,7 +125,7 @@ public class Meta
 	 */
 	public String getPlainTextOrThrow( String outlet ) throws JsonSyntaxException, NullPointerException
 	{
-		return GsonHolder.getInstance().fromJson( json.get( outlet ), String.class );
+		return getTextOrThrow( outlet ).toString();
 	}
 
 	/**
@@ -198,7 +198,7 @@ public class Meta
 	 * Be aware that strings are raw data in meta representing different content types. It makes probably sense to parse it into the desired format.
 	 * If you expect texts, which can contain formatting tags, call {@link TextFormatting#format(String)} on each string.
 	 * If you expect dates, call {@link DateTimeUtils#parseOrNull(String)}.
-	 * If you expect a cross-link, use {@link Connection#Connection(String, String, List, String, String)}.
+	 * If you expect a cross-link, use {@link Connection#Connection(String)}.
 	 *
 	 * @param outlet identifier of outlet available in page meta data
 	 * @return values for outlet identifier as raw strings
@@ -218,7 +218,7 @@ public class Meta
 	 * Be aware that strings are raw data in meta representing different content types. It makes probably sense to parse it into the desired format.
 	 * If you expect texts, which can contain formatting tags, call {@link TextFormatting#format(String)} on each string.
 	 * If you expect dates, call {@link DateTimeUtils#parseOrNull(String)}.
-	 * If you expect a cross-link, use {@link Connection#Connection(String, String, List, String, String)}.
+	 * If you expect a cross-link, use {@link Connection#Connection(String)}.
 	 *
 	 * @param outlet identifier of outlet available in page meta data
 	 * @return values for outlet identifier as raw strings if exists in meta data, empty list otherwise
