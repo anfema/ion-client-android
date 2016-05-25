@@ -1,8 +1,10 @@
 apply plugin: 'com.android.library'
 apply plugin: 'me.tatarka.retrolambda' // apply last because it might interfere with android-apt commands
 apply plugin: 'de.mobilej.unmock'
+apply plugin: 'kotlin-android'
 
 buildscript {
+    ext.kotlin_version = '1.0.2'
     repositories {
         jcenter()
     }
@@ -11,10 +13,17 @@ buildscript {
         classpath 'me.tatarka:gradle-retrolambda:3.2.3' // activate lambda expressions (on maven central)
         classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2'
         classpath 'de.mobilej.unmock:UnMockPlugin:0.3.6'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 
     // Exclude the version that the android plugin depends on.
     configurations.classpath.exclude group: 'com.android.tools.external.lombok'
+}
+
+repositories {
+    maven {
+        url "http://repository.jetbrains.com/all" // source of Spek
+    }
 }
 
 android {
@@ -49,7 +58,6 @@ android {
 }
 
 dependencies {
-    testCompile 'junit:junit:4.12'
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:support-v4:23.3.0' // required for FileProvider and Annotations
 
@@ -67,6 +75,12 @@ dependencies {
     compile 'org.apache.commons:commons-compress:1.2'
     compile 'joda-time:joda-time:2.9' // better DateTime handling
     compile 'com.google.guava:guava:18.0'
+
+    testCompile 'junit:junit:4.12'
+    testCompile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testCompile "org.jetbrains.spek:spek:1.0.25"
+    testCompile "nl.jqno.equalsverifier:equalsverifier:2.1"
 }
 
 // allow unit tests to use some basic android library classes
@@ -75,7 +89,10 @@ unMock {
     downloadFrom 'https://oss.sonatype.org/content/groups/public/org/robolectric/android-all/4.3_r2-robolectric-0/android-all-4.3_r2-robolectric-0.jar'
 
     keep "android.net.Uri"
+    keepStartingWith "android.text."
+    keepStartingWith "org.ccil.cowan.tagsoup."
     keepStartingWith "libcore."
+    keepStartingWith "com.android.internal.util."
     keepAndRename "java.nio.charset.Charsets" to "xjava.nio.charset.Charsets"
 }
 
