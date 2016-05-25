@@ -44,7 +44,7 @@ public class DateTimeSerializerTest extends TestCase
 	}
 
 	/**
-	 * Tests that deserialising an empty string returns null
+	 * Tests that deserializing an empty string returns null
 	 */
 	public void testDeserializeEmptyString()
 	{
@@ -53,7 +53,7 @@ public class DateTimeSerializerTest extends TestCase
 	}
 
 	/**
-	 * Tests that deserialising a null string returns null
+	 * Tests that deserializing a null string returns null
 	 */
 	public void testDeserializeNullString()
 	{
