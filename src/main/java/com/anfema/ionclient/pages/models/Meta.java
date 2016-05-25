@@ -198,7 +198,7 @@ public class Meta
 	 * Be aware that strings are raw data in meta representing different content types. It makes probably sense to parse it into the desired format.
 	 * If you expect texts, which can contain formatting tags, call {@link TextFormatting#format(String)} on each string.
 	 * If you expect dates, call {@link DateTimeUtils#parseOrNull(String)}.
-	 * If you expect a cross-link, use {@link Connection#Connection(String)}.
+	 * If you expect a cross-link, use {@link Connection#Connection(String, String, List, String, String)}.
 	 *
 	 * @param outlet identifier of outlet available in page meta data
 	 * @return values for outlet identifier as raw strings
@@ -218,7 +218,7 @@ public class Meta
 	 * Be aware that strings are raw data in meta representing different content types. It makes probably sense to parse it into the desired format.
 	 * If you expect texts, which can contain formatting tags, call {@link TextFormatting#format(String)} on each string.
 	 * If you expect dates, call {@link DateTimeUtils#parseOrNull(String)}.
-	 * If you expect a cross-link, use {@link Connection#Connection(String)}.
+	 * If you expect a cross-link, use {@link Connection#Connection(String, String, List, String, String)}.
 	 *
 	 * @param outlet identifier of outlet available in page meta data
 	 * @return values for outlet identifier as raw strings if exists in meta data, empty list otherwise
@@ -333,5 +333,26 @@ public class Meta
 		{
 			throw new JsonSyntaxException( "You tried to compare " + compareValue + " with a meta entry " + json.get( outlet ) + " which could not be parsed to a String.", e );
 		}
+	}
+
+	@Override
+	public final boolean equals( Object o )
+	{
+		if ( !( o instanceof Meta ) )
+		{
+			return false;
+		}
+		Meta other = ( Meta ) o;
+		if ( json == null )
+		{
+			return other.json == null;
+		}
+		return json.equals( other.json );
+	}
+
+	@Override
+	public final int hashCode()
+	{
+		return json != null ? json.hashCode() : -1;
 	}
 }

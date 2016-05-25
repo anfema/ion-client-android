@@ -1,5 +1,6 @@
 package com.anfema.ionclient.serialization;
 
+import com.anfema.ionclient.pages.models.contents.Connection;
 import com.anfema.ionclient.pages.models.contents.ConnectionContent;
 import com.anfema.ionclient.pages.models.contents.Content;
 import com.google.gson.Gson;
@@ -24,18 +25,12 @@ public class ConnectionContentSerializerTest extends TestCase
 
 	public void testRoundtripConnectionContent() throws Exception
 	{
-		ConnectionContent original = new ConnectionContent( null );
-		original.connection.scheme = "ion";
-		original.connection.collectionIdentifier = "collection_identifier";
 		List<String> pageIdentifierPath = new ArrayList<>();
 		pageIdentifierPath.add( "page_identifier1" );
-		String pageIdentifier = "page_identifier2";
-		pageIdentifierPath.add( pageIdentifier );
-		original.connection.pageIdentifierPath = pageIdentifierPath;
-		original.connection.pageIdentifier = pageIdentifier;
-		original.connection.outletIdentifier = "outlet_identifier";
+		pageIdentifierPath.add( "page_identifier2" );
+		Connection conn = new Connection( "ion", "collection_identifier", pageIdentifierPath, "outlet_identifier" );
+		ConnectionContent original = new ConnectionContent( null, conn );
 		System.out.println( "original toString(): " + original );
-
 
 		String intermediate = gson.toJson( original );
 		System.out.println( "intermediate String: " + intermediate );

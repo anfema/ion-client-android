@@ -11,6 +11,10 @@ public class StringUtils
 	 */
 	public static String concatStrings( Iterable<String> strings, String separator )
 	{
+		if ( strings == null )
+		{
+			return null;
+		}
 		if ( separator == null )
 		{
 			separator = "";
@@ -37,4 +41,5 @@ public class StringUtils
 	{
 		return string.length() * 2;
 	}
+
 }

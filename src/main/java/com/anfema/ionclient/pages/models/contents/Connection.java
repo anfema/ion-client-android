@@ -3,16 +3,19 @@ package com.anfema.ionclient.pages.models.contents;
 
 import android.net.Uri;
 
+import com.anfema.utils.EqualsContract;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class Connection
 {
-	public String       scheme;
-	public String       collectionIdentifier;
-	public List<String> pageIdentifierPath;
-	public String       pageIdentifier;
-	public String       outletIdentifier;
+	public final String       scheme;
+	public final String       collectionIdentifier;
+	public final List<String> pageIdentifierPath;
+	public final String       pageIdentifier;
+	public final String       outletIdentifier;
 
 	public Connection( String connectionContentString )
 	{
@@ -26,8 +29,49 @@ public class Connection
 			{
 				pageIdentifier = pageIdentifierPath.get( pageIdentifierPath.size() - 1 );
 			}
+			else
+			{
+				pageIdentifier = null;
+			}
 			outletIdentifier = uri.getFragment();
 		}
+		else
+		{
+			scheme = null;
+			collectionIdentifier = null;
+			pageIdentifierPath = new ArrayList<>();
+			pageIdentifier = null;
+			outletIdentifier = null;
+		}
+	}
+
+	public Connection( String scheme, String collectionIdentifier, String pageIdentifier, String outletIdentifier )
+	{
+		this.scheme = scheme;
+		this.collectionIdentifier = collectionIdentifier;
+		this.pageIdentifier = pageIdentifier;
+		this.pageIdentifierPath = new ArrayList<>();
+		if ( pageIdentifier != null )
+		{
+			pageIdentifierPath.add( pageIdentifier );
+		}
+		this.outletIdentifier = outletIdentifier;
+	}
+
+	public Connection( String scheme, String collectionIdentifier, List<String> pageIdentifierPath, String outletIdentifier )
+	{
+		this.scheme = scheme;
+		this.collectionIdentifier = collectionIdentifier;
+		this.pageIdentifierPath = pageIdentifierPath;
+		if ( pageIdentifierPath != null && !pageIdentifierPath.isEmpty() )
+		{
+			pageIdentifier = pageIdentifierPath.get( pageIdentifierPath.size() - 1 );
+		}
+		else
+		{
+			pageIdentifier = null;
+		}
+		this.outletIdentifier = outletIdentifier;
 	}
 
 	@Override
@@ -38,7 +82,7 @@ public class Connection
 	}
 
 	@Override
-	public boolean equals( Object other )
+	public final boolean equals( Object other )
 	{
 		if ( !( other instanceof Connection ) )
 		{
@@ -46,17 +90,8 @@ public class Connection
 		}
 
 		Connection o = ( Connection ) other;
-		return equal( scheme, o.scheme ) && equal( collectionIdentifier, o.collectionIdentifier ) && equalPaths( o )
-				&& equal( pageIdentifier, o.pageIdentifier ) && equal( outletIdentifier, o.outletIdentifier );
-	}
-
-	protected boolean equal( String s1, String s2 )
-	{
-		if ( s1 == null )
-		{
-			return s2 == null;
-		}
-		return s1.equals( s2 );
+		return EqualsContract.equal( scheme, o.scheme ) && EqualsContract.equal( collectionIdentifier, o.collectionIdentifier ) && equalPaths( o )
+				&& EqualsContract.equal( pageIdentifier, o.pageIdentifier ) && EqualsContract.equal( outletIdentifier, o.outletIdentifier );
 	}
 
 	private boolean equalPaths( Connection o )
@@ -64,6 +99,10 @@ public class Connection
 		if ( pageIdentifierPath == null )
 		{
 			return o.pageIdentifierPath == null;
+		}
+		if ( o.pageIdentifierPath == null )
+		{
+			return false;
 		}
 		if ( pageIdentifierPath.size() != o.pageIdentifierPath.size() )
 		{
@@ -73,7 +112,7 @@ public class Connection
 		{
 			String page = pageIdentifierPath.get( i );
 			String otherPage = o.pageIdentifierPath.get( i );
-			if ( !equal( page, otherPage ) )
+			if ( !EqualsContract.equal( page, otherPage ) )
 			{
 				return false;
 			}
@@ -82,7 +121,7 @@ public class Connection
 	}
 
 	@Override
-	public int hashCode()
+	public final int hashCode()
 	{
 		Object[] hashRelevantFields = { scheme, collectionIdentifier, pageIdentifierPath, pageIdentifier, outletIdentifier };
 		return Arrays.hashCode( hashRelevantFields );
