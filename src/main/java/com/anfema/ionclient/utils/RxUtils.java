@@ -1,7 +1,5 @@
 package com.anfema.ionclient.utils;
 
-import com.anfema.utils.Log;
-
 import retrofit2.adapter.rxjava.HttpException;
 import rx.Observable;
 import rx.Observable.Transformer;
