@@ -2,16 +2,6 @@
 
 -dontwarn java.lang.invoke.*
 
-
-# *** RxJava 1.0.14 ***
-
-#-keepclassmembers class rx.internal.util.unsafe.* {
-#   long producerIndex;
-#   long consumerIndex;
-#}
--keep class rx.** { *; }
-#-dontwarn rx.**
-
 # *** Gson ***
 
 # Gson uses generic type information stored in a class file when working with fields. Proguard
@@ -64,42 +54,32 @@
 -keep interface org.joda.time.** { *; }
 -dontwarn org.joda.convert.**
 
+# *** Apache Commons Compress 1.12 ***
 
-# *** Guava ***
+-dontwarn org.apache.**
 
-# Configuration for Guava 18.0
-# disagrees with instructions provided by Guava project: https://code.google.com/p/guava-libraries/wiki/UsingProGuardWithGuava
+###### Rules of picasso snapshot
 
--keep class com.google.common.io.Resources {
-    public static <methods>;
-}
--keep class com.google.common.collect.Lists {
-    public static ** reverse(**);
-}
--keep class com.google.common.base.Charsets {
-    public static <fields>;
-}
+### PICASSO
 
--keep class com.google.common.base.Joiner {
-    public static com.google.common.base.Joiner on(java.lang.String);
-    public ** join(...);
-}
+# Checks for OkHttp versions on the classpath to determine Downloader to use.
+-dontnote com.squareup.picasso.Utils
+# Downloader used only when OkHttp 2.x is present on the classpath.
+-dontwarn com.squareup.picasso.OkHttpDownloader
+# Downloader used only when OkHttp 3.x is present on the classpath.
+-dontwarn com.squareup.picasso.OkHttp3Downloader
 
--keep class com.google.common.collect.MapMakerInternalMap$ReferenceEntry
--keep class com.google.common.cache.LocalCache$ReferenceEntry
 
-# http://stackoverflow.com/questions/9120338/proguard-configuration-for-guava-with-obfuscation-and-optimization
--dontwarn javax.annotation.**
--dontwarn javax.inject.**
--dontwarn sun.misc.Unsafe
+### OKHTTP
 
-# Guava 19.0
--dontwarn java.lang.ClassValue
--dontwarn com.google.j2objc.annotations.Weak
--dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
+# Platform calls Class.forName on types which do not exist on Android to determine platform.
+-dontnote okhttp3.internal.Platform
+-dontnote com.squareup.okhttp.internal.Platform
 
-# tests
-#-keep class com.squareup.okhttp.** { *; }
-#-keep interface com.squareup.okhttp.** { *; }
-#-keep class com.google.gson.stream.** { *; }
-#-keep class org.apache.** { *; }
+
+### OKIO
+
+# java.nio.file.* usage which cannot be used at runtime. Animal sniffer annotation.
+-dontwarn okio.Okio
+# JDK 7-only method which is @hide on Android. Animal sniffer annotation.
+-dontwarn okio.DeflaterSink
