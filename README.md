@@ -8,8 +8,7 @@
 1. In settings.gradle: `include ':ionclient'`
 1. In build.gradle of your app module add module dependency 
 ```
-debugCompile project(path: ':ionclient', configuration: 'debug')
-releaseCompile project(path: ':ionclient', configuration: 'release')
+compile project(':ionclient')
 ``` 
 
 TBD: Make ION client available as a dependency.
