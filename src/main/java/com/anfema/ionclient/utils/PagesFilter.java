@@ -1,5 +1,7 @@
 package com.anfema.ionclient.utils;
 
+import android.support.annotation.NonNull;
+
 import com.anfema.ionclient.pages.models.PagePreview;
 
 import java.util.List;
@@ -28,7 +30,12 @@ public class PagesFilter
 	 */
 	public static Func1<PagePreview, Boolean> identifierEquals( String pageIdentifier )
 	{
-		return pagePreview -> pagePreview != null && pagePreview.identifier != null && pagePreview.identifier.equals( pageIdentifier );
+		return pagePreview -> identifierEquals( pageIdentifier, pagePreview );
+	}
+
+	public static boolean identifierEquals( String pageIdentifier, PagePreview pagePreview )
+	{
+		return pagePreview != null && pagePreview.identifier != null && pagePreview.identifier.equals( pageIdentifier );
 	}
 
 	/**
@@ -36,21 +43,25 @@ public class PagesFilter
 	 */
 	public static Func1<PagePreview, Boolean> identifierIn( List<String> pageIdentifiers )
 	{
-		return pagePreview -> {
-			if ( pagePreview == null || pageIdentifiers == null )
-			{
-				return false;
-			}
+		return pagePreview -> identifierIn( pageIdentifiers, pagePreview );
+	}
 
-			for ( String pageIdentifier : pageIdentifiers )
-			{
-				if ( pageIdentifier != null && pageIdentifier.equals( pagePreview.identifier ) )
-				{
-					return true;
-				}
-			}
+	@NonNull
+	public static Boolean identifierIn( List<String> pageIdentifiers, PagePreview pagePreview )
+	{
+		if ( pagePreview == null || pageIdentifiers == null )
+		{
 			return false;
-		};
+		}
+
+		for ( String pageIdentifier : pageIdentifiers )
+		{
+			if ( pageIdentifier != null && pageIdentifier.equals( pagePreview.identifier ) )
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -58,7 +69,12 @@ public class PagesFilter
 	 */
 	public static Func1<PagePreview, Boolean> layoutEquals( String layout )
 	{
-		return pagePreview -> pagePreview != null && pagePreview.layout != null && pagePreview.layout.equals( layout );
+		return pagePreview -> layoutEquals( layout, pagePreview );
+	}
+
+	public static boolean layoutEquals( String layout, PagePreview pagePreview )
+	{
+		return pagePreview != null && pagePreview.layout != null && pagePreview.layout.equals( layout );
 	}
 
 	/**
@@ -66,6 +82,11 @@ public class PagesFilter
 	 */
 	public static Func1<PagePreview, Boolean> childOf( String parentIdentifier )
 	{
-		return pagePreview -> pagePreview != null && pagePreview.parent != null && pagePreview.parent.equals( parentIdentifier );
+		return pagePreview -> childOf( parentIdentifier, pagePreview );
+	}
+
+	public static boolean childOf( String parentIdentifier, PagePreview pagePreview )
+	{
+		return pagePreview != null && pagePreview.parent != null && pagePreview.parent.equals( parentIdentifier );
 	}
 }
