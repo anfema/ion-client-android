@@ -159,6 +159,9 @@ public class IonPagesWithCaching implements IonPages
 	@Override
 	public Observable<Page> fetchPage( String pageIdentifier )
 	{
+		// clear incompatible cache
+		CacheCompatManager.cleanUp( context );
+
 		String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 		PageCacheIndex pageCacheIndex = PageCacheIndex.retrieve( pageUrl, config, context );
 
@@ -368,9 +371,6 @@ public class IonPagesWithCaching implements IonPages
 	 */
 	private Observable<Page> fetchPageFromCache( String pageIdentifier, boolean serverCallAsBackup )
 	{
-		// clear incompatible cache
-		CacheCompatManager.cleanUp( context );
-
 		String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 
 		// retrieve from memory cache
@@ -387,7 +387,7 @@ public class IonPagesWithCaching implements IonPages
 		File filePath = FilePaths.getPageJsonPath( pageUrl, pageIdentifier, config, context );
 		if ( !filePath.exists() )
 		{
-			return Observable.error( new PageNotAvailableException() );
+			return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, new PageNotAvailableException() );
 		}
 
 		return FileUtils.readTextFromFile( filePath )
