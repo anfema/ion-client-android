@@ -72,7 +72,7 @@ public class IonPagesWithCaching implements IonPages
 	{
 		this.config = config;
 		this.context = context;
-		ionApi = ApiFactory.newInstance( config.baseUrl, interceptors, IonPagesApi.class );
+		ionApi = ApiFactory.newInstance( config.baseUrl, interceptors, IonPagesApi.class, config.networkTimeout );
 		runningCollectionDownload = new PendingDownloadHandler<>();
 		runningPageDownloads = new PendingDownloadHandler<>();
 	}
@@ -183,7 +183,8 @@ public class IonPagesWithCaching implements IonPages
 				.flatMap( collection -> collection.getPageLastChangedAsync( pageIdentifier ) )
 				// compare last_changed date of cached page with that of collection
 				.map( pageCacheIndex::isOutdated )
-				.flatMap( isOutdated -> {
+				.flatMap( isOutdated ->
+				{
 					boolean networkAvailable = NetworkUtils.isConnected( context ) && IonConfig.cachingStrategy != CachingStrategy.STRICT_OFFLINE;
 					if ( !isOutdated )
 					{
@@ -267,7 +268,8 @@ public class IonPagesWithCaching implements IonPages
 
 		return FileUtils.readTextFromFile( filePath )
 				// deserialize collection and remember byte count
-				.map( collectionsString -> {
+				.map( collectionsString ->
+				{
 					CollectionResponse collectionResponse = GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class );
 					Collection collection1 = collectionResponse.getCollection();
 					collection1.byteCount = StringUtils.byteCount( collectionsString );
@@ -275,7 +277,8 @@ public class IonPagesWithCaching implements IonPages
 				} )
 				// save to memory cache
 				.doOnNext( collection1 -> MemoryCache.saveCollection( collection1, collectionUrl, context ) )
-				.onErrorResumeNext( throwable -> {
+				.onErrorResumeNext( throwable ->
+				{
 					return handleUnsuccessfulCollectionCacheReading( collectionUrl, cacheIndex, serverCallAsBackup, throwable );
 				} )
 				.compose( RxUtils.runOnIoThread() );
@@ -307,7 +310,8 @@ public class IonPagesWithCaching implements IonPages
 
 		Observable<Collection> collectionObservable = config.authenticatedRequest(
 				authorizationHeaderValue -> ionApi.getCollection( config.collectionIdentifier, config.locale, authorizationHeaderValue, config.variation, lastModified ) )
-				.flatMap( serverResponse -> {
+				.flatMap( serverResponse ->
+				{
 					if ( serverResponse.code() == COLLECTION_NOT_MODIFIED )
 					{
 						// collection has not changed, return cached version
@@ -322,14 +326,16 @@ public class IonPagesWithCaching implements IonPages
 						// parse collection data from response and write cache index and memory cache
 						return Observable.just( serverResponse )
 								// unwrap page and remember byte count
-								.map( ( response ) -> {
+								.map( ( response ) ->
+								{
 									Collection collection = response.body().getCollection();
 									collection.byteCount = getContentByteCount( response );
 									return collection;
 								} )
 								.doOnNext( collection -> MemoryCache.saveCollection( collection, config, context ) )
 								.doOnNext( saveCollectionCacheIndex( lastModifiedReceived ) )
-								.doOnNext( collection -> {
+								.doOnNext( collection ->
+								{
 									if ( collectionListener != null )
 									{
 										collectionListener.collectionDownloaded( collection, lastModifiedReceived );
@@ -341,7 +347,8 @@ public class IonPagesWithCaching implements IonPages
 						return Observable.error( new HttpException( serverResponse ) );
 					}
 				} )
-				.onErrorResumeNext( throwable -> {
+				.onErrorResumeNext( throwable ->
+				{
 					String collectionUrl = IonPageUrls.getCollectionUrl( config );
 					if ( cacheAsBackup )
 					{
@@ -392,7 +399,8 @@ public class IonPagesWithCaching implements IonPages
 
 		return FileUtils.readTextFromFile( filePath )
 				// deserialize page and remember byte count
-				.map( pagesString -> {
+				.map( pagesString ->
+				{
 					PageResponse pageResponse = GsonHolder.getInstance().fromJson( pagesString, PageResponse.class );
 					Page page = pageResponse.getPage();
 					page.byteCount = StringUtils.byteCount( pagesString );
@@ -400,7 +408,8 @@ public class IonPagesWithCaching implements IonPages
 				} )
 				// save to memory cache
 				.doOnNext( page -> MemoryCache.savePage( page, config, context ) )
-				.onErrorResumeNext( throwable -> {
+				.onErrorResumeNext( throwable ->
+				{
 					return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, throwable );
 				} )
 				.compose( RxUtils.runOnIoThread() );
@@ -426,14 +435,16 @@ public class IonPagesWithCaching implements IonPages
 		Observable<Page> pageObservable = config.authenticatedRequest(
 				authorizationHeaderValue -> ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.variation, authorizationHeaderValue ) )
 				// unwrap page and remember byte count
-				.map( response -> {
+				.map( response ->
+				{
 					Page page = response.body().getPage();
 					page.byteCount = getContentByteCount( response );
 					return page;
 				} )
 				.doOnNext( savePageCacheIndex() )
 				.doOnNext( page -> MemoryCache.savePage( page, config, context ) )
-				.onErrorResumeNext( throwable -> {
+				.onErrorResumeNext( throwable ->
+				{
 					String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 					if ( cacheAsBackup )
 					{

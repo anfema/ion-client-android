@@ -2,8 +2,9 @@ package com.anfema.ionclient.utils;
 
 import android.support.annotation.NonNull;
 
+import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.serialization.GsonHolder;
-import com.anfema.utils.Log;
+import com.anfema.utils.NetworkUtils;
 
 import java.util.Collection;
 
@@ -16,12 +17,13 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiFactory
 {
-	public static <T> T newInstance( String baseUrl, Collection<Interceptor> interceptors, Class<T> serviceApi )
+	public static <T> T newInstance( String baseUrl, Collection<Interceptor> interceptors, Class<T> serviceApi, int networkTimeout )
 	{
 		baseUrl = ensureEndsWithSlash( baseUrl );
 
 		// configure okHttp client: add interceptors
 		OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
+		NetworkUtils.applyTimeout( okHttpClientBuilder, networkTimeout );
 		if ( interceptors != null )
 		{
 			for ( Interceptor interceptor : interceptors )
@@ -43,7 +45,7 @@ public class ApiFactory
 	}
 
 	@NonNull
-	public static String ensureEndsWithSlash( String baseUrl )
+	private static String ensureEndsWithSlash( String baseUrl )
 	{
 		if ( !baseUrl.endsWith( FileUtils.SLASH ) )
 		{
@@ -55,6 +57,6 @@ public class ApiFactory
 
 	public static <T> T newInstance( String baseUrl, Class<T> serviceApi )
 	{
-		return newInstance( baseUrl, null, serviceApi );
+		return newInstance( baseUrl, null, serviceApi, IonConfig.DEFAULT_NETWORK_TIMEOUT );
 	}
 }

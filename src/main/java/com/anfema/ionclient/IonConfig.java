@@ -1,6 +1,7 @@
 package com.anfema.ionclient;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import com.anfema.ionclient.exceptions.IonConfigInvalidException;
 import com.anfema.ionclient.utils.IonLog;
@@ -12,7 +13,9 @@ import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import rx.Observable;
 import rx.functions.Func0;
@@ -22,6 +25,7 @@ public class IonConfig
 {
 	public static final String DEFAULT_VARIATION                        = "default";
 	public static final int    DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH = 5;
+	public static final int    DEFAULT_NETWORK_TIMEOUT                  = -1;
 	public static final int    CALC_REASONABLE_SIZE                     = -1;
 
 	/**
@@ -135,6 +139,12 @@ public class IonConfig
 	 */
 	public final int minutesUntilCollectionRefetch;
 
+	/**
+	 * Unit: seconds
+	 * If set to DEFAULT_NETWORK_TIMEOUT, the default timeouts from okhttp library are used (10 seconds).
+	 */
+	public final int networkTimeout;
+
 	@SuppressWarnings("unused")
 	public static class Builder
 	{
@@ -147,6 +157,8 @@ public class IonConfig
 		private boolean            archiveDownloads              = false;
 		private boolean            ftsDbDownloads                = false;
 		private int                minutesUntilCollectionRefetch = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH;
+		private int                networkTimeout                = DEFAULT_NETWORK_TIMEOUT;
+
 
 		public Builder( String baseUrl, String collectionIdentifier )
 		{
@@ -205,6 +217,12 @@ public class IonConfig
 			return this;
 		}
 
+		public Builder networkTimeout( int networkTimeout )
+		{
+			this.networkTimeout = networkTimeout;
+			return this;
+		}
+
 		public IonConfig build()
 		{
 			if ( locale == null )
@@ -216,11 +234,13 @@ public class IonConfig
 				IonLog.w( "IonConfig.Builder", "Did you forget to provide an authorization?" );
 			}
 			return new IonConfig( baseUrl, collectionIdentifier, locale, variation, authorizationHeaderValue, authorizationHeaderValueCall,
-					archiveDownloads, ftsDbDownloads, minutesUntilCollectionRefetch );
+					archiveDownloads, ftsDbDownloads, minutesUntilCollectionRefetch, networkTimeout );
 		}
 	}
 
-	public IonConfig( String baseUrl, String collectionIdentifier, String locale, String variation, String authorizationHeaderValue, Observable<String> authorizationHeaderValueCall, boolean archiveDownloads, boolean ftsDbDownloads, int minutesUntilCollectionRefetch )
+	public IonConfig( String baseUrl, String collectionIdentifier, String locale, String variation, String authorizationHeaderValue,
+					  Observable<String> authorizationHeaderValueCall, boolean archiveDownloads, boolean ftsDbDownloads,
+					  int minutesUntilCollectionRefetch, int networkTimeout )
 	{
 		this.baseUrl = baseUrl;
 		this.collectionIdentifier = collectionIdentifier;
@@ -231,9 +251,10 @@ public class IonConfig
 		this.archiveDownloads = archiveDownloads;
 		this.ftsDbDownloads = ftsDbDownloads;
 		this.minutesUntilCollectionRefetch = minutesUntilCollectionRefetch;
+		this.networkTimeout = networkTimeout;
 	}
 
-	public IonConfig( IonConfig otherConfig )
+	public IonConfig( @NonNull IonConfig otherConfig )
 	{
 		this.baseUrl = otherConfig.baseUrl;
 		this.collectionIdentifier = otherConfig.collectionIdentifier;
@@ -244,6 +265,7 @@ public class IonConfig
 		this.archiveDownloads = otherConfig.archiveDownloads;
 		this.ftsDbDownloads = otherConfig.ftsDbDownloads;
 		this.minutesUntilCollectionRefetch = otherConfig.minutesUntilCollectionRefetch;
+		this.networkTimeout = otherConfig.networkTimeout;
 	}
 
 	public boolean isValid()
@@ -331,7 +353,8 @@ public class IonConfig
 	{
 		return updateAuthorizationHeaderValue( !tryAgain )
 				.flatMap( requestFunc::call )
-				.flatMap( response -> {
+				.flatMap( response ->
+				{
 					if ( tryAgain )
 					{
 						int responseCode = -1;
@@ -381,7 +404,8 @@ public class IonConfig
 		}
 
 		Observable<String> updatedAuthorization = authorizationHeaderValueCall
-				.map( authorizationHeaderValue -> {
+				.map( authorizationHeaderValue ->
+				{
 					authorizations.put( IonConfig.this, authorizationHeaderValue );
 					this.authorizationHeaderValue = authorizationHeaderValue;
 					return authorizationHeaderValue;
