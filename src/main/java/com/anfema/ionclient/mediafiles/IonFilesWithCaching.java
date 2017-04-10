@@ -52,6 +52,7 @@ public class IonFilesWithCaching implements IonFiles
 		this.config = config;
 		this.context = context;
 		OkHttpClient.Builder okHttpClientBuilder = new Builder();
+		NetworkUtils.applyTimeout( okHttpClientBuilder, config.networkTimeout );
 		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( this.config::getAuthorizationHeaderValue ) );
 		okHttpClientBuilder.addInterceptor( new RequestLogger( "Network Request" ) );
 		// disable okHttp disk cache because it would store duplicate and un-used data because ION client uses its own cache

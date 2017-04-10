@@ -11,6 +11,7 @@ import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
 import com.anfema.ionclient.utils.IonLog;
+import com.anfema.utils.NetworkUtils;
 import com.jakewharton.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.LruCache;
@@ -45,7 +46,7 @@ public class IonPicassoWithCaching implements IonPicasso
 	{
 		this.ionFiles = ionFiles;
 		this.config = config;
-		this.picasso = createPicassoInstance( this.config::getAuthorizationHeaderValue, context );
+		this.picasso = createPicassoInstance( this.config::getAuthorizationHeaderValue, context, config.networkTimeout );
 	}
 
 	@Override
@@ -57,9 +58,10 @@ public class IonPicassoWithCaching implements IonPicasso
 	/**
 	 * You may not want to acquire a Picasso instance via {@link IonClient}.
 	 */
-	public static Picasso createPicassoInstance( Func0<String> authHeaderValueRetriever, Context context )
+	public static Picasso createPicassoInstance( Func0<String> authHeaderValueRetriever, Context context, int networkTimeout )
 	{
 		OkHttpClient.Builder okHttpClientBuilder = new Builder();
+		NetworkUtils.applyTimeout( okHttpClientBuilder, networkTimeout );
 		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( authHeaderValueRetriever ) );
 		okHttpClientBuilder.addInterceptor( new RequestLogger( "Picasso Request" ) );
 		OkHttpClient picassoClient = okHttpClientBuilder.build();
@@ -77,9 +79,9 @@ public class IonPicassoWithCaching implements IonPicasso
 	 * <p>
 	 * Therefore, it is recommended to call this method in {@link Application#onCreate()}. (But do not perform any long-lasting operations there.)
 	 */
-	public static void setupDefaultPicasso( String authHeaderValue, Context context ) throws IllegalStateException
+	public static void setupDefaultPicasso( String authHeaderValue, Context context, int networkTimeout ) throws IllegalStateException
 	{
-		Picasso picasso = createPicassoInstance( () -> authHeaderValue, context );
+		Picasso picasso = createPicassoInstance( () -> authHeaderValue, context, networkTimeout );
 		Picasso.setSingletonInstance( picasso );
 	}
 
