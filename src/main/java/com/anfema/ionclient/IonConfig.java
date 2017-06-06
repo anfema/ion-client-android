@@ -13,13 +13,11 @@ import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Callable;
 
-import okhttp3.OkHttpClient;
+import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 import okhttp3.Response;
-import rx.Observable;
-import rx.functions.Func0;
-import rx.functions.Func1;
 
 public class IonConfig
 {
@@ -272,7 +270,8 @@ public class IonConfig
 	{
 		return baseUrl != null && baseUrl.contains( "://" )
 				&& collectionIdentifier != null
-				&& locale != null && locale.length() > 0;
+				&& locale != null && locale.length() > 0
+				&& ( authorizationHeaderValue != null || authorizationHeaderValueCall != null );
 	}
 
 	public static void assertConfigIsValid( IonConfig config )
@@ -334,7 +333,7 @@ public class IonConfig
 	 * @param <T>         return type of the request
 	 * @return observable of request is forwarded
 	 */
-	public <T> Observable<T> authenticatedRequest( Func0<Observable<T>> requestFunc )
+	public <T> Observable<T> authenticatedRequest( Callable<Observable<T>> requestFunc )
 	{
 		return authenticatedRequest( authorizationHeaderValue -> requestFunc.call() );
 	}
@@ -344,15 +343,15 @@ public class IonConfig
 	 * @param <T>         return type of the request
 	 * @return observable of request is forwarded
 	 */
-	public <T> Observable<T> authenticatedRequest( Func1<String, Observable<T>> requestFunc )
+	public <T> Observable<T> authenticatedRequest( Function<String, Observable<T>> requestFunc )
 	{
 		return authenticatedRequest( requestFunc, true );
 	}
 
-	private <T> Observable<T> authenticatedRequest( Func1<String, Observable<T>> requestFunc, boolean tryAgain )
+	private <T> Observable<T> authenticatedRequest( Function<String, Observable<T>> requestFunc, boolean tryAgain )
 	{
 		return updateAuthorizationHeaderValue( !tryAgain )
-				.flatMap( requestFunc::call )
+				.flatMap( requestFunc )
 				.flatMap( response ->
 				{
 					if ( tryAgain )

@@ -6,13 +6,13 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Callback;
 
-import rx.functions.Func1;
+import io.reactivex.functions.Function;
 
 /**
  * Imagine you do not want to use Picasso's placeholder during loading but a progress bar for example.
  * <p>
  * First create a (relative) layout with that extra view indicating loading state.
- * Then, pick {@link com.anfema.ionclient.mediafiles.IonPicasso#loadImage(Uri, ImageView, Func1, Callback)} or a convenience method with a callback
+ * Then, pick {@link com.anfema.ionclient.mediafiles.IonPicasso#loadImage(Uri, ImageView, Function, Callback)} or a convenience method with a callback
  * and pass an instance of {@link PicassoLoadingViewHandler} pointing to the loading indicator and visibility will be handled automatically.
  */
 public class PicassoLoadingViewHandler implements Callback

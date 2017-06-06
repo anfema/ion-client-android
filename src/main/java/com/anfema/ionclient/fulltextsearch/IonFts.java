@@ -5,7 +5,8 @@ import com.anfema.ionclient.pages.ConfigUpdatable;
 import java.io.File;
 import java.util.List;
 
-import rx.Observable;
+import io.reactivex.Observable;
+
 
 public interface IonFts extends ConfigUpdatable
 {

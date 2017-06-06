@@ -32,14 +32,14 @@ import com.anfema.utils.StringUtils;
 import java.io.File;
 import java.util.List;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Predicate;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.Interceptor;
+import retrofit2.HttpException;
 import retrofit2.Response;
-import retrofit2.adapter.rxjava.HttpException;
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 
 /**
  * A wrapper of "collections" and "pages" call of ION API.
@@ -68,7 +68,7 @@ public class IonPagesWithCaching implements IonPages
 	 */
 	private final IonPagesApi ionApi;
 
-	public IonPagesWithCaching( IonConfig config, Context context, List<Interceptor> interceptors )
+	IonPagesWithCaching( IonConfig config, Context context, List<Interceptor> interceptors )
 	{
 		this.config = config;
 		this.context = context;
@@ -126,16 +126,16 @@ public class IonPagesWithCaching implements IonPages
 	{
 		return fetchCollection()
 				.map( collection -> collection.pages )
-				.flatMap( Observable::from )
+				.flatMap( Observable::fromIterable )
 				.filter( PagesFilter.identifierEquals( pageIdentifier ) );
 	}
 
 	@Override
-	public Observable<PagePreview> fetchPagePreviews( Func1<PagePreview, Boolean> pagesFilter )
+	public Observable<PagePreview> fetchPagePreviews( Predicate<PagePreview> pagesFilter )
 	{
 		return fetchCollection()
 				.map( collection -> collection.pages )
-				.concatMap( Observable::from )
+				.concatMap( Observable::fromIterable )
 				.filter( pagesFilter );
 	}
 
@@ -210,7 +210,7 @@ public class IonPagesWithCaching implements IonPages
 
 	/**
 	 * Fetch a set of pages by passing its page identifiers.
-	 * This is a convenience method for {@link #fetchPages(Func1)}.
+	 * This is a convenience method for {@link #fetchPages(Predicate)}.
 	 */
 	@Override
 	public Observable<Page> fetchPages( List<String> pageIdentifiers )
@@ -223,12 +223,12 @@ public class IonPagesWithCaching implements IonPages
 	 * Use collection identifier as specified in {@link this#config}
 	 */
 	@Override
-	public Observable<Page> fetchPages( Func1<PagePreview, Boolean> pagesFilter )
+	public Observable<Page> fetchPages( Predicate<PagePreview> pagesFilter )
 	{
 		return fetchCollection()
 				.observeOn( Schedulers.io() )
 				.map( collection -> collection.pages )
-				.concatMap( Observable::from )
+				.concatMap( Observable::fromIterable )
 				.filter( pagesFilter )
 				.map( page -> page.identifier )
 				.concatMap( this::fetchPage )
@@ -476,13 +476,13 @@ public class IonPagesWithCaching implements IonPages
 
 
 	@NonNull
-	private Action1<Collection> saveCollectionCacheIndex( String lastModified )
+	private Consumer<Collection> saveCollectionCacheIndex( String lastModified )
 	{
 		return collection -> CollectionCacheIndex.save( config, context, lastModified );
 	}
 
 	@NonNull
-	private Action1<Page> savePageCacheIndex()
+	private Consumer<Page> savePageCacheIndex()
 	{
 		return page -> PageCacheIndex.save( page, config, context );
 	}

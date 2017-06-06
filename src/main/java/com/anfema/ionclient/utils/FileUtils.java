@@ -2,7 +2,6 @@ package com.anfema.ionclient.utils;
 
 import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.exceptions.FileMoveException;
-import com.anfema.utils.Log;
 
 import org.apache.commons.compress.utils.IOUtils;
 
@@ -18,8 +17,9 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import rx.Observable;
-import rx.schedulers.Schedulers;
+import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
+
 
 public class FileUtils
 {
@@ -112,29 +112,28 @@ public class FileUtils
 
 	public static Observable<String> readTextFromFile( File file )
 	{
-		return Observable.just( null )
-				.flatMap( o ->
-				{
-					StringBuilder text = new StringBuilder();
-					BufferedReader br = null;
-					try
-					{
-						br = new BufferedReader( new FileReader( file ) );
-						String line;
+		return Observable.defer( () ->
+		{
+			StringBuilder text = new StringBuilder();
+			BufferedReader br = null;
+			try
+			{
+				br = new BufferedReader( new FileReader( file ) );
+				String line;
 
-						while ( ( line = br.readLine() ) != null )
-						{
-							text.append( line );
-							text.append( '\n' );
-						}
-						br.close();
-						return Observable.just( text.toString() );
-					}
-					catch ( IOException e )
-					{
-						return Observable.error( e );
-					}
-				} ).subscribeOn( Schedulers.io() );
+				while ( ( line = br.readLine() ) != null )
+				{
+					text.append( line );
+					text.append( '\n' );
+				}
+				br.close();
+				return Observable.just( text.toString() );
+			}
+			catch ( IOException e )
+			{
+				return Observable.error( e );
+			}
+		} ).subscribeOn( Schedulers.io() );
 	}
 
 	/**

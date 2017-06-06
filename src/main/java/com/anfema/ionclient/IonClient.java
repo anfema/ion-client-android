@@ -30,9 +30,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Observable;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import okhttp3.HttpUrl;
-import rx.Observable;
-import rx.functions.Func1;
 
 /**
  * Main entry point for ION functionality. Obtain an instance with {@link #getInstance(IonConfig, Context)}.
@@ -127,7 +128,7 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * @param pagesFilter see {@link com.anfema.ionclient.utils.PagesFilter} for some frequently used filter options.
 	 */
 	@Override
-	public Observable<PagePreview> fetchPagePreviews( Func1<PagePreview, Boolean> pagesFilter )
+	public Observable<PagePreview> fetchPagePreviews( Predicate<PagePreview> pagesFilter )
 	{
 		return ionPages.fetchPagePreviews( pagesFilter );
 	}
@@ -159,7 +160,7 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * @param pagesFilter see {@link com.anfema.ionclient.utils.PagesFilter} for some frequently used filter options.
 	 */
 	@Override
-	public Observable<Page> fetchPages( Func1<PagePreview, Boolean> pagesFilter )
+	public Observable<Page> fetchPages( Predicate<PagePreview> pagesFilter )
 	{
 		return ionPages.fetchPages( pagesFilter );
 	}
@@ -204,37 +205,37 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	}
 
 	@Override
-	public void loadImage( int resourceId, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
+	public void loadImage( int resourceId, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation )
 	{
 		ionPicasso.loadImage( resourceId, target, requestTransformation );
 	}
 
 	@Override
-	public void loadImage( int resourceId, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	public void loadImage( int resourceId, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
 		ionPicasso.loadImage( resourceId, target, requestTransformation, callback );
 	}
 
 	@Override
-	public void loadImage( String path, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
+	public void loadImage( String path, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation )
 	{
 		ionPicasso.loadImage( path, target, requestTransformation );
 	}
 
 	@Override
-	public void loadImage( String path, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	public void loadImage( String path, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
 		ionPicasso.loadImage( path, target, requestTransformation, callback );
 	}
 
 	@Override
-	public void loadImage( Uri uri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
+	public void loadImage( Uri uri, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation )
 	{
 		ionPicasso.loadImage( uri, target, requestTransformation );
 	}
 
 	@Override
-	public void loadImage( Uri uri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	public void loadImage( Uri uri, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
 		ionPicasso.loadImage( uri, target, requestTransformation, callback );
 	}

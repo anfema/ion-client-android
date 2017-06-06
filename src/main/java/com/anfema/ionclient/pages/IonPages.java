@@ -6,8 +6,8 @@ import com.anfema.ionclient.pages.models.PagePreview;
 
 import java.util.List;
 
-import rx.Observable;
-import rx.functions.Func1;
+import io.reactivex.Observable;
+import io.reactivex.functions.Predicate;
 
 public interface IonPages extends ConfigUpdatable
 {
@@ -15,7 +15,7 @@ public interface IonPages extends ConfigUpdatable
 
 	Observable<PagePreview> fetchPagePreview( String pageIdentifier );
 
-	Observable<PagePreview> fetchPagePreviews( Func1<PagePreview, Boolean> pagesFilter );
+	Observable<PagePreview> fetchPagePreviews( Predicate<PagePreview> pagesFilter );
 
 	Observable<PagePreview> fetchAllPagePreviews();
 
@@ -23,7 +23,7 @@ public interface IonPages extends ConfigUpdatable
 
 	Observable<Page> fetchPages( List<String> pageIdentifiers );
 
-	Observable<Page> fetchPages( Func1<PagePreview, Boolean> pagesFilter );
+	Observable<Page> fetchPages( Predicate<PagePreview> pagesFilter );
 
 	Observable<Page> fetchAllPages();
 }

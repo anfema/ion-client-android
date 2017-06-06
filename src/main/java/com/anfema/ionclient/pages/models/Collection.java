@@ -8,7 +8,7 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 public class Collection implements SizeAware
 {

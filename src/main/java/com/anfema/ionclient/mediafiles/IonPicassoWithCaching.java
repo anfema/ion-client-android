@@ -3,6 +3,7 @@ package com.anfema.ionclient.mediafiles;
 import android.app.Application;
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.webkit.URLUtil;
 import android.widget.ImageView;
 
@@ -11,6 +12,7 @@ import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
 import com.anfema.ionclient.utils.IonLog;
+import com.anfema.utils.Log;
 import com.anfema.utils.NetworkUtils;
 import com.jakewharton.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Callback;
@@ -18,12 +20,13 @@ import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
+import java.util.concurrent.Callable;
+
+import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
-import rx.Observable;
-import rx.functions.Func0;
-import rx.functions.Func1;
 
 /**
  * This class holds multiple {@link Picasso} instances.
@@ -58,7 +61,7 @@ public class IonPicassoWithCaching implements IonPicasso
 	/**
 	 * You may not want to acquire a Picasso instance via {@link IonClient}.
 	 */
-	public static Picasso createPicassoInstance( Func0<String> authHeaderValueRetriever, Context context, int networkTimeout )
+	public static Picasso createPicassoInstance( Callable<String> authHeaderValueRetriever, Context context, int networkTimeout )
 	{
 		OkHttpClient.Builder okHttpClientBuilder = new Builder();
 		NetworkUtils.applyTimeout( okHttpClientBuilder, networkTimeout );
@@ -86,30 +89,37 @@ public class IonPicassoWithCaching implements IonPicasso
 	}
 
 	@Override
-	public void loadImage( int resourceId, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
+	public void loadImage( int resourceId, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation )
 	{
 		loadImage( resourceId, target, requestTransformation, null );
 	}
 
 	@Override
-	public void loadImage( int resourceId, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	public void loadImage( int resourceId, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
 		RequestCreator requestCreator = picasso.load( resourceId );
 		if ( requestTransformation != null )
 		{
-			requestCreator = requestTransformation.call( requestCreator );
+			try
+			{
+				requestCreator = requestTransformation.apply( requestCreator );
+			}
+			catch ( Exception e )
+			{
+				Log.ex( e );
+			}
 		}
 		requestCreator.into( target, callback );
 	}
 
 	@Override
-	public void loadImage( String path, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
+	public void loadImage( String path, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation )
 	{
 		loadImage( path, target, requestTransformation, null );
 	}
 
 	@Override
-	public void loadImage( String path, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	public void loadImage( String path, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
 		if ( path == null || path.trim().length() == 0 )
 		{
@@ -117,7 +127,14 @@ public class IonPicassoWithCaching implements IonPicasso
 			RequestCreator requestCreator = picasso.load( path );
 			if ( requestTransformation != null )
 			{
-				requestCreator = requestTransformation.call( requestCreator );
+				try
+				{
+					requestCreator = requestTransformation.apply( requestCreator );
+				}
+				catch ( Exception e )
+				{
+					Log.ex( e );
+				}
 			}
 			requestCreator.into( target, callback );
 			return;
@@ -126,13 +143,13 @@ public class IonPicassoWithCaching implements IonPicasso
 	}
 
 	@Override
-	public void loadImage( Uri requestUri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation )
+	public void loadImage( Uri requestUri, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation )
 	{
 		loadImage( requestUri, target, requestTransformation, null );
 	}
 
 	@Override
-	public void loadImage( Uri requestUri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	public void loadImage( Uri requestUri, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
 		IonLog.i( "ION Picasso", "START: requestUri: " + requestUri );
 		// IonLog.d( "ION Picasso", "picasso instance: " + picasso + ", ion picasso instance: " + this );
@@ -140,7 +157,7 @@ public class IonPicassoWithCaching implements IonPicasso
 				.subscribe( fileUri -> showImage( fileUri, target, requestTransformation, callback ), throwable -> imageDownloadFailed( throwable, target, requestTransformation, callback ) );
 	}
 
-	private Observable<Uri> fetchImageFile( Uri uri )
+	private Observable<Uri> fetchImageFile( @NonNull Uri uri )
 	{
 		if ( URLUtil.isNetworkUrl( uri.toString() ) )
 		{
@@ -154,20 +171,27 @@ public class IonPicassoWithCaching implements IonPicasso
 		}
 	}
 
-	private void showImage( Uri uri, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	private void showImage( Uri uri, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
 		RequestCreator requestCreator = picasso.load( uri );
 
 		// apply passed requestCreator operations
 		if ( requestTransformation != null )
 		{
-			requestCreator = requestTransformation.call( requestCreator );
+			try
+			{
+				requestCreator = requestTransformation.apply( requestCreator );
+			}
+			catch ( Exception e )
+			{
+				Log.ex( e );
+			}
 		}
 
 		requestCreator.into( target, callback );
 	}
 
-	private void imageDownloadFailed( Throwable throwable, ImageView target, Func1<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	private void imageDownloadFailed( Throwable throwable, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
 		IonLog.ex( "ION Picasso", throwable );
 		showImage( null, target, requestTransformation, null );

@@ -26,12 +26,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import io.reactivex.Observable;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.Request;
 import okhttp3.Response;
-import rx.Observable;
 
 /**
  * Does not perform calls against a specific API, but takes complete URLs as parameter to perform a GET call to.

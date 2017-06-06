@@ -20,10 +20,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.HttpUrl;
-import rx.Observable;
-import rx.schedulers.Schedulers;
-import rx.util.async.Async;
 
 /**
  * Full text search on collectin data.
@@ -94,7 +93,7 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 	@Override
 	public Observable<List<SearchResult>> fullTextSearch( String searchTerm, String locale, String pageLayout )
 	{
-		return Async.start( () -> performFts( searchTerm, locale, pageLayout ) )
+		return Observable.fromCallable( () -> performFts( searchTerm, locale, pageLayout ) )
 				.compose( RxUtils.runOnIoThread() );
 	}
 
@@ -178,11 +177,13 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 	private void testSearch()
 	{
 		downloadSearchDatabase()
-				.subscribe( o -> {
+				.subscribe( o ->
+				{
 					String personLayout = "person-layout";
 					String eventLayout = "event-layout";
 					fullTextSearch( "Hab M", "de_DE", personLayout )
-							.subscribe( results -> {
+							.subscribe( results ->
+							{
 								IonLog.d( "****FTS***", "#results: " + results.size() );
 								for ( SearchResult result : results )
 								{

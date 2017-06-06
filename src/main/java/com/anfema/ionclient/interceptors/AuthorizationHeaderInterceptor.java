@@ -1,20 +1,22 @@
 package com.anfema.ionclient.interceptors;
 
 
+import com.anfema.utils.Log;
+
 import java.io.IOException;
+import java.util.concurrent.Callable;
 
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
-import rx.functions.Func0;
 
 /**
  * Add header 'Authorization' to request.
  */
 public class AuthorizationHeaderInterceptor implements Interceptor
 {
-	private final String        authHeaderValue;
-	private final Func0<String> authHeaderValueRetriever;
+	private final String           authHeaderValue;
+	private final Callable<String> authHeaderValueRetriever;
 
 	/**
 	 * Provide value for 'Authorization' header directly.
@@ -28,7 +30,7 @@ public class AuthorizationHeaderInterceptor implements Interceptor
 	/**
 	 * Provide value for 'Authorization' header through the return value of a function.
 	 */
-	public AuthorizationHeaderInterceptor( Func0<String> authHeaderValueRetriever )
+	public AuthorizationHeaderInterceptor( Callable<String> authHeaderValueRetriever )
 	{
 		this.authHeaderValue = null;
 		this.authHeaderValueRetriever = authHeaderValueRetriever;
@@ -40,7 +42,14 @@ public class AuthorizationHeaderInterceptor implements Interceptor
 		String authHeaderValue = this.authHeaderValue;
 		if ( authHeaderValue == null && authHeaderValueRetriever != null )
 		{
-			authHeaderValue = authHeaderValueRetriever.call();
+			try
+			{
+				authHeaderValue = authHeaderValueRetriever.call();
+			}
+			catch ( Exception e )
+			{
+				Log.ex( e );
+			}
 		}
 		return requestWithAuthHeader( authHeaderValue, chain );
 	}

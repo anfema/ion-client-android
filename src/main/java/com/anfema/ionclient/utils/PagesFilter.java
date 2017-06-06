@@ -6,29 +6,29 @@ import com.anfema.ionclient.pages.models.PagePreview;
 
 import java.util.List;
 
-import rx.functions.Func1;
+import io.reactivex.functions.Predicate;
 
 /**
- * This utility filters are supposed to be used with {@link com.anfema.ionclient.pages.IonPages#fetchPagePreviews(Func1)}
- * and {@link com.anfema.ionclient.pages.IonPages#fetchPages(Func1)}.
+ * This utility filters are supposed to be used with {@link com.anfema.ionclient.pages.IonPages#fetchPagePreviews(Predicate)}
+ * and {@link com.anfema.ionclient.pages.IonPages#fetchPages(Predicate)}.
  */
 public class PagesFilter
 {
 	/**
 	 * Fetch all (preview) pages of current collection.
 	 */
-	public static final Func1<PagePreview, Boolean> ALL = pagePreview -> pagePreview != null;
+	public static final Predicate<PagePreview> ALL = pagePreview -> pagePreview != null;
 
 	/**
 	 * Fetch all (preview) pages, which are (tree-hierarchical) root pages within the collection.
 	 */
-	public static final Func1<PagePreview, Boolean> ROOT_ELEMENTS = pagePreview -> pagePreview != null && pagePreview.parent == null;
+	public static final Predicate<PagePreview> ROOT_ELEMENTS = pagePreview -> pagePreview != null && pagePreview.parent == null;
 
 	/**
 	 * Before using this filter method, consider using
 	 * {@link com.anfema.ionclient.pages.IonPages#fetchPage(String)} or {@link com.anfema.ionclient.pages.IonPages#fetchPagePreview(String)} instead.
 	 */
-	public static Func1<PagePreview, Boolean> identifierEquals( String pageIdentifier )
+	public static Predicate<PagePreview> identifierEquals( String pageIdentifier )
 	{
 		return pagePreview -> identifierEquals( pageIdentifier, pagePreview );
 	}
@@ -41,7 +41,7 @@ public class PagesFilter
 	/**
 	 * Fetch (preview) pages while providing a list of page identifiers.
 	 */
-	public static Func1<PagePreview, Boolean> identifierIn( List<String> pageIdentifiers )
+	public static Predicate<PagePreview> identifierIn( List<String> pageIdentifiers )
 	{
 		return pagePreview -> identifierIn( pageIdentifiers, pagePreview );
 	}
@@ -67,7 +67,7 @@ public class PagesFilter
 	/**
 	 * Fetch (preview) pages with a specific layout.
 	 */
-	public static Func1<PagePreview, Boolean> layoutEquals( String layout )
+	public static Predicate<PagePreview> layoutEquals( String layout )
 	{
 		return pagePreview -> layoutEquals( layout, pagePreview );
 	}
@@ -80,7 +80,7 @@ public class PagesFilter
 	/**
 	 * Fetch (preview) pages with a specific direct tree parent.
 	 */
-	public static Func1<PagePreview, Boolean> childOf( String parentIdentifier )
+	public static Predicate<PagePreview> childOf( String parentIdentifier )
 	{
 		return pagePreview -> childOf( parentIdentifier, pagePreview );
 	}

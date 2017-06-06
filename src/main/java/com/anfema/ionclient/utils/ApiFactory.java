@@ -12,7 +12,7 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.Retrofit.Builder;
-import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiFactory
@@ -35,7 +35,7 @@ public class ApiFactory
 
 		// configure retrofit
 		final Builder retrofitBuilder = new Builder();
-		retrofitBuilder.addCallAdapterFactory( RxJavaCallAdapterFactory.create() ); // enable returning Observables
+		retrofitBuilder.addCallAdapterFactory( RxJava2CallAdapterFactory.create() ); // enable returning Observables
 		retrofitBuilder.addConverterFactory( GsonConverterFactory.create( GsonHolder.getInstance() ) );
 		retrofitBuilder.baseUrl( baseUrl );
 		retrofitBuilder.client( okHttpClient );

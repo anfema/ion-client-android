@@ -3,7 +3,7 @@ package com.anfema.ionclient.authentication;
 import com.anfema.ionclient.authentication.models.LoginResponse;
 import com.anfema.ionclient.utils.ApiFactory;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 /**
  * Use IONs internal login request and retrieve API token.

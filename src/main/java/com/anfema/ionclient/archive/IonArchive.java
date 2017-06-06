@@ -1,11 +1,12 @@
 package com.anfema.ionclient.archive;
 
-import com.anfema.ionclient.pages.ConfigUpdatable;
 import com.anfema.ionclient.IonConfig;
+import com.anfema.ionclient.pages.ConfigUpdatable;
 
 import java.io.File;
 
-import rx.Observable;
+import io.reactivex.Observable;
+
 
 public interface IonArchive extends ConfigUpdatable
 {

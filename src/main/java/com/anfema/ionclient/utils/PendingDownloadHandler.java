@@ -3,7 +3,8 @@ package com.anfema.ionclient.utils;
 import java.util.HashMap;
 import java.util.Map;
 
-import rx.Observable;
+import io.reactivex.Observable;
+
 
 public class PendingDownloadHandler<K, T>
 {

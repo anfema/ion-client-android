@@ -14,9 +14,9 @@ import com.anfema.ionclient.utils.RxUtils;
 
 import java.io.File;
 
+import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.HttpUrl;
-import rx.Observable;
-import rx.schedulers.Schedulers;
 
 class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 {

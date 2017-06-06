@@ -5,8 +5,8 @@ import com.anfema.ionclient.pages.models.contents.Downloadable;
 
 import java.io.File;
 
+import io.reactivex.Observable;
 import okhttp3.HttpUrl;
-import rx.Observable;
 
 public interface IonFiles extends ConfigUpdatable
 {

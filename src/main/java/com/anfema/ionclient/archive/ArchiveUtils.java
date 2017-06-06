@@ -37,7 +37,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import rx.Observable;
+import io.reactivex.Observable;
+
 
 class ArchiveUtils
 {
@@ -45,20 +46,11 @@ class ArchiveUtils
 
 	static Observable<File> unTar( File archiveFile, Collection collection, String lastModified, IonConfig config, Context context )
 	{
-		return Observable.just( null )
-				.flatMap( o -> {
-					try
-					{
-						return Observable.from( performUnTar( archiveFile, config, collection, lastModified, context ) )
-								// write cache index entries
-								.doOnNext( fileWithType -> saveCacheIndex( fileWithType, collection, lastModified, config, context ) )
-								.map( fileWithType -> fileWithType.file );
-					}
-					catch ( IOException | ArchiveException e )
-					{
-						return Observable.error( e );
-					}
-				} );
+		return Observable.fromCallable( () -> performUnTar( archiveFile, config, collection, lastModified, context ) )
+				.flatMap( Observable::fromIterable )
+				// write cache index entries
+				.doOnNext( fileWithType -> saveCacheIndex( fileWithType, collection, lastModified, config, context ) )
+				.map( fileWithType -> fileWithType.file );
 	}
 
 	/**
