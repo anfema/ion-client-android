@@ -22,7 +22,7 @@ import com.squareup.picasso.RequestCreator;
 
 import java.util.concurrent.Callable;
 
-import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -157,7 +157,7 @@ public class IonPicassoWithCaching implements IonPicasso
 				.subscribe( fileUri -> showImage( fileUri, target, requestTransformation, callback ), throwable -> imageDownloadFailed( throwable, target, requestTransformation, callback ) );
 	}
 
-	private Observable<Uri> fetchImageFile( @NonNull Uri uri )
+	private Single<Uri> fetchImageFile( @NonNull Uri uri )
 	{
 		if ( URLUtil.isNetworkUrl( uri.toString() ) )
 		{
@@ -167,7 +167,7 @@ public class IonPicassoWithCaching implements IonPicasso
 		}
 		else
 		{
-			return Observable.just( uri );
+			return Single.just( uri );
 		}
 	}
 
@@ -208,7 +208,7 @@ public class IonPicassoWithCaching implements IonPicasso
 	}
 
 	@Override
-	public Observable<Picasso> getPicassoInstanceDoAuthCall()
+	public Single<Picasso> getPicassoInstanceDoAuthCall()
 	{
 		return config.updateAuthorizationHeaderValue()
 				.map( o -> picasso );

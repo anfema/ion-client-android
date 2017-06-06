@@ -20,7 +20,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.Observable;
+import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.HttpUrl;
 
@@ -59,7 +60,7 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 	 * @see IonFts#downloadSearchDatabase() (String, String, String)
 	 */
 	@Override
-	public Observable<File> downloadSearchDatabase()
+	public Completable downloadSearchDatabase()
 	{
 		activeFtsDbDownload = true;
 
@@ -69,8 +70,9 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 				.observeOn( Schedulers.io() )
 				.map( collection -> collection.fts_db )
 				.flatMap( searchDbUrl -> ionFiles.request( HttpUrl.parse( searchDbUrl ), null, true, dbTargetPath ) )
-				.doOnNext( file -> activeFtsDbDownload = false )
-				.compose( RxUtils.runOnIoThread() );
+				.toCompletable()
+				.doOnComplete( () -> activeFtsDbDownload = false )
+				.subscribeOn( Schedulers.io() );
 	}
 
 	/**
@@ -83,7 +85,7 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 		{
 			// archive needs to be downloaded again. Download runs in background and does not even inform UI when finished
 			downloadSearchDatabase()
-					.subscribe( RxUtils.NOTHING, RxUtils.DEFAULT_EXCEPTION_HANDLER, () -> IonLog.d( "ION FTS", "FTS database has been downloaded/updated in background" ) );
+					.subscribe( () -> IonLog.d( "ION FTS", "FTS database has been downloaded/updated in background" ), RxUtils.DEFAULT_EXCEPTION_HANDLER );
 		}
 	}
 
@@ -91,10 +93,10 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 	 * @see IonFts#fullTextSearch(String, String, String)
 	 */
 	@Override
-	public Observable<List<SearchResult>> fullTextSearch( String searchTerm, String locale, String pageLayout )
+	public Single<List<SearchResult>> fullTextSearch( String searchTerm, String locale, String pageLayout )
 	{
-		return Observable.fromCallable( () -> performFts( searchTerm, locale, pageLayout ) )
-				.compose( RxUtils.runOnIoThread() );
+		return Single.fromCallable( () -> performFts( searchTerm, locale, pageLayout ) )
+				.subscribeOn( Schedulers.io() );
 	}
 
 	private List<SearchResult> performFts( String searchTerm, String locale, String pageLayout )
@@ -172,25 +174,5 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 			searchTermModified.append( word ).append( "* " );
 		}
 		return searchTermModified.toString();
-	}
-
-	private void testSearch()
-	{
-		downloadSearchDatabase()
-				.subscribe( o ->
-				{
-					String personLayout = "person-layout";
-					String eventLayout = "event-layout";
-					fullTextSearch( "Hab M", "de_DE", personLayout )
-							.subscribe( results ->
-							{
-								IonLog.d( "****FTS***", "#results: " + results.size() );
-								for ( SearchResult result : results )
-								{
-									IonLog.d( "*******FTS********", result.pageIdentifier + ", " + result.text + ", " + result.pageLayout );
-								}
-							} );
-				}, RxUtils.DEFAULT_EXCEPTION_HANDLER );
-
 	}
 }

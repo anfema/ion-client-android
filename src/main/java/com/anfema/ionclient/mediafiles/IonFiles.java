@@ -5,14 +5,14 @@ import com.anfema.ionclient.pages.models.contents.Downloadable;
 
 import java.io.File;
 
-import io.reactivex.Observable;
+import io.reactivex.Single;
 import okhttp3.HttpUrl;
 
 public interface IonFiles extends ConfigUpdatable
 {
-	Observable<File> request( Downloadable content );
+	Single<File> request( Downloadable content );
 
-	Observable<File> request( HttpUrl url, String checksum );
+	Single<File> request( HttpUrl url, String checksum );
 
-	Observable<File> request( HttpUrl url, String checksum, boolean ignoreCaching, File targetFile );
+	Single<File> request( HttpUrl url, String checksum, boolean ignoreCaching, File targetFile );
 }

@@ -3,6 +3,7 @@ package com.anfema.ionclient.utils;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
+import io.reactivex.SingleTransformer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Consumer;
@@ -43,7 +44,16 @@ public class RxUtils
 	@SuppressWarnings("unchecked")
 	public static <T> ObservableTransformer<T, T> runOnIoThread()
 	{
-		return tObservable -> tObservable.subscribeOn( Schedulers.io() ).observeOn( AndroidSchedulers.mainThread() );
+		return observable -> observable.subscribeOn( Schedulers.io() ).observeOn( AndroidSchedulers.mainThread() );
+	}
+
+	/**
+	 * Use in compose operator to apply to a single
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> SingleTransformer<T, T> runSingleOnIoThread()
+	{
+		return single -> single.subscribeOn( Schedulers.io() ).observeOn( AndroidSchedulers.mainThread() );
 	}
 
 	/**

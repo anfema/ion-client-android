@@ -2,10 +2,10 @@ package com.anfema.ionclient.fulltextsearch;
 
 import com.anfema.ionclient.pages.ConfigUpdatable;
 
-import java.io.File;
 import java.util.List;
 
-import io.reactivex.Observable;
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 
 public interface IonFts extends ConfigUpdatable
@@ -13,7 +13,7 @@ public interface IonFts extends ConfigUpdatable
 	/**
 	 * download full text search database for respective collection
 	 */
-	Observable<File> downloadSearchDatabase();
+	Completable downloadSearchDatabase();
 
 	/**
 	 * Precondition: FTS database has been downloaded via {@link #downloadSearchDatabase()} first.
@@ -27,5 +27,5 @@ public interface IonFts extends ConfigUpdatable
 	 * @param pageLayout optional filter by page layout. no filter applied if {@code null}
 	 * @return all found entries
 	 */
-	Observable<List<SearchResult>> fullTextSearch( String searchTerm, String locale, String pageLayout );
+	Single<List<SearchResult>> fullTextSearch( String searchTerm, String locale, String pageLayout );
 }

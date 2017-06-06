@@ -7,19 +7,20 @@ import com.anfema.ionclient.pages.models.PagePreview;
 import java.util.List;
 
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.functions.Predicate;
 
 public interface IonPages extends ConfigUpdatable
 {
-	Observable<Collection> fetchCollection();
+	Single<Collection> fetchCollection();
 
-	Observable<PagePreview> fetchPagePreview( String pageIdentifier );
+	Single<PagePreview> fetchPagePreview( String pageIdentifier );
 
 	Observable<PagePreview> fetchPagePreviews( Predicate<PagePreview> pagesFilter );
 
 	Observable<PagePreview> fetchAllPagePreviews();
 
-	Observable<Page> fetchPage( String pageIdentifier );
+	Single<Page> fetchPage( String pageIdentifier );
 
 	Observable<Page> fetchPages( List<String> pageIdentifiers );
 

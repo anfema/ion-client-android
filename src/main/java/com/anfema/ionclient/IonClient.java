@@ -30,7 +30,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import okhttp3.HttpUrl;
@@ -110,14 +112,14 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * Adds collection identifier and authorization token to request as retrieved via {@link IonConfig}<br/>
 	 */
 	@Override
-	public Observable<Collection> fetchCollection()
+	public Single<Collection> fetchCollection()
 	{
 		return ionPages.fetchCollection();
 	}
 
 
 	@Override
-	public Observable<PagePreview> fetchPagePreview( String pageIdentifier )
+	public Single<PagePreview> fetchPagePreview( String pageIdentifier )
 	{
 		return ionPages.fetchPagePreview( pageIdentifier );
 	}
@@ -143,7 +145,7 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * Add collection identifier and authorization token to request.<br/>
 	 */
 	@Override
-	public Observable<Page> fetchPage( String pageIdentifier )
+	public Single<Page> fetchPage( String pageIdentifier )
 	{
 		return ionPages.fetchPage( pageIdentifier );
 	}
@@ -181,7 +183,7 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * @see IonFiles#request(Downloadable)
 	 */
 	@Override
-	public Observable<File> request( Downloadable content )
+	public Single<File> request( Downloadable content )
 	{
 		return ionFiles.request( content );
 	}
@@ -190,7 +192,7 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * @see IonFiles#request(HttpUrl, String)
 	 */
 	@Override
-	public Observable<File> request( HttpUrl url, String checksum )
+	public Single<File> request( HttpUrl url, String checksum )
 	{
 		return ionFiles.request( url, checksum );
 	}
@@ -199,7 +201,7 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * @see IonFiles#request(HttpUrl, String, boolean, File)
 	 */
 	@Override
-	public Observable<File> request( HttpUrl url, String checksum, boolean ignoreCaching, File targetFile )
+	public Single<File> request( HttpUrl url, String checksum, boolean ignoreCaching, File targetFile )
 	{
 		return ionFiles.request( url, checksum, ignoreCaching, targetFile );
 	}
@@ -247,7 +249,7 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	}
 
 	@Override
-	public Observable<Picasso> getPicassoInstanceDoAuthCall()
+	public Single<Picasso> getPicassoInstanceDoAuthCall()
 	{
 		return ionPicasso.getPicassoInstanceDoAuthCall();
 	}
@@ -259,7 +261,7 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * @see IonArchive#downloadArchive()
 	 */
 	@Override
-	public Observable<File> downloadArchive()
+	public Completable downloadArchive()
 	{
 		return ionArchive.downloadArchive();
 	}
@@ -271,7 +273,7 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * @see IonFts#downloadSearchDatabase()
 	 */
 	@Override
-	public Observable<File> downloadSearchDatabase()
+	public Completable downloadSearchDatabase()
 	{
 		return ionFts.downloadSearchDatabase();
 	}
@@ -280,7 +282,7 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * @see IonFts#fullTextSearch(String, String, String)
 	 */
 	@Override
-	public Observable<List<SearchResult>> fullTextSearch( String searchTerm, String locale, String pageLayout )
+	public Single<List<SearchResult>> fullTextSearch( String searchTerm, String locale, String pageLayout )
 	{
 		return ionFts.fullTextSearch( searchTerm, locale, pageLayout );
 	}

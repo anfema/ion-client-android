@@ -14,7 +14,8 @@ import com.anfema.ionclient.utils.RxUtils;
 
 import java.io.File;
 
-import io.reactivex.Observable;
+import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.HttpUrl;
 
@@ -55,7 +56,7 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 	 * Download the archive file for current collection, which should make app usable in offline mode.
 	 */
 	@Override
-	public Observable<File> downloadArchive()
+	public Completable downloadArchive()
 	{
 		return downloadArchive( null, null );
 	}
@@ -66,13 +67,13 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 	 * @param inCollection If collection already is available it can be passed in order to save time.
 	 * @param lastModified when the collection has been last modified
 	 */
-	public Observable<File> downloadArchive( Collection inCollection, String lastModified )
+	public Completable downloadArchive( Collection inCollection, String lastModified )
 	{
 		if ( inCollection != null && !inCollection.identifier.equals( config.collectionIdentifier ) )
 		{
 			Exception e = new Exception( "Archive download: inCollection.identifier: " + inCollection.identifier + " does not match config's collectionIdentifier: " + config.collectionIdentifier );
 			IonLog.ex( e );
-			return Observable.error( e );
+			return Completable.error( e );
 		}
 
 		File archivePath = FilePaths.getArchiveFilePath( config, context );
@@ -81,23 +82,24 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 		activeArchiveDownload = true;
 
 		// use inCollection or retrieve by making a collections call
-		Observable<Collection> collectionObs;
+		Single<Collection> collectionObs;
 		if ( inCollection == null )
 		{
 			collectionObs = ionPages.fetchCollection().observeOn( Schedulers.io() );
 		}
 		else
 		{
-			collectionObs = Observable.just( inCollection );
+			collectionObs = Single.just( inCollection );
 		}
 
-		Observable<File> archiveObs = collectionObs
+		Single<File> archiveObs = collectionObs
 				.map( collection -> collection.archive )
 				.flatMap( archiveUrl -> ionFiles.request( HttpUrl.parse( archiveUrl ), null, true, archivePath ) );
 
-		return RxUtils.flatCombineLatest( collectionObs, archiveObs, ( collection, archivePath2 ) -> ArchiveUtils.unTar( archivePath2, collection, lastModified, config, context ) )
-				.doOnNext( file -> activeArchiveDownload = false )
-				.compose( RxUtils.runOnIoThread() );
+		return collectionObs.zipWith( archiveObs, ( collection, archivePath2 ) -> ArchiveUtils.unTar( archivePath2, collection, lastModified, config, context ) )
+				.toCompletable()
+				.doOnComplete( () -> activeArchiveDownload = false )
+				.subscribeOn( Schedulers.io() );
 	}
 
 	/**
@@ -110,7 +112,7 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 		{
 			// archive needs to be downloaded again. Download runs in background and does not even inform UI when finished
 			downloadArchive( collection, lastModified )
-					.subscribe( RxUtils.NOTHING, RxUtils.DEFAULT_EXCEPTION_HANDLER, () -> IonLog.d( "ION Archive", "Archive has been downloaded/updated in background" ) );
+					.subscribe( () -> IonLog.d( "ION Archive", "Archive has been downloaded/updated in background" ), RxUtils.DEFAULT_EXCEPTION_HANDLER );
 		}
 	}
 }

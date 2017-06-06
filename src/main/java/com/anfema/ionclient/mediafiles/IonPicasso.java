@@ -8,7 +8,7 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
-import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.functions.Function;
 
 /**
@@ -65,5 +65,5 @@ public interface IonPicasso extends ConfigUpdatable
 	 * <p>
 	 * If authentication value is not provided directly, but through an async function, this method will return a guaranteed initialized instance.
 	 */
-	Observable<Picasso> getPicassoInstanceDoAuthCall();
+	Single<Picasso> getPicassoInstanceDoAuthCall();
 }

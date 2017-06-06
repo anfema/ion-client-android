@@ -26,7 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import io.reactivex.Observable;
+import io.reactivex.Single;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
@@ -73,7 +73,7 @@ public class IonFilesWithCaching implements IonFiles
 	 * @see #request(HttpUrl, String)
 	 */
 	@Override
-	public Observable<File> request( Downloadable content )
+	public Single<File> request( Downloadable content )
 	{
 		return request( HttpUrl.parse( content.getUrl() ), content.getChecksum() );
 	}
@@ -84,7 +84,7 @@ public class IonFilesWithCaching implements IonFiles
 	 * @see #request(HttpUrl, String, boolean, File)
 	 */
 	@Override
-	public Observable<File> request( HttpUrl url, String checksum )
+	public Single<File> request( HttpUrl url, String checksum )
 	{
 		return request( url, checksum, false, null );
 	}
@@ -99,7 +99,7 @@ public class IonFilesWithCaching implements IonFiles
 	 * @return file is retrieved when subscribed to the the result of this async operation.
 	 */
 	@Override
-	public Observable<File> request( HttpUrl url, String checksum, boolean ignoreCaching, @Nullable File inTargetFile )
+	public Single<File> request( HttpUrl url, String checksum, boolean ignoreCaching, @Nullable File inTargetFile )
 	{
 		// clear incompatible cache
 		CacheCompatManager.cleanUp( context );
@@ -113,11 +113,11 @@ public class IonFilesWithCaching implements IonFiles
 			{
 				// force new download, do not create cache index entry
 				return authenticatedFileRequest( url, targetFile )
-						.compose( RxUtils.runOnIoThread() );
+						.compose( RxUtils.runSingleOnIoThread() );
 			}
 			else
 			{
-				return Observable.error( new FileNotAvailableException( url ) );
+				return Single.error( new FileNotAvailableException( url ) );
 			}
 		}
 
@@ -127,30 +127,30 @@ public class IonFilesWithCaching implements IonFiles
 		{
 			// retrieve current version from cache
 			IonLog.i( "File Cache Lookup", url.toString() );
-			return Observable.just( targetFile );
+			return Single.just( targetFile );
 		}
 		else
 		{
 			if ( networkAvailable )
 			{
 				// download media file
-				Observable<File> downloadObservable = authenticatedFileRequest( url, targetFile )
-						.doOnNext( file -> FileCacheIndex.save( url.toString(), file, config, null, context ) )
-						.compose( RxUtils.runOnIoThread() )
-						.doOnNext( file -> runningDownloads.finished( url ) );
-				return runningDownloads.starting( url, downloadObservable );
+				Single<File> downloadSingle = authenticatedFileRequest( url, targetFile )
+						.doOnSuccess( file -> FileCacheIndex.save( url.toString(), file, config, null, context ) )
+						.compose( RxUtils.runSingleOnIoThread() )
+						.doOnSuccess( file -> runningDownloads.finished( url ) );
+				return runningDownloads.starting( url, downloadSingle.toObservable() ).singleOrError();
 			}
 			else if ( targetFile.exists() )
 			{
 				// TODO notify app that data might be outdated
 				// no network: use old version from cache (even if no cache index entry exists)
 				IonLog.i( "File Cache Lookup", url.toString() );
-				return Observable.just( targetFile );
+				return Single.just( targetFile );
 			}
 			else
 			{
 				// media file can neither be downloaded nor be found in cache
-				return Observable.error( new FileNotAvailableException( url ) );
+				return Single.error( new FileNotAvailableException( url ) );
 			}
 		}
 	}
@@ -185,7 +185,7 @@ public class IonFilesWithCaching implements IonFiles
 	 * @param targetFile path, where file is going to be stored. if null, default "/files" directory is used
 	 * @return the file with content
 	 */
-	private Observable<File> authenticatedFileRequest( HttpUrl url, File targetFile )
+	private Single<File> authenticatedFileRequest( HttpUrl url, File targetFile )
 	{
 		return config.authenticatedRequest( () -> performRequest( url ) )
 				.flatMap( response -> writeToLocalStorage( response, targetFile ) );
@@ -195,7 +195,7 @@ public class IonFilesWithCaching implements IonFiles
 	 * Perform get request
 	 */
 	@NonNull
-	private Observable<Response> performRequest( HttpUrl url )
+	private Single<Response> performRequest( HttpUrl url )
 	{
 		// client.setReadTimeout( 30, TimeUnit.SECONDS );
 
@@ -210,22 +210,22 @@ public class IonFilesWithCaching implements IonFiles
 				{
 					response.body().close();
 				}
-				return Observable.error( new IOException( "Unexpected code: " + response ) );
+				return Single.error( new IOException( "Unexpected code: " + response ) );
 			}
 
 			// use custom target file path
-			return Observable.just( response );
+			return Single.just( response );
 		}
 		catch ( IOException e )
 		{
-			return Observable.error( e );
+			return Single.error( e );
 		}
 	}
 
 	/**
 	 * write from input stream to file
 	 */
-	private Observable<File> writeToLocalStorage( Response response, File targetFile )
+	private Single<File> writeToLocalStorage( Response response, File targetFile )
 	{
 		// Be aware: using this method empties the response body byte stream. It is not possible to read the response a second time.
 		InputStream inputStream = response.body().byteStream();
@@ -246,9 +246,9 @@ public class IonFilesWithCaching implements IonFiles
 		}
 		catch ( IOException e )
 		{
-			return Observable.error( e );
+			return Single.error( e );
 		}
-		return Observable.just( file );
+		return Single.just( file );
 	}
 
 	/**

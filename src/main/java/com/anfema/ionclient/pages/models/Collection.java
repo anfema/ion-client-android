@@ -8,7 +8,7 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 
-import io.reactivex.Observable;
+import io.reactivex.Single;
 
 public class Collection implements SizeAware
 {
@@ -50,15 +50,15 @@ public class Collection implements SizeAware
 	public ArrayList<PagePreview> pages;
 
 	@NonNull
-	public Observable<? extends DateTime> getPageLastChangedAsync( String pageIdentifier )
+	public Single<? extends DateTime> getPageLastChangedAsync( String pageIdentifier )
 	{
 		try
 		{
-			return Observable.just( getPageLastChanged( pageIdentifier ) );
+			return Single.just( getPageLastChanged( pageIdentifier ) );
 		}
 		catch ( PageNotInCollectionException e )
 		{
-			return Observable.error( e );
+			return Single.error( e );
 		}
 	}
 

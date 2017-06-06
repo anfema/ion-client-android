@@ -33,6 +33,7 @@ import java.io.File;
 import java.util.List;
 
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Predicate;
@@ -88,7 +89,7 @@ public class IonPagesWithCaching implements IonPages
 	 * Use default collection identifier as specified in {@link #config}
 	 */
 	@Override
-	public Observable<Collection> fetchCollection()
+	public Single<Collection> fetchCollection()
 	{
 		// clear incompatible cache
 		CacheCompatManager.cleanUp( context );
@@ -117,17 +118,18 @@ public class IonPagesWithCaching implements IonPages
 		else
 		{
 			// collection can neither be downloaded nor be found in cache
-			return Observable.error( new CollectionNotAvailableException() );
+			return Single.error( new CollectionNotAvailableException() );
 		}
 	}
 
 	@Override
-	public Observable<PagePreview> fetchPagePreview( String pageIdentifier )
+	public Single<PagePreview> fetchPagePreview( String pageIdentifier )
 	{
 		return fetchCollection()
 				.map( collection -> collection.pages )
-				.flatMap( Observable::fromIterable )
-				.filter( PagesFilter.identifierEquals( pageIdentifier ) );
+				.flatMapObservable( Observable::fromIterable )
+				.filter( PagesFilter.identifierEquals( pageIdentifier ) )
+				.singleOrError();
 	}
 
 	@Override
@@ -135,7 +137,7 @@ public class IonPagesWithCaching implements IonPages
 	{
 		return fetchCollection()
 				.map( collection -> collection.pages )
-				.concatMap( Observable::fromIterable )
+				.flatMapObservable( Observable::fromIterable )
 				.filter( pagesFilter );
 	}
 
@@ -157,7 +159,7 @@ public class IonPagesWithCaching implements IonPages
 	 * Use default collection identifier as specified in {@link this#config}
 	 */
 	@Override
-	public Observable<Page> fetchPage( String pageIdentifier )
+	public Single<Page> fetchPage( String pageIdentifier )
 	{
 		// clear incompatible cache
 		CacheCompatManager.cleanUp( context );
@@ -176,7 +178,7 @@ public class IonPagesWithCaching implements IonPages
 			else
 			{
 				// page can neither be downloaded nor be found in cache
-				return Observable.error( new PageNotAvailableException() );
+				return Single.error( new PageNotAvailableException() );
 			}
 		}
 
@@ -228,10 +230,10 @@ public class IonPagesWithCaching implements IonPages
 		return fetchCollection()
 				.observeOn( Schedulers.io() )
 				.map( collection -> collection.pages )
-				.concatMap( Observable::fromIterable )
+				.flatMapObservable( Observable::fromIterable )
 				.filter( pagesFilter )
 				.map( page -> page.identifier )
-				.concatMap( this::fetchPage )
+				.concatMap( pageIdentifier -> fetchPage( pageIdentifier ).toObservable() )
 				.observeOn( AndroidSchedulers.mainThread() );
 	}
 
@@ -248,7 +250,7 @@ public class IonPagesWithCaching implements IonPages
 
 	/// Get collection methods
 
-	private Observable<Collection> fetchCollectionFromCache( CollectionCacheIndex cacheIndex, boolean serverCallAsBackup )
+	private Single<Collection> fetchCollectionFromCache( CollectionCacheIndex cacheIndex, boolean serverCallAsBackup )
 	{
 		String collectionUrl = IonPageUrls.getCollectionUrl( config );
 
@@ -257,7 +259,7 @@ public class IonPagesWithCaching implements IonPages
 		if ( collection != null )
 		{
 			IonLog.i( "Memory Cache Lookup", collectionUrl );
-			return Observable.just( collection );
+			return Single.just( collection );
 		}
 
 		// retrieve from file cache
@@ -266,7 +268,7 @@ public class IonPagesWithCaching implements IonPages
 		File filePath = FilePaths.getCollectionJsonPath( collectionUrl, config, context );
 		if ( !filePath.exists() )
 		{
-			return Observable.error( new CollectionNotAvailableException() );
+			return Single.error( new CollectionNotAvailableException() );
 		}
 
 		return FileUtils.readTextFromFile( filePath )
@@ -279,15 +281,15 @@ public class IonPagesWithCaching implements IonPages
 					return collection1;
 				} )
 				// save to memory cache
-				.doOnNext( collection1 -> MemoryCache.saveCollection( collection1, collectionUrl, context ) )
+				.doOnSuccess( collection1 -> MemoryCache.saveCollection( collection1, collectionUrl, context ) )
 				.onErrorResumeNext( throwable ->
 				{
 					return handleUnsuccessfulCollectionCacheReading( collectionUrl, cacheIndex, serverCallAsBackup, throwable );
 				} )
-				.compose( RxUtils.runOnIoThread() );
+				.compose( RxUtils.runSingleOnIoThread() );
 	}
 
-	private Observable<Collection> handleUnsuccessfulCollectionCacheReading( String collectionUrl, CollectionCacheIndex cacheIndex, boolean serverCallAsBackup, Throwable e )
+	private Single<Collection> handleUnsuccessfulCollectionCacheReading( String collectionUrl, CollectionCacheIndex cacheIndex, boolean serverCallAsBackup, Throwable e )
 	{
 		if ( serverCallAsBackup )
 		{
@@ -298,7 +300,7 @@ public class IonPagesWithCaching implements IonPages
 		else
 		{
 			IonLog.e( "Failed Request", "Cache lookup " + collectionUrl + " failed." );
-			return Observable.error( new ReadFromCacheException( collectionUrl, e ) );
+			return Single.error( new ReadFromCacheException( collectionUrl, e ) );
 		}
 	}
 
@@ -307,11 +309,11 @@ public class IonPagesWithCaching implements IonPages
 	 * Adds collection identifier and authorization token to request.<br/>
 	 * Uses default collection identifier as specified in {@link this#config}
 	 */
-	private Observable<Collection> fetchCollectionFromServer( CollectionCacheIndex cacheIndex, boolean cacheAsBackup )
+	private Single<Collection> fetchCollectionFromServer( CollectionCacheIndex cacheIndex, boolean cacheAsBackup )
 	{
 		final String lastModified = cacheIndex != null ? cacheIndex.getLastModified() : null;
 
-		Observable<Collection> collectionObservable = config.authenticatedRequest(
+		Single<Collection> collectionSingle = config.authenticatedRequest(
 				authorizationHeaderValue -> ionApi.getCollection( config.collectionIdentifier, config.locale, authorizationHeaderValue, config.variation, lastModified ) )
 				.flatMap( serverResponse ->
 				{
@@ -320,14 +322,14 @@ public class IonPagesWithCaching implements IonPages
 						// collection has not changed, return cached version
 						return fetchCollectionFromCache( cacheIndex, false )
 								// update cache index again (last updated needs to be reset to now)
-								.doOnNext( saveCollectionCacheIndex( lastModified ) );
+								.doOnSuccess( saveCollectionCacheIndex( lastModified ) );
 					}
 					else if ( serverResponse.isSuccessful() )
 					{
 						String lastModifiedReceived = serverResponse.headers().get( "Last-Modified" );
 
 						// parse collection data from response and write cache index and memory cache
-						return Observable.just( serverResponse )
+						return Single.just( serverResponse )
 								// unwrap page and remember byte count
 								.map( ( response ) ->
 								{
@@ -335,9 +337,9 @@ public class IonPagesWithCaching implements IonPages
 									collection.byteCount = getContentByteCount( response );
 									return collection;
 								} )
-								.doOnNext( collection -> MemoryCache.saveCollection( collection, config, context ) )
-								.doOnNext( saveCollectionCacheIndex( lastModifiedReceived ) )
-								.doOnNext( collection ->
+								.doOnSuccess( collection -> MemoryCache.saveCollection( collection, config, context ) )
+								.doOnSuccess( saveCollectionCacheIndex( lastModifiedReceived ) )
+								.doOnSuccess( collection ->
 								{
 									if ( collectionListener != null )
 									{
@@ -347,7 +349,7 @@ public class IonPagesWithCaching implements IonPages
 					}
 					else
 					{
-						return Observable.error( new HttpException( serverResponse ) );
+						return Single.error( new HttpException( serverResponse ) );
 					}
 				} )
 				.onErrorResumeNext( throwable ->
@@ -360,11 +362,11 @@ public class IonPagesWithCaching implements IonPages
 						return fetchCollectionFromCache( cacheIndex, false );
 					}
 					IonLog.e( "Failed Request", "Network request " + collectionUrl + " failed." );
-					return Observable.error( new NetworkRequestException( collectionUrl, throwable ) );
+					return Single.error( new NetworkRequestException( collectionUrl, throwable ) );
 				} )
-				.compose( RxUtils.runOnIoThread() )
-				.doOnNext( file -> runningCollectionDownload.finished( config.collectionIdentifier ) );
-		return runningCollectionDownload.starting( config.collectionIdentifier, collectionObservable );
+				.compose( RxUtils.runSingleOnIoThread() )
+				.doOnSuccess( file -> runningCollectionDownload.finished( config.collectionIdentifier ) );
+		return runningCollectionDownload.starting( config.collectionIdentifier, collectionSingle.toObservable() ).singleOrError();
 	}
 
 
@@ -376,7 +378,7 @@ public class IonPagesWithCaching implements IonPages
 	/**
 	 * @param serverCallAsBackup If reading from cache is not successful, should a server call be made?
 	 */
-	private Observable<Page> fetchPageFromCache( String pageIdentifier, boolean serverCallAsBackup )
+	private Single<Page> fetchPageFromCache( String pageIdentifier, boolean serverCallAsBackup )
 	{
 		String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 
@@ -385,7 +387,7 @@ public class IonPagesWithCaching implements IonPages
 		if ( memPage != null )
 		{
 			IonLog.i( "Memory Cache Lookup", pageUrl );
-			return Observable.just( memPage );
+			return Single.just( memPage );
 		}
 
 		// retrieve from file cache
@@ -407,15 +409,12 @@ public class IonPagesWithCaching implements IonPages
 					return page;
 				} )
 				// save to memory cache
-				.doOnNext( page -> MemoryCache.savePage( page, config, context ) )
-				.onErrorResumeNext( throwable ->
-				{
-					return handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, throwable );
-				} )
-				.compose( RxUtils.runOnIoThread() );
+				.doOnSuccess( page -> MemoryCache.savePage( page, config, context ) )
+				.onErrorResumeNext( throwable -> handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, throwable ) )
+				.compose( RxUtils.runSingleOnIoThread() );
 	}
 
-	private Observable<Page> handleUnsuccessfulPageCacheReading( String pageIdentifier, boolean serverCallAsBackup, String pageUrl, Throwable e )
+	private Single<Page> handleUnsuccessfulPageCacheReading( String pageIdentifier, boolean serverCallAsBackup, String pageUrl, Throwable e )
 	{
 		if ( serverCallAsBackup )
 		{
@@ -424,15 +423,15 @@ public class IonPagesWithCaching implements IonPages
 			return fetchPageFromServer( pageIdentifier, false );
 		}
 		IonLog.e( "Failed Request", "Cache lookup " + pageUrl + " failed." );
-		return Observable.error( new ReadFromCacheException( pageUrl, e ) );
+		return Single.error( new ReadFromCacheException( pageUrl, e ) );
 	}
 
 	/**
 	 * @param cacheAsBackup If server call is not successful, should cached version be used (even if it might be old)?
 	 */
-	private Observable<Page> fetchPageFromServer( String pageIdentifier, boolean cacheAsBackup )
+	private Single<Page> fetchPageFromServer( String pageIdentifier, boolean cacheAsBackup )
 	{
-		Observable<Page> pageObservable = config.authenticatedRequest(
+		Single<Page> pageSingle = config.authenticatedRequest(
 				authorizationHeaderValue -> ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.variation, authorizationHeaderValue ) )
 				// unwrap page and remember byte count
 				.map( response ->
@@ -441,8 +440,8 @@ public class IonPagesWithCaching implements IonPages
 					page.byteCount = getContentByteCount( response );
 					return page;
 				} )
-				.doOnNext( savePageCacheIndex() )
-				.doOnNext( page -> MemoryCache.savePage( page, config, context ) )
+				.doOnSuccess( savePageCacheIndex() )
+				.doOnSuccess( page -> MemoryCache.savePage( page, config, context ) )
 				.onErrorResumeNext( throwable ->
 				{
 					String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
@@ -453,11 +452,11 @@ public class IonPagesWithCaching implements IonPages
 						return fetchPageFromCache( pageIdentifier, false );
 					}
 					IonLog.e( "Failed Request", "Network request " + pageUrl + " failed." );
-					return Observable.error( new NetworkRequestException( pageUrl, throwable ) );
+					return Single.error( new NetworkRequestException( pageUrl, throwable ) );
 				} )
-				.compose( RxUtils.runOnIoThread() )
-				.doOnNext( file -> runningPageDownloads.finished( pageIdentifier ) );
-		return runningPageDownloads.starting( pageIdentifier, pageObservable );
+				.compose( RxUtils.runSingleOnIoThread() )
+				.doOnSuccess( file -> runningPageDownloads.finished( pageIdentifier ) );
+		return runningPageDownloads.starting( pageIdentifier, pageSingle.toObservable() ).singleOrError();
 	}
 
 	/**

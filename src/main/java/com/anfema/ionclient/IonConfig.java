@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import okhttp3.Response;
 
@@ -120,7 +120,7 @@ public class IonConfig
 	/**
 	 * Authorization header value is required to use the ION API. Secondary option: provide it indirectly through an async call.
 	 */
-	private final Observable<String> authorizationHeaderValueCall;
+	private final Single<String> authorizationHeaderValueCall;
 
 	/**
 	 * Should the whole archive be downloaded when the collection is downloaded?
@@ -149,13 +149,13 @@ public class IonConfig
 		private final String baseUrl;
 		private final String collectionIdentifier;
 		private       String locale;
-		private String             variation                     = DEFAULT_VARIATION;
-		private String             authorizationHeaderValue      = null;
-		private Observable<String> authorizationHeaderValueCall  = null;
-		private boolean            archiveDownloads              = false;
-		private boolean            ftsDbDownloads                = false;
-		private int                minutesUntilCollectionRefetch = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH;
-		private int                networkTimeout                = DEFAULT_NETWORK_TIMEOUT;
+		private String         variation                     = DEFAULT_VARIATION;
+		private String         authorizationHeaderValue      = null;
+		private Single<String> authorizationHeaderValueCall  = null;
+		private boolean        archiveDownloads              = false;
+		private boolean        ftsDbDownloads                = false;
+		private int            minutesUntilCollectionRefetch = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH;
+		private int            networkTimeout                = DEFAULT_NETWORK_TIMEOUT;
 
 
 		public Builder( String baseUrl, String collectionIdentifier )
@@ -191,7 +191,7 @@ public class IonConfig
 			return this;
 		}
 
-		public Builder authorization( Observable<String> authorizationHeaderValueCall )
+		public Builder authorization( Single<String> authorizationHeaderValueCall )
 		{
 			this.authorizationHeaderValueCall = authorizationHeaderValueCall;
 			return this;
@@ -237,7 +237,7 @@ public class IonConfig
 	}
 
 	public IonConfig( String baseUrl, String collectionIdentifier, String locale, String variation, String authorizationHeaderValue,
-					  Observable<String> authorizationHeaderValueCall, boolean archiveDownloads, boolean ftsDbDownloads,
+					  Single<String> authorizationHeaderValueCall, boolean archiveDownloads, boolean ftsDbDownloads,
 					  int minutesUntilCollectionRefetch, int networkTimeout )
 	{
 		this.baseUrl = baseUrl;
@@ -329,26 +329,26 @@ public class IonConfig
 	}
 
 	/**
-	 * @param requestFunc the in parameter is the authorization header value
 	 * @param <T>         return type of the request
-	 * @return observable of request is forwarded
+	 * @param requestFunc the in parameter is the authorization header value
+	 * @return single of request is forwarded
 	 */
-	public <T> Observable<T> authenticatedRequest( Callable<Observable<T>> requestFunc )
+	public <T> Single<T> authenticatedRequest( Callable<Single<T>> requestFunc )
 	{
 		return authenticatedRequest( authorizationHeaderValue -> requestFunc.call() );
 	}
 
 	/**
-	 * @param requestFunc the in parameter is the authorization header value
 	 * @param <T>         return type of the request
+	 * @param requestFunc the in parameter is the authorization header value
 	 * @return observable of request is forwarded
 	 */
-	public <T> Observable<T> authenticatedRequest( Function<String, Observable<T>> requestFunc )
+	public <T> Single<T> authenticatedRequest( Function<String, Single<T>> requestFunc )
 	{
 		return authenticatedRequest( requestFunc, true );
 	}
 
-	private <T> Observable<T> authenticatedRequest( Function<String, Observable<T>> requestFunc, boolean tryAgain )
+	private <T> Single<T> authenticatedRequest( Function<String, Single<T>> requestFunc, boolean tryAgain )
 	{
 		return updateAuthorizationHeaderValue( !tryAgain )
 				.flatMap( requestFunc )
@@ -375,22 +375,22 @@ public class IonConfig
 							return authenticatedRequest( requestFunc, false );
 						}
 					}
-					return Observable.just( response );
+					return Single.just( response );
 				} );
 	}
 
-	public Observable<String> updateAuthorizationHeaderValue()
+	public Single<String> updateAuthorizationHeaderValue()
 	{
 		return updateAuthorizationHeaderValue( false );
 	}
 
-	public Observable<String> updateAuthorizationHeaderValue( boolean forceUpdate )
+	public Single<String> updateAuthorizationHeaderValue( boolean forceUpdate )
 	{
 		// IonLog.d( "IonConfig", "UpdateAuthorization: authorizationHeaderValue != null: " + ( authorizationHeaderValue != null ) + ", call != null: " + ( authorizationHeaderValueCall != null ) );
 
 		if ( authorizationHeaderValueCall == null || ( authorizationHeaderValue != null && !forceUpdate ) )
 		{
-			return Observable.just( authorizationHeaderValue );
+			return Single.just( authorizationHeaderValue );
 		}
 
 		if ( !forceUpdate )
@@ -398,19 +398,19 @@ public class IonConfig
 			String authorizationFromCache = authorizations.get( this );
 			if ( authorizationFromCache != null )
 			{
-				return Observable.just( authorizationFromCache );
+				return Single.just( authorizationFromCache );
 			}
 		}
 
-		Observable<String> updatedAuthorization = authorizationHeaderValueCall
+		Single<String> updatedAuthorization = authorizationHeaderValueCall
 				.map( authorizationHeaderValue ->
 				{
 					authorizations.put( IonConfig.this, authorizationHeaderValue );
 					this.authorizationHeaderValue = authorizationHeaderValue;
 					return authorizationHeaderValue;
 				} )
-				.doOnNext( authorizationHeaderValue -> pendingLogins.finished( this ) );
-		return pendingLogins.starting( this, updatedAuthorization );
+				.doOnSuccess( authorizationHeaderValue -> pendingLogins.finished( this ) );
+		return pendingLogins.starting( this, updatedAuthorization.toObservable() ).singleOrError();
 	}
 
 	public String getAuthorizationHeaderValue()

@@ -17,7 +17,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
 
@@ -110,9 +110,9 @@ public class FileUtils
 		return writeToFile( new ByteArrayInputStream( content.getBytes( "UTF-8" ) ), targetFile );
 	}
 
-	public static Observable<String> readTextFromFile( File file )
+	public static Single<String> readTextFromFile( File file )
 	{
-		return Observable.defer( () ->
+		return Single.defer( () ->
 		{
 			StringBuilder text = new StringBuilder();
 			BufferedReader br = null;
@@ -127,11 +127,11 @@ public class FileUtils
 					text.append( '\n' );
 				}
 				br.close();
-				return Observable.just( text.toString() );
+				return Single.just( text.toString() );
 			}
 			catch ( IOException e )
 			{
-				return Observable.error( e );
+				return Single.error( e );
 			}
 		} ).subscribeOn( Schedulers.io() );
 	}
