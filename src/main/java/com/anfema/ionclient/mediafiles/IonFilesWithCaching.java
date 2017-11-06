@@ -248,6 +248,10 @@ public class IonFilesWithCaching implements IonFiles
 		{
 			return Single.error( e );
 		}
+		if ( file == null )
+		{
+			return Single.error( new IOException( "Failure writing " + targetFile.getPath() + " to local storage." ) );
+		}
 		return Single.just( file );
 	}
 
