@@ -1,8 +1,10 @@
 package com.anfema.ionclient.pages.models.contents;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
-public class Content implements Comparable<Content>
+public class Content implements Comparable<Content>, Parcelable
 {
 	public String variation;
 
@@ -38,4 +40,46 @@ public class Content implements Comparable<Content>
 		}
 		return position < another.position ? -1 : 1;
 	}
+
+	@Override
+	public int describeContents()
+	{
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel( Parcel dest, int flags )
+	{
+		dest.writeString( this.variation );
+		dest.writeString( this.outlet );
+		dest.writeLong( this.position );
+		dest.writeByte( this.is_searchable ? ( byte ) 1 : ( byte ) 0 );
+	}
+
+	public Content()
+	{
+	}
+
+	protected Content( Parcel in )
+	{
+		this.variation = in.readString();
+		this.outlet = in.readString();
+		this.position = in.readLong();
+		this.is_searchable = in.readByte() != 0;
+	}
+
+	public static final Creator<Content> CREATOR = new Creator<Content>()
+	{
+		@Override
+		public Content createFromParcel( Parcel in )
+		{
+			return new Content( in );
+		}
+
+		@Override
+		public Content[] newArray( int size )
+		{
+			return new Content[ size ];
+		}
+	};
 }

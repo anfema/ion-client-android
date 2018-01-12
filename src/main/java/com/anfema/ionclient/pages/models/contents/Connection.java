@@ -2,6 +2,8 @@ package com.anfema.ionclient.pages.models.contents;
 
 
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import com.anfema.utils.EqualsContract;
 
@@ -9,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Connection
+public class Connection implements Parcelable
 {
 	public final String       scheme;
 	public final String       collectionIdentifier;
@@ -126,4 +128,44 @@ public class Connection
 		Object[] hashRelevantFields = { scheme, collectionIdentifier, pageIdentifierPath, pageIdentifier, outletIdentifier };
 		return Arrays.hashCode( hashRelevantFields );
 	}
+
+	@Override
+	public int describeContents()
+	{
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel( Parcel dest, int flags )
+	{
+		dest.writeString( this.scheme );
+		dest.writeString( this.collectionIdentifier );
+		dest.writeStringList( this.pageIdentifierPath );
+		dest.writeString( this.pageIdentifier );
+		dest.writeString( this.outletIdentifier );
+	}
+
+	protected Connection( Parcel in )
+	{
+		this.scheme = in.readString();
+		this.collectionIdentifier = in.readString();
+		this.pageIdentifierPath = in.createStringArrayList();
+		this.pageIdentifier = in.readString();
+		this.outletIdentifier = in.readString();
+	}
+
+	public static final Creator<Connection> CREATOR = new Creator<Connection>()
+	{
+		@Override
+		public Connection createFromParcel( Parcel source )
+		{
+			return new Connection( source );
+		}
+
+		@Override
+		public Connection[] newArray( int size )
+		{
+			return new Connection[ size ];
+		}
+	};
 }

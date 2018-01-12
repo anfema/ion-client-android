@@ -1,6 +1,8 @@
 package com.anfema.ionclient.pages.models.contents;
 
 
+import android.os.Parcel;
+
 import java.util.List;
 
 public class ConnectionContent extends Content
@@ -64,4 +66,38 @@ public class ConnectionContent extends Content
 		}
 		return toString;
 	}
+
+	@Override
+	public int describeContents()
+	{
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel( Parcel dest, int flags )
+	{
+		super.writeToParcel( dest, flags );
+		dest.writeParcelable( this.connection, flags );
+	}
+
+	protected ConnectionContent( Parcel in )
+	{
+		super( in );
+		this.connection = in.readParcelable( Connection.class.getClassLoader() );
+	}
+
+	public static final Creator<ConnectionContent> CREATOR = new Creator<ConnectionContent>()
+	{
+		@Override
+		public ConnectionContent createFromParcel( Parcel source )
+		{
+			return new ConnectionContent( source );
+		}
+
+		@Override
+		public ConnectionContent[] newArray( int size )
+		{
+			return new ConnectionContent[ size ];
+		}
+	};
 }
