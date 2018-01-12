@@ -10,7 +10,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'de.mobilej.unmock:UnMockPlugin:0.3.6'
+        classpath 'de.mobilej.unmock:UnMockPlugin:0.6.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
