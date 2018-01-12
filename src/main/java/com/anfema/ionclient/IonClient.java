@@ -1,7 +1,6 @@
 package com.anfema.ionclient;
 
 import android.content.Context;
-import android.net.Uri;
 import android.widget.ImageView;
 
 import com.anfema.ionclient.archive.IonArchive;
@@ -231,15 +230,15 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	}
 
 	@Override
-	public void loadImage( Uri uri, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation )
+	public void loadImage( Downloadable image, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation )
 	{
-		ionPicasso.loadImage( uri, target, requestTransformation );
+		ionPicasso.loadImage( image, target, requestTransformation );
 	}
 
 	@Override
-	public void loadImage( Uri uri, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	public void loadImage( Downloadable image, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
-		ionPicasso.loadImage( uri, target, requestTransformation, callback );
+		ionPicasso.loadImage( image, target, requestTransformation, callback );
 	}
 
 	@Override

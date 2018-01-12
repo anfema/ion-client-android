@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.widget.ImageView;
 
 import com.anfema.ionclient.pages.ConfigUpdatable;
+import com.anfema.ionclient.pages.models.contents.Downloadable;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
@@ -22,7 +23,7 @@ public interface IonPicasso extends ConfigUpdatable
 	void loadImage( int resourceId, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation );
 
 	/**
-	 * Convenience method for {@link #loadImage(Uri, ImageView, Function, Callback)} which parses resource ID to {@link Uri}.
+	 * Load image from a resource ID.
 	 */
 	void loadImage( int resourceId, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback );
 
@@ -32,25 +33,26 @@ public interface IonPicasso extends ConfigUpdatable
 	void loadImage( String path, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation );
 
 	/**
-	 * Convenience method for {@link #loadImage(Uri, ImageView, Function, Callback)} which parses path string to {@link Uri}.
+	 * Convenience method for {@link #loadImage(Downloadable, ImageView, Function, Callback)} which does not provide a {@link Downloadable} image
+	 * object but only a path without checksum.
 	 */
 	void loadImage( String path, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback );
 
 	/**
-	 * {@link #loadImage(Uri, ImageView, Function, Callback)} without a callback
+	 * {@link #loadImage(Downloadable, ImageView, Function, Callback)} without a callback
 	 */
-	void loadImage( Uri uri, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation );
+	void loadImage( Downloadable image, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation );
 
 	/**
-	 * Wraps Picasso's load method {@link Picasso#load(Uri)}.
-	 * If Uri is a HTTP link then it might be changed to a file link in case the cached version shall be used.
+	 * Load image form a URI. Wraps Picasso's load method {@link Picasso#load(Uri)}.
+	 * If URI is a HTTP link then it might be changed to a file link in case the cached version shall be used.
 	 *
-	 * @param uri                   the location of the image source. can be a network link, file link, or content link, see {@link Picasso#load(Uri)}
+	 * @param image                 image content. the URL can be a network link, file link, or content link, see {@link Picasso#load(Uri)}
 	 * @param target                view where the image should be displayed
 	 * @param requestTransformation can be null, chained operations on {@link RequestCreator} (e.g. requestCreator -> requestCreator.fit().centerCrop())
 	 * @param callback              listener to onSuccess and onError events
 	 */
-	void loadImage( Uri uri, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback );
+	void loadImage( Downloadable image, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback );
 
 	/**
 	 * loadImage methods are a shortcut for {@link Picasso}'s load methods. Get Picasso instance if you need more of its functions.

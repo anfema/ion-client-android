@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.webkit.URLUtil;
 import android.widget.ImageView;
 
@@ -11,6 +12,7 @@ import com.anfema.ionclient.IonClient;
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
+import com.anfema.ionclient.pages.models.contents.Downloadable;
 import com.anfema.ionclient.utils.IonLog;
 import com.anfema.utils.Log;
 import com.anfema.utils.NetworkUtils;
@@ -121,10 +123,32 @@ public class IonPicassoWithCaching implements IonPicasso
 	@Override
 	public void loadImage( String path, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
+		loadImage( path, null, target, requestTransformation, callback );
+	}
+
+	@Override
+	public void loadImage( Downloadable image, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation )
+	{
+
+		loadImage( image, target, requestTransformation, null );
+	}
+
+	@Override
+	public void loadImage( Downloadable image, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	{
+		String path = image != null ? image.getUrl() : null;
+		String checksum = image != null ? image.getChecksum() : null;
+		loadImage( path, checksum, target, requestTransformation, callback );
+	}
+
+	private void loadImage( String path, String checksum, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	{
+		IonLog.i( "ION Picasso", "START: requestUri: " + path + ", checksum: " + checksum );
+
 		if ( path == null || path.trim().length() == 0 )
 		{
 			// let picasso handle edge cases
-			RequestCreator requestCreator = picasso.load( path );
+			RequestCreator requestCreator = picasso.load( path ).memoryPolicy(  );
 			if ( requestTransformation != null )
 			{
 				try
@@ -139,30 +163,17 @@ public class IonPicassoWithCaching implements IonPicasso
 			requestCreator.into( target, callback );
 			return;
 		}
-		loadImage( Uri.parse( path ), target, requestTransformation, callback );
-	}
 
-	@Override
-	public void loadImage( Uri requestUri, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation )
-	{
-		loadImage( requestUri, target, requestTransformation, null );
-	}
-
-	@Override
-	public void loadImage( Uri requestUri, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
-	{
-		IonLog.i( "ION Picasso", "START: requestUri: " + requestUri );
-		// IonLog.d( "ION Picasso", "picasso instance: " + picasso + ", ion picasso instance: " + this );
-		fetchImageFile( requestUri )
+		fetchImageFile( Uri.parse( path ), checksum )
 				.subscribe( fileUri -> showImage( fileUri, target, requestTransformation, callback ), throwable -> imageDownloadFailed( throwable, target, requestTransformation, callback ) );
 	}
 
-	private Single<Uri> fetchImageFile( @NonNull Uri uri )
+	private Single<Uri> fetchImageFile( @NonNull Uri uri, @Nullable String checksum )
 	{
 		if ( URLUtil.isNetworkUrl( uri.toString() ) )
 		{
 			HttpUrl httpUrl = HttpUrl.parse( uri.toString() );
-			return ionFiles.request( httpUrl, null )
+			return ionFiles.request( httpUrl, checksum )
 					.map( Uri::fromFile );
 		}
 		else
