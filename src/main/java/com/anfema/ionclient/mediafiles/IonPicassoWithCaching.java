@@ -148,7 +148,7 @@ public class IonPicassoWithCaching implements IonPicasso
 		if ( path == null || path.trim().length() == 0 )
 		{
 			// let picasso handle edge cases
-			RequestCreator requestCreator = picasso.load( path ).memoryPolicy(  );
+			RequestCreator requestCreator = picasso.load( path );
 			if ( requestTransformation != null )
 			{
 				try
