@@ -201,17 +201,15 @@ public class IonPicassoWithCaching implements IonPicasso
 		}
 
 		// apply passed requestCreator operations
+		if ( requestTransformation != null )
 		{
-			if ( requestTransformation != null )
+			try
 			{
-				try
-				{
-					requestCreator = requestTransformation.apply( requestCreator );
-				}
-				catch ( Exception e )
-				{
-					Log.ex( e );
-				}
+				requestCreator = requestTransformation.apply( requestCreator );
+			}
+			catch ( Exception e )
+			{
+				Log.ex( e );
 			}
 		}
 
