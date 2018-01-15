@@ -73,7 +73,7 @@ public class IonFilesWithCaching implements IonFiles
 	 * @see #request(HttpUrl, String)
 	 */
 	@Override
-	public Single<File> request( Downloadable content )
+	public Single<FileWithStatus> request( Downloadable content )
 	{
 		return request( HttpUrl.parse( content.getUrl() ), content.getChecksum() );
 	}
@@ -84,7 +84,7 @@ public class IonFilesWithCaching implements IonFiles
 	 * @see #request(HttpUrl, String, boolean, File)
 	 */
 	@Override
-	public Single<File> request( HttpUrl url, String checksum )
+	public Single<FileWithStatus> request( HttpUrl url, String checksum )
 	{
 		return request( url, checksum, false, null );
 	}
@@ -99,7 +99,7 @@ public class IonFilesWithCaching implements IonFiles
 	 * @return file is retrieved when subscribed to the the result of this async operation.
 	 */
 	@Override
-	public Single<File> request( HttpUrl url, String checksum, boolean ignoreCaching, @Nullable File inTargetFile )
+	public Single<FileWithStatus> request( HttpUrl url, String checksum, boolean ignoreCaching, @Nullable File inTargetFile )
 	{
 		// clear incompatible cache
 		CacheCompatManager.cleanUp( context );
@@ -113,6 +113,7 @@ public class IonFilesWithCaching implements IonFiles
 			{
 				// force new download, do not create cache index entry
 				return authenticatedFileRequest( url, targetFile )
+						.map( file -> new FileWithStatus( file, FileStatus.NETWORK ) )
 						.compose( RxUtils.runSingleOnIoThread() );
 			}
 			else
@@ -127,7 +128,8 @@ public class IonFilesWithCaching implements IonFiles
 		{
 			// retrieve current version from cache
 			IonLog.i( "File Cache Lookup", url.toString() );
-			return Single.just( targetFile );
+			return Single.just( targetFile )
+					.map( file -> new FileWithStatus( file, FileStatus.DISK ) );
 		}
 		else
 		{
@@ -138,14 +140,15 @@ public class IonFilesWithCaching implements IonFiles
 						.doOnSuccess( file -> FileCacheIndex.save( url.toString(), file, config, null, context ) )
 						.compose( RxUtils.runSingleOnIoThread() )
 						.doOnSuccess( file -> runningDownloads.finished( url ) );
-				return runningDownloads.starting( url, downloadSingle.toObservable() ).singleOrError();
+				return runningDownloads.starting( url, downloadSingle.toObservable() ).singleOrError()
+						.map( file -> new FileWithStatus( file, FileStatus.NETWORK ) );
 			}
 			else if ( targetFile.exists() )
 			{
-				// TODO notify app that data might be outdated
 				// no network: use old version from cache (even if no cache index entry exists)
 				IonLog.i( "File Cache Lookup", url.toString() );
-				return Single.just( targetFile );
+				return Single.just( targetFile )
+						.map( file -> new FileWithStatus( file, FileStatus.DISK_OUTDATED ) );
 			}
 			else
 			{

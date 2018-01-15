@@ -8,6 +8,7 @@ import com.anfema.ionclient.archive.IonArchiveFactory;
 import com.anfema.ionclient.fulltextsearch.IonFts;
 import com.anfema.ionclient.fulltextsearch.IonFtsFactory;
 import com.anfema.ionclient.fulltextsearch.SearchResult;
+import com.anfema.ionclient.mediafiles.FileWithStatus;
 import com.anfema.ionclient.mediafiles.IonFiles;
 import com.anfema.ionclient.mediafiles.IonFilesFactory;
 import com.anfema.ionclient.mediafiles.IonPicasso;
@@ -182,7 +183,7 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * @see IonFiles#request(Downloadable)
 	 */
 	@Override
-	public Single<File> request( Downloadable content )
+	public Single<FileWithStatus> request( Downloadable content )
 	{
 		return ionFiles.request( content );
 	}
@@ -191,7 +192,7 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * @see IonFiles#request(HttpUrl, String)
 	 */
 	@Override
-	public Single<File> request( HttpUrl url, String checksum )
+	public Single<FileWithStatus> request( HttpUrl url, String checksum )
 	{
 		return ionFiles.request( url, checksum );
 	}
@@ -200,7 +201,7 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	 * @see IonFiles#request(HttpUrl, String, boolean, File)
 	 */
 	@Override
-	public Single<File> request( HttpUrl url, String checksum, boolean ignoreCaching, File targetFile )
+	public Single<FileWithStatus> request( HttpUrl url, String checksum, boolean ignoreCaching, File targetFile )
 	{
 		return ionFiles.request( url, checksum, ignoreCaching, targetFile );
 	}

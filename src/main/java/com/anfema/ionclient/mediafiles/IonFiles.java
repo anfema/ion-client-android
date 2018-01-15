@@ -10,9 +10,9 @@ import okhttp3.HttpUrl;
 
 public interface IonFiles extends ConfigUpdatable
 {
-	Single<File> request( Downloadable content );
+	Single<FileWithStatus> request( Downloadable content );
 
-	Single<File> request( HttpUrl url, String checksum );
+	Single<FileWithStatus> request( HttpUrl url, String checksum );
 
-	Single<File> request( HttpUrl url, String checksum, boolean ignoreCaching, File targetFile );
+	Single<FileWithStatus> request( HttpUrl url, String checksum, boolean ignoreCaching, File targetFile );
 }

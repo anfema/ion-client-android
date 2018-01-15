@@ -18,7 +18,7 @@ import io.reactivex.functions.Function;
  */
 public class PicassoLoadingViewHandler implements Callback
 {
-	private final View loadingIndicatorView;
+	protected final View loadingIndicatorView;
 
 	public PicassoLoadingViewHandler( View loadingIndicatorView )
 	{

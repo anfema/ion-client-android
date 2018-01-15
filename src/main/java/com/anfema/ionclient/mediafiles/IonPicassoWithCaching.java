@@ -30,6 +30,8 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 
+import static com.squareup.picasso.MemoryPolicy.NO_CACHE;
+
 /**
  * This class holds multiple {@link Picasso} instances.
  * <p>
@@ -168,34 +170,42 @@ public class IonPicassoWithCaching implements IonPicasso
 				.subscribe( fileUri -> showImage( fileUri, target, requestTransformation, callback ), throwable -> imageDownloadFailed( throwable, target, requestTransformation, callback ) );
 	}
 
-	private Single<Uri> fetchImageFile( @NonNull Uri uri, @Nullable String checksum )
+	private Single<UriWithStatus> fetchImageFile( @NonNull Uri uri, @Nullable String checksum )
 	{
 		if ( URLUtil.isNetworkUrl( uri.toString() ) )
 		{
 			HttpUrl httpUrl = HttpUrl.parse( uri.toString() );
 			return ionFiles.request( httpUrl, checksum )
-					.map( Uri::fromFile );
+					.map( UriWithStatus::new );
 		}
 		else
 		{
-			return Single.just( uri );
+			return Single.just( new UriWithStatus( uri, FileStatus.DISK ) );
 		}
 	}
 
-	private void showImage( Uri uri, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
+	private void showImage( @NonNull UriWithStatus uriWithStatus, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
-		RequestCreator requestCreator = picasso.load( uri );
+		RequestCreator requestCreator = picasso.load( uriWithStatus.uri );
+
+		if ( uriWithStatus.status == FileStatus.NETWORK )
+		{
+			// skip memory cache lookup if the image has been downloaded (so memory cache may hold an outdated version)
+			requestCreator.memoryPolicy( NO_CACHE );
+		}
 
 		// apply passed requestCreator operations
-		if ( requestTransformation != null )
 		{
-			try
+			if ( requestTransformation != null )
 			{
-				requestCreator = requestTransformation.apply( requestCreator );
-			}
-			catch ( Exception e )
-			{
-				Log.ex( e );
+				try
+				{
+					requestCreator = requestTransformation.apply( requestCreator );
+				}
+				catch ( Exception e )
+				{
+					Log.ex( e );
+				}
 			}
 		}
 
@@ -205,7 +215,7 @@ public class IonPicassoWithCaching implements IonPicasso
 	private void imageDownloadFailed( Throwable throwable, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
 	{
 		IonLog.ex( "ION Picasso", throwable );
-		showImage( null, target, requestTransformation, null );
+		showImage( new UriWithStatus( null, null ), target, requestTransformation, null );
 		if ( callback != null )
 		{
 			callback.onError();
