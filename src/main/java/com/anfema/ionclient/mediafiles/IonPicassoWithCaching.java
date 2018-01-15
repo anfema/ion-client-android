@@ -37,6 +37,10 @@ import static com.squareup.picasso.MemoryPolicy.NO_CACHE;
  * <p>
  * Each instance intercepts the requests being performed by adding an authorization header – which is useful in case the link is referring to
  * the protected media repository of ION.
+ * <p>
+ * Although, the Picasso instance is accessible directly through {@link #getPicassoInstance()} or {@link #getPicassoInstanceDoAuthCall()}, loading
+ * images should be performed through {@link #loadImage(String, ImageView, Function)} or one of its variations in order to utilize the persistent
+ * ION disk cache.
  */
 public class IonPicassoWithCaching implements IonPicasso
 {
@@ -71,6 +75,8 @@ public class IonPicassoWithCaching implements IonPicasso
 		NetworkUtils.applyTimeout( okHttpClientBuilder, networkTimeout );
 		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( authHeaderValueRetriever ) );
 		okHttpClientBuilder.addInterceptor( new RequestLogger( "Picasso Request" ) );
+		// keep disk cache of OkHttp client in place, in case images are loaded directly through the picasso instance instead of using a
+		// loadImage-method
 		OkHttpClient picassoClient = okHttpClientBuilder.build();
 
 		return new Picasso.Builder( context )
