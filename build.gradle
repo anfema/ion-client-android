@@ -35,6 +35,8 @@ android {
 
         // in this files proguard rules are exposed and can be used by the application project
         consumerProguardFiles 'proguard-library-consumer.pro'
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -79,6 +81,10 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testApi "org.jetbrains.spek:spek:1.0.25"
     testApi "nl.jqno.equalsverifier:equalsverifier:2.1"
+
+    androidTestImplementation "com.android.support:support-annotations:$support_version"
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test:rules:1.0.1'
 }
 
 // allow unit tests to use some basic android library classes
