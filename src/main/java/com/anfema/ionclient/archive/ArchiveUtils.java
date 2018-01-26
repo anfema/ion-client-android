@@ -1,6 +1,7 @@
 package com.anfema.ionclient.archive;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.archive.models.ArchiveIndex;
@@ -44,13 +45,12 @@ class ArchiveUtils
 {
 	private static final String TAG = "ArchiveUtils";
 
-	static Observable<File> unTar( File archiveFile, Collection collection, String lastModified, IonConfig config, Context context )
+	static Observable<File> unTar( @NonNull File archiveFile, @NonNull Collection collection, String lastModified, IonConfig config, Context context )
 	{
 		return Observable.fromCallable( () -> performUnTar( archiveFile, config, collection, lastModified, context ) )
 				.flatMap( Observable::fromIterable )
 				// write cache index entries
-				.doOnNext( fileWithType -> saveCacheIndex( fileWithType, collection, lastModified, config, context ) )
-				.map( fileWithType -> fileWithType.file );
+				.map( fileWithType -> saveCacheIndex( fileWithType, collection, lastModified, config, context ) );
 	}
 
 	/**
@@ -239,13 +239,13 @@ class ArchiveUtils
 		}
 	}
 
-	private static void saveCacheIndex( FileWithMeta fileWithMeta, Collection collection, String lastModified, IonConfig config, Context context )
+	private static File saveCacheIndex( @NonNull FileWithMeta fileWithMeta, Collection collection, String lastModified, IonConfig config, Context context )
 	{
 		IonRequestType type = fileWithMeta.type;
 		if ( type == null )
 		{
 			IonLog.w( TAG, "It could not be determined of which kind the request " + fileWithMeta.archiveIndex.url + " is. Thus, do not create a cache index entry." );
-			return;
+			return fileWithMeta.file;
 		}
 
 		switch ( type )
@@ -270,5 +270,6 @@ class ArchiveUtils
 				FileCacheIndex.save( fileWithMeta.archiveIndex.url, fileWithMeta.file, config, fileWithMeta.archiveIndex.checksum, context );
 				break;
 		}
+		return fileWithMeta.file;
 	}
 }

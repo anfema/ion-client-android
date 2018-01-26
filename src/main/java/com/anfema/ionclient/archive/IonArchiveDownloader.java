@@ -97,9 +97,10 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 				.flatMap( archiveUrl -> ionFiles.request( HttpUrl.parse( archiveUrl ), null, true, archivePath ) )
 				.map( fileWithStatus -> fileWithStatus.file );
 
-		return collectionObs.zipWith( archiveObs, ( collection, archivePath2 ) -> ArchiveUtils.unTar( archivePath2, collection, lastModified, config, context ) )
-				.toCompletable()
-				.doOnComplete( () -> activeArchiveDownload = false )
+		return collectionObs.zipWith( archiveObs, CollectionArchive::new )
+				.flatMapObservable( collArch -> ArchiveUtils.unTar( collArch.archivePath, collArch.collection, lastModified, config, context ) )
+				.ignoreElements()
+				.doOnTerminate( () -> activeArchiveDownload = false )
 				.subscribeOn( Schedulers.io() );
 	}
 
@@ -114,6 +115,18 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 			// archive needs to be downloaded again. Download runs in background and does not even inform UI when finished
 			downloadArchive( collection, lastModified )
 					.subscribe( () -> IonLog.d( "ION Archive", "Archive has been downloaded/updated in background" ), RxUtils.DEFAULT_EXCEPTION_HANDLER );
+		}
+	}
+
+	class CollectionArchive
+	{
+		Collection collection;
+		File       archivePath;
+
+		CollectionArchive( Collection collection, File archivePath )
+		{
+			this.collection = collection;
+			this.archivePath = archivePath;
 		}
 	}
 }
