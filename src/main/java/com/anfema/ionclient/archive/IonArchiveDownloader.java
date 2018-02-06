@@ -100,7 +100,7 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 		return collectionObs.zipWith( archiveObs, CollectionArchive::new )
 				.flatMapObservable( collArch -> ArchiveUtils.unTar( collArch.archivePath, collArch.collection, lastModified, config, context ) )
 				.ignoreElements()
-				.doOnTerminate( () -> activeArchiveDownload = false )
+				.doFinally( () -> activeArchiveDownload = false )
 				.subscribeOn( Schedulers.io() );
 	}
 

@@ -70,7 +70,7 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 				.map( collection -> collection.fts_db )
 				.flatMap( searchDbUrl -> ionFiles.request( HttpUrl.parse( searchDbUrl ), null, true, dbTargetPath ) )
 				.toCompletable()
-				.doOnComplete( () -> activeFtsDbDownload = false )
+				.doFinally( () -> activeFtsDbDownload = false );
 	}
 
 	/**

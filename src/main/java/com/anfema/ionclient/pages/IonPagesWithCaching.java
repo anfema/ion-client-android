@@ -364,8 +364,8 @@ public class IonPagesWithCaching implements IonPages
 					IonLog.e( "Failed Request", "Network request " + collectionUrl + " failed." );
 					return Single.error( new NetworkRequestException( collectionUrl, throwable ) );
 				} )
-				.doOnSuccess( file -> runningCollectionDownload.finished( config.collectionIdentifier ) );
 				.subscribeOn( Schedulers.io() )
+				.doFinally( () -> runningCollectionDownload.finished( config.collectionIdentifier ) );
 		return runningCollectionDownload.starting( config.collectionIdentifier, collectionSingle.toObservable() ).singleOrError();
 	}
 
@@ -455,7 +455,7 @@ public class IonPagesWithCaching implements IonPages
 					return Single.error( new NetworkRequestException( pageUrl, throwable ) );
 				} )
 				.compose( RxUtils.runSingleOnIoThread() )
-				.doOnSuccess( file -> runningPageDownloads.finished( pageIdentifier ) );
+				.doFinally( () -> runningPageDownloads.finished( pageIdentifier ) );
 		return runningPageDownloads.starting( pageIdentifier, pageSingle.toObservable() ).singleOrError();
 	}
 
