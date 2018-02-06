@@ -129,7 +129,8 @@ public class IonPagesWithCaching implements IonPages
 				.map( collection -> collection.pages )
 				.flatMapObservable( Observable::fromIterable )
 				.filter( PagesFilter.identifierEquals( pageIdentifier ) )
-				.singleOrError();
+				.singleOrError()
+				.observeOn( AndroidSchedulers.mainThread() );
 	}
 
 	@Override
@@ -138,7 +139,8 @@ public class IonPagesWithCaching implements IonPages
 		return fetchCollection()
 				.map( collection -> collection.pages )
 				.flatMapObservable( Observable::fromIterable )
-				.filter( pagesFilter );
+				.filter( pagesFilter )
+				.observeOn( AndroidSchedulers.mainThread() );
 	}
 
 	@Override
@@ -183,7 +185,6 @@ public class IonPagesWithCaching implements IonPages
 		}
 
 		return fetchCollection()
-				.observeOn( Schedulers.io() )
 				// get page's last_changed date from collection
 				.flatMap( collection -> collection.getPageLastChangedAsync( pageIdentifier ) )
 				// compare last_changed date of cached page with that of collection
@@ -228,7 +229,6 @@ public class IonPagesWithCaching implements IonPages
 	public Observable<Page> fetchPages( Predicate<PagePreview> pagesFilter )
 	{
 		return fetchCollection()
-				.observeOn( Schedulers.io() )
 				.map( collection -> collection.pages )
 				.flatMapObservable( Observable::fromIterable )
 				.filter( pagesFilter )
@@ -286,7 +286,7 @@ public class IonPagesWithCaching implements IonPages
 				{
 					return handleUnsuccessfulCollectionCacheReading( collectionUrl, cacheIndex, serverCallAsBackup, throwable );
 				} )
-				.compose( RxUtils.runSingleOnIoThread() );
+				.subscribeOn( Schedulers.io() );
 	}
 
 	private Single<Collection> handleUnsuccessfulCollectionCacheReading( String collectionUrl, CollectionCacheIndex cacheIndex, boolean serverCallAsBackup, Throwable e )
@@ -364,8 +364,8 @@ public class IonPagesWithCaching implements IonPages
 					IonLog.e( "Failed Request", "Network request " + collectionUrl + " failed." );
 					return Single.error( new NetworkRequestException( collectionUrl, throwable ) );
 				} )
-				.compose( RxUtils.runSingleOnIoThread() )
 				.doOnSuccess( file -> runningCollectionDownload.finished( config.collectionIdentifier ) );
+				.subscribeOn( Schedulers.io() )
 		return runningCollectionDownload.starting( config.collectionIdentifier, collectionSingle.toObservable() ).singleOrError();
 	}
 
