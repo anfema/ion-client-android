@@ -92,12 +92,12 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 			collectionObs = Single.just( inCollection );
 		}
 
-		Single<File> archiveObs = collectionObs
-				.map( collection -> collection.archive )
-				.flatMap( archiveUrl -> ionFiles.request( HttpUrl.parse( archiveUrl ), null, true, archivePath ) )
-				.map( fileWithStatus -> fileWithStatus.file );
-
-		return collectionObs.zipWith( archiveObs, CollectionArchive::new )
+		return collectionObs.flatMap( collection ->
+				// download archive
+				ionFiles.request( HttpUrl.parse( collection.archive ), null, false, archivePath )
+						.map( fileWithStatus -> fileWithStatus.file )
+						.map( archiveFile -> new CollectionArchive( collection, archiveFile ) ) )
+				// untar archive
 				.flatMapObservable( collArch -> ArchiveUtils.unTar( collArch.archivePath, collArch.collection, lastModified, config, context ) )
 				.ignoreElements()
 				.doFinally( () -> activeArchiveDownload = false )
