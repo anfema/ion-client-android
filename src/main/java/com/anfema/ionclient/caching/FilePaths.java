@@ -38,6 +38,8 @@ public class FilePaths
 				return getCollectionJsonPath( url, config, context, tempFolder );
 			case PAGE:
 				return getPageJsonPath( url, requestInfo.pageIdentifier, config, context, tempFolder );
+			case ARCHIVE:
+				return getArchiveFilePath( config, context );
 			case MEDIA:
 			default:
 				return getMediaFilePath( url, config, context, tempFolder );

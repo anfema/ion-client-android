@@ -8,8 +8,6 @@ import com.anfema.ionclient.pages.models.Page;
 
 import org.joda.time.DateTime;
 
-import okhttp3.HttpUrl;
-
 public class PageCacheIndex extends CacheIndex
 {
 	/**
@@ -17,18 +15,8 @@ public class PageCacheIndex extends CacheIndex
 	 */
 	private DateTime lastChanged;
 
-	public PageCacheIndex( String filename, DateTime lastChanged )
+	public PageCacheIndex( DateTime lastChanged )
 	{
-		super( filename );
-		this.lastChanged = lastChanged;
-	}
-
-	/**
-	 * Use MD5 of request URL as filename
-	 */
-	public PageCacheIndex( HttpUrl requestUrl, DateTime lastChanged )
-	{
-		super( requestUrl );
 		this.lastChanged = lastChanged;
 	}
 
@@ -62,7 +50,7 @@ public class PageCacheIndex extends CacheIndex
 	public static void save( String pageIdentifier, DateTime pageLastChanged, IonConfig config, Context context )
 	{
 		String url = IonPageUrls.getPageUrl( config, pageIdentifier );
-		PageCacheIndex cacheIndex = new PageCacheIndex( url, pageLastChanged );
+		PageCacheIndex cacheIndex = new PageCacheIndex( pageLastChanged );
 		CacheIndexStore.save( url, cacheIndex, config, context );
 	}
 }

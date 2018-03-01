@@ -21,6 +21,7 @@ import com.anfema.ionclient.pages.models.responses.CollectionResponse;
 import com.anfema.ionclient.pages.models.responses.PageResponse;
 import com.anfema.ionclient.serialization.GsonHolder;
 import com.anfema.ionclient.utils.ApiFactory;
+import com.anfema.ionclient.utils.DateTimeUtils;
 import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.IonLog;
 import com.anfema.ionclient.utils.PagesFilter;
@@ -28,6 +29,8 @@ import com.anfema.ionclient.utils.PendingDownloadHandler;
 import com.anfema.ionclient.utils.RxUtils;
 import com.anfema.utils.NetworkUtils;
 import com.anfema.utils.StringUtils;
+
+import org.joda.time.DateTime;
 
 import java.io.File;
 import java.util.List;
@@ -313,6 +316,7 @@ public class IonPagesWithCaching implements IonPages
 	{
 		final String lastModified = cacheIndex != null ? cacheIndex.getLastModified() : null;
 
+		DateTime requestTime = DateTimeUtils.now();
 		Single<Collection> collectionSingle = config.authenticatedRequest(
 				authorizationHeaderValue -> ionApi.getCollection( config.collectionIdentifier, config.locale, authorizationHeaderValue, config.variation, lastModified ) )
 				.flatMap( serverResponse ->
@@ -322,7 +326,7 @@ public class IonPagesWithCaching implements IonPages
 						// collection has not changed, return cached version
 						return fetchCollectionFromCache( cacheIndex, false )
 								// update cache index again (last updated needs to be reset to now)
-								.doOnSuccess( saveCollectionCacheIndex( lastModified ) );
+								.doOnSuccess( saveCollectionCacheIndex( lastModified, requestTime ) );
 					}
 					else if ( serverResponse.isSuccessful() )
 					{
@@ -338,7 +342,7 @@ public class IonPagesWithCaching implements IonPages
 									return collection;
 								} )
 								.doOnSuccess( collection -> MemoryCache.saveCollection( collection, config, context ) )
-								.doOnSuccess( saveCollectionCacheIndex( lastModifiedReceived ) )
+								.doOnSuccess( saveCollectionCacheIndex( lastModifiedReceived, requestTime ) )
 								.doOnSuccess( collection ->
 								{
 									if ( collectionListener != null )
@@ -475,9 +479,9 @@ public class IonPagesWithCaching implements IonPages
 
 
 	@NonNull
-	private Consumer<Collection> saveCollectionCacheIndex( String lastModified )
+	private Consumer<Collection> saveCollectionCacheIndex( String lastModified, DateTime lastUpdated )
 	{
-		return collection -> CollectionCacheIndex.save( config, context, lastModified );
+		return collection -> CollectionCacheIndex.save( config, context, lastModified, lastUpdated );
 	}
 
 	@NonNull

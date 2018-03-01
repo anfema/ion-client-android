@@ -10,20 +10,25 @@ public class IonPageUrls
 {
 	public enum IonRequestType
 	{
-		COLLECTION, PAGE, MEDIA
+		COLLECTION, PAGE, MEDIA, ARCHIVE
 	}
 
 	public static final String SLASH           = FileUtils.SLASH;
 	public static final String QUERY_BEGIN     = "?";
 	public static final String QUERY_VARIATION = "variation=";
 
-	private static final String[] MEDIA_URL_INDICATORS = { "/media/", "/protected_media/" };
+	private static final String[] MEDIA_URL_INDICATORS  = { "/media/", "/protected_media/" };
+	private static final String   ARCHIVE_URL_INDICATOR = ".tar";
 
 	public static IonRequestInfo analyze( String url, IonConfig config ) throws NoIonPagesRequestException
 	{
 		if ( isMediaRequestUrl( url ) )
 		{
 			return new IonRequestInfo( IonRequestType.MEDIA, null, null, null, null );
+		}
+		else if ( isArchiveUrl( url ) )
+		{
+			return new IonRequestInfo( IonRequestType.ARCHIVE, null, null, null, null );
 		}
 		else
 		{
@@ -78,6 +83,11 @@ public class IonPageUrls
 			}
 		}
 		return false;
+	}
+
+	private static boolean isArchiveUrl( String url )
+	{
+		return url.endsWith( ARCHIVE_URL_INDICATOR ) || url.contains( ARCHIVE_URL_INDICATOR + "?" );
 	}
 
 	public static String getCollectionUrl( IonConfig config )

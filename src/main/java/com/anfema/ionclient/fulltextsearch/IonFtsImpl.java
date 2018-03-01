@@ -68,7 +68,7 @@ class IonFtsImpl implements IonFts, CollectionDownloadedListener
 		IonLog.i( "FTS Database", "about to download FTS database for collection " + config.collectionIdentifier );
 		return ionPages.fetchCollection()
 				.map( collection -> collection.fts_db )
-				.flatMap( searchDbUrl -> ionFiles.request( HttpUrl.parse( searchDbUrl ), null, false, dbTargetPath ) )
+				.flatMap( searchDbUrl -> ionFiles.request( HttpUrl.parse( searchDbUrl ), null, true, dbTargetPath ) )
 				.toCompletable()
 				.doFinally( () -> activeFtsDbDownload = false );
 	}

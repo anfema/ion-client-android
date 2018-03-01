@@ -4,7 +4,6 @@ import android.content.Context;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.caching.index.CacheIndexStore;
-import com.anfema.ionclient.caching.index.MemoryCacheIndex;
 import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.IonLog;
 
@@ -32,7 +31,6 @@ public class CacheManager
 	{
 		IonLog.i( "Cache Clear", "Clear memory cache" );
 		MemoryCache.clear();
-		MemoryCacheIndex.clear();
 	}
 
 	/**

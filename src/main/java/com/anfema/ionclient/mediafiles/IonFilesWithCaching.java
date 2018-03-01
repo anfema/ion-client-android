@@ -11,9 +11,11 @@ import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.caching.index.CollectionCacheIndex;
 import com.anfema.ionclient.caching.index.FileCacheIndex;
 import com.anfema.ionclient.exceptions.FileNotAvailableException;
+import com.anfema.ionclient.exceptions.HttpException;
 import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
 import com.anfema.ionclient.pages.models.contents.Downloadable;
+import com.anfema.ionclient.utils.DateTimeUtils;
 import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.IonLog;
 import com.anfema.ionclient.utils.PendingDownloadHandler;
@@ -32,6 +34,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * Does not perform calls against a specific API, but takes complete URLs as parameter to perform a GET call to.
@@ -101,6 +104,22 @@ public class IonFilesWithCaching implements IonFiles
 	@Override
 	public Single<FileWithStatus> request( HttpUrl url, String checksum, boolean ignoreCaching, @Nullable File inTargetFile )
 	{
+		return request( url, url, checksum, ignoreCaching, inTargetFile );
+	}
+
+	/**
+	 * Retrieve a file through its URL either from file cache or with a network request. The result can be cached for further requests.
+	 *
+	 * @param url           File location is defined this HTTP URL.
+	 * @param downloadUrl   The actual HTTP URL used to make a network request, it can differ from lookupUrl (e.g. by additional query parameter lastUpdated)
+	 * @param checksum      checksum of the current file on server
+	 * @param ignoreCaching If set to true file is retrieved through a network request and not stored in cache.
+	 * @param inTargetFile  Optionally, a custom file path can be provided. If {@code null}, the default scheme is used.
+	 * @return file is retrieved when subscribed to the the result of this async operation.
+	 */
+	@Override
+	public Single<FileWithStatus> request( HttpUrl url, HttpUrl downloadUrl, String checksum, boolean ignoreCaching, @Nullable File inTargetFile )
+	{
 		// clear incompatible cache
 		CacheCompatManager.cleanUp( context );
 
@@ -112,7 +131,7 @@ public class IonFilesWithCaching implements IonFiles
 			if ( networkAvailable )
 			{
 				// force new download, do not create cache index entry
-				return authenticatedFileRequest( url, targetFile )
+				return authenticatedFileRequest( downloadUrl, targetFile )
 						.map( file -> new FileWithStatus( file, FileStatus.NETWORK ) )
 						.compose( RxUtils.runSingleOnIoThread() );
 			}
@@ -135,9 +154,10 @@ public class IonFilesWithCaching implements IonFiles
 		{
 			if ( networkAvailable )
 			{
+				DateTime requestTime = DateTimeUtils.now();
 				// download media file
-				Single<File> downloadSingle = authenticatedFileRequest( url, targetFile )
-						.doOnSuccess( file -> FileCacheIndex.save( url.toString(), file, config, null, context ) )
+				Single<File> downloadSingle = authenticatedFileRequest( downloadUrl, targetFile )
+						.doOnSuccess( file -> FileCacheIndex.save( url.toString(), file, config, null, requestTime, context ) )
 						.compose( RxUtils.runSingleOnIoThread() )
 						.doOnSuccess( file -> runningDownloads.finished( url ) );
 				return runningDownloads.starting( url, downloadSingle.toObservable() ).singleOrError()
@@ -209,11 +229,12 @@ public class IonFilesWithCaching implements IonFiles
 			Response response = client.newCall( request ).execute();
 			if ( !response.isSuccessful() )
 			{
-				if ( response.body() != null )
+				ResponseBody responseBody = response.body();
+				if ( responseBody != null )
 				{
-					response.body().close();
+					responseBody.close();
 				}
-				return Single.error( new IOException( "Unexpected code: " + response ) );
+				return Single.error( new HttpException( response.code(), response.message() ) );
 			}
 
 			// use custom target file path

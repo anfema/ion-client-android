@@ -1,6 +1,7 @@
 package com.anfema.ionclient.caching.index;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.pages.IonPageUrls;
@@ -8,8 +9,6 @@ import com.anfema.ionclient.utils.DateTimeUtils;
 import com.anfema.ionclient.utils.IonLog;
 
 import org.joda.time.DateTime;
-
-import okhttp3.HttpUrl;
 
 public class CollectionCacheIndex extends CacheIndex
 {
@@ -23,19 +22,8 @@ public class CollectionCacheIndex extends CacheIndex
 	 */
 	private String lastModified;
 
-	public CollectionCacheIndex( String filename, DateTime lastUpdated, String lastModified )
+	public CollectionCacheIndex( DateTime lastUpdated, String lastModified )
 	{
-		super( filename );
-		this.lastUpdated = lastUpdated;
-		this.lastModified = lastModified;
-	}
-
-	/**
-	 * Use MD5 of request URL as filename
-	 */
-	public CollectionCacheIndex( HttpUrl requestUrl, DateTime lastUpdated, String lastModified )
-	{
-		super( requestUrl );
 		this.lastUpdated = lastUpdated;
 		this.lastModified = lastModified;
 	}
@@ -94,10 +82,14 @@ public class CollectionCacheIndex extends CacheIndex
 		return CacheIndexStore.retrieve( requestUrl, CollectionCacheIndex.class, config, context );
 	}
 
-	public static void save( IonConfig config, Context context, String lastModified )
+	public static void save( IonConfig config, Context context, String lastModified, @Nullable DateTime lastUpdated )
 	{
 		String url = IonPageUrls.getCollectionUrl( config );
-		CollectionCacheIndex cacheIndex = new CollectionCacheIndex( url, DateTimeUtils.now(), lastModified );
+		if ( lastUpdated == null )
+		{
+			lastUpdated = DateTimeUtils.now();
+		}
+		CollectionCacheIndex cacheIndex = new CollectionCacheIndex( lastUpdated, lastModified );
 		CacheIndexStore.save( url, cacheIndex, config, context );
 	}
 }
