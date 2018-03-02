@@ -94,6 +94,16 @@ public class IonPagesWithCaching implements IonPages
 	@Override
 	public Single<Collection> fetchCollection()
 	{
+		return fetchCollection( false );
+	}
+
+	/**
+	 *
+	 * @param preferNetwork try network download as first option if set to false
+	 */
+	@Override
+	public Single<Collection> fetchCollection( boolean preferNetwork )
+	{
 		// clear incompatible cache
 		CacheCompatManager.cleanUp( context );
 
@@ -102,7 +112,7 @@ public class IonPagesWithCaching implements IonPages
 		boolean currentCacheEntry = cacheIndex != null && !cacheIndex.isOutdated( config );
 		boolean networkAvailable = NetworkUtils.isConnected( context ) && IonConfig.cachingStrategy != CachingStrategy.STRICT_OFFLINE;
 
-		if ( currentCacheEntry )
+		if ( currentCacheEntry && !preferNetwork )
 		{
 			// retrieve current version from cache
 			return fetchCollectionFromCache( cacheIndex, networkAvailable );

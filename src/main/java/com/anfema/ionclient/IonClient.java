@@ -120,6 +120,13 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 
 
 	@Override
+	public Single<Collection> fetchCollection( boolean preferNetwork )
+	{
+		return ionPages.fetchCollection( preferNetwork );
+	}
+
+
+	@Override
 	public Single<PagePreview> fetchPagePreview( String pageIdentifier )
 	{
 		return ionPages.fetchPagePreview( pageIdentifier );

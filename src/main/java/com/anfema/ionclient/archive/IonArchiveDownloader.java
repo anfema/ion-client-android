@@ -92,7 +92,7 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 		Single<Collection> collectionObs;
 		if ( inCollection == null )
 		{
-			collectionObs = ionPages.fetchCollection();
+			collectionObs = ionPages.fetchCollection( true );
 		}
 		else
 		{
