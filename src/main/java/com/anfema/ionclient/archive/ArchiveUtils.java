@@ -21,6 +21,7 @@ import com.anfema.ionclient.pages.models.responses.CollectionResponse;
 import com.anfema.ionclient.serialization.GsonHolder;
 import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.IonLog;
+import com.anfema.utils.Log;
 
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
@@ -35,8 +36,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import io.reactivex.Observable;
 
@@ -45,12 +48,13 @@ class ArchiveUtils
 {
 	private static final String TAG = "ArchiveUtils";
 
-	static Observable<File> unTar( @NonNull File archiveFile, @NonNull Collection collection, String lastModified, IonConfig config, Context context )
+	static Observable<File> unTar( @NonNull File archiveFile, @NonNull Collection collection, String lastModified, DateTime requestTime,
+								   IonConfig config, Context context )
 	{
-		return Observable.fromCallable( () -> performUnTar( archiveFile, config, collection, lastModified, context ) )
+		return Observable.fromCallable( () -> performUnTar( archiveFile, config, collection, lastModified, requestTime, context ) )
 				.flatMap( Observable::fromIterable )
 				// write cache index entries
-				.map( fileWithType -> saveCacheIndex( fileWithType, collection, lastModified, config, context ) );
+				.map( fileWithType -> saveCacheIndex( fileWithType, collection, lastModified, requestTime, config, context ) );
 	}
 
 	/**
@@ -61,18 +65,20 @@ class ArchiveUtils
 	 *
 	 * @param archiveFile  input TAR file
 	 * @param lastModified when collection has been last modified
+	 * @param requestTime  the time, when the archive download was initiated
 	 * @throws FileNotFoundException
 	 * @throws ArchiveException
 	 */
-	private static List<FileWithMeta> performUnTar( File archiveFile, IonConfig config, Collection collection, String lastModified, Context context ) throws FileNotFoundException, IOException, ArchiveException
+	private static List<FileWithMeta> performUnTar( File archiveFile, IonConfig config, Collection collection, String lastModified,
+													DateTime requestTime, Context context ) throws FileNotFoundException, IOException, ArchiveException
 	{
 		File collectionFolder = FilePaths.getCollectionFolderPath( config, context );
-		File collectionFolderTemp = FilePaths.getTempFilePath( collectionFolder );
 
 		final List<FileWithMeta> untaredFiles = new LinkedList<>();
 
 		InputStream is = null;
 		TarArchiveInputStream debInputStream = null;
+		List<ArchiveIndex> index = null;
 		try
 		{
 			IonLog.d( TAG, String.format( "Untaring %s to dir %s.", archiveFile.getPath(), collectionFolder.getPath() ) );
@@ -81,7 +87,6 @@ class ArchiveUtils
 			debInputStream = ( TarArchiveInputStream ) new ArchiveStreamFactory().createArchiveInputStream( "tar", is );
 
 			TarArchiveEntry entry;
-			List<ArchiveIndex> index = null;
 			boolean indexHasBeenRead = false;
 			while ( ( entry = ( TarArchiveEntry ) debInputStream.getNextEntry() ) != null )
 			{
@@ -106,8 +111,8 @@ class ArchiveUtils
 					}
 
 					IonLog.i( TAG, fileInfo.url );
-					FileWithMeta fileWithMeta = getFilePath( fileInfo, collectionFolderTemp, config, context );
-					File targetFile = fileWithMeta.file;
+					FileWithMeta fileWithMeta = getFilePath( fileInfo, collectionFolder, config, context );
+					File targetFile = fileWithMeta.fileTemp;
 					FileUtils.createDir( targetFile.getParentFile() );
 
 					targetFile = FileUtils.writeToFile( debInputStream, targetFile );
@@ -130,10 +135,6 @@ class ArchiveUtils
 			{
 				debInputStream.close();
 			}
-			if ( archiveFile != null && archiveFile.exists() )
-			{
-				archiveFile.delete();
-			}
 		}
 
 		// if lastModified date was not passed, look if cache index entry exists for collection and retrieve it from there
@@ -144,32 +145,48 @@ class ArchiveUtils
 			IonLog.d( TAG, "Restoring last_modified from cache index: " + lastModified );
 		}
 
-		// delete old cache index entries of the collection in shared preferences and in memory cache
-		CacheIndexStore.clearCollection( config, context );
+		// clear memory cache because there is no way to selectively delete entries
 		MemoryCache.clear();
 
-		// replace collection folder (containing json files) - deletes old file cache
-		boolean jsonWriteSuccess = FileUtils.move( collectionFolderTemp, collectionFolder, true );
-		if ( !jsonWriteSuccess )
+		// merge files from archive download into collection's cache
+		for ( FileWithMeta fileWithMeta : untaredFiles )
 		{
-			throw new IOException( "JSON files could not be moved to final path." );
-		}
-
-		// replace media files in collection
-		File mediaFolderTemp = FilePaths.getMediaFolderPath( config, context, true );
-		File mediaFolder = FilePaths.getMediaFolderPath( config, context, false );
-		if ( mediaFolderTemp.exists() )
-		{
-			boolean mediaWriteSuccess = FileUtils.move( mediaFolderTemp, mediaFolder, true );
-			if ( !mediaWriteSuccess )
+			boolean writeSuccess = FileUtils.move( fileWithMeta.fileTemp, fileWithMeta.file, true );
+			if ( !writeSuccess )
 			{
-				throw new IOException( "Media files could not be moved to final path." );
+				throw new IOException( "File could not be moved to its final path '" + fileWithMeta.file.getPath() + "'" );
 			}
 		}
-		else
+
+		// remove old pages/media files incl. cache entries (those which are not listed in index json)
+		Set<String> archiveUrls = new HashSet<>();
+		for ( ArchiveIndex indexEntry : index )
 		{
-			IonLog.w( TAG, "No media files were contained in archive." );
+			archiveUrls.add( indexEntry.url );
 		}
+		// get all index entries stored in the cache index store
+		Set<String> outdatedUrls = CacheIndexStore.retrieveAllUrls( config, context );
+		// subtract the current index entries - leaving outdated cache index entries
+		outdatedUrls.removeAll( archiveUrls );
+
+		for ( String outdatedUrl : outdatedUrls )
+		{
+			CacheIndexStore.delete( outdatedUrl, config, context );
+			try
+			{
+				// delete all files but archive file
+				File file = FilePaths.getFilePath( outdatedUrl, config, context );
+				if ( file.exists() && !file.getPath().equals( archiveFile.getPath() ) )
+				{
+					file.delete();
+				}
+			}
+			catch ( NoIonPagesRequestException e )
+			{
+				Log.e( TAG, "Tried to delete file for URL " + outdatedUrl + "\nBut the URL is not a valid ION Request URL" );
+			}
+		}
+
 
 		// add collection to file cache again
 		if ( collection != null )
@@ -178,13 +195,26 @@ class ArchiveUtils
 			try
 			{
 				saveCollectionToFileCache( config, collection, context );
-				CollectionCacheIndex.save( config, context, lastModified );
+				CollectionCacheIndex.save( config, context, lastModified, requestTime );
 			}
 			catch ( IOException e )
 			{
 				IonLog.e( "ION Archive", "Collection could not be saved." );
 				IonLog.ex( e );
 			}
+		}
+
+		// add archive to file cache again - not the actual file, but the last updated information is required for subsequent archive downloads
+		if ( archiveFile != null && archiveFile.exists() && collection != null )
+		{
+			FileCacheIndex.save( collection.archive, archiveFile, config, null, requestTime, context );
+			// delete archiveFile - yes that introduces an inconsistency, but it saves storage space on the other side
+			archiveFile.delete();
+		}
+		else
+		{
+			String archiveFilePath = archiveFile != null ? archiveFile.getPath() : "n/a";
+			IonLog.e( TAG, "Archive Index entry could not be saved. Archive file path: " + archiveFilePath + ", Collection: " + collection );
 		}
 
 		// cache index entries are not written yet at this point
@@ -199,8 +229,9 @@ class ArchiveUtils
 		FileUtils.writeTextToFile( collectionJson, filePath );
 	}
 
-	private static FileWithMeta getFilePath( ArchiveIndex fileInfo, File collectionFolderTemp, IonConfig config, Context context )
+	private static FileWithMeta getFilePath( ArchiveIndex fileInfo, File collectionFolder, IonConfig config, Context context )
 	{
+		File targetFileTemp;
 		File targetFile;
 		IonRequestType type = null;
 		String url = fileInfo.url;
@@ -212,34 +243,39 @@ class ArchiveUtils
 			IonRequestInfo requestInfo = IonPageUrls.analyze( url, config );
 			pageIdentifier = requestInfo.pageIdentifier;
 			type = requestInfo.requestType;
-			targetFile = FilePaths.getFilePath( url, config, context, true );
+			targetFileTemp = FilePaths.getFilePath( url, config, context, true );
+			targetFile = FilePaths.getFilePath( url, config, context, false );
 		}
-
 		catch ( NoIonPagesRequestException e )
 		{
 			IonLog.w( TAG, "URL " + url + " cannot be handled properly. Is it invalid?" );
-			targetFile = new File( collectionFolderTemp, filename );
+			File collectionFolderTemp = FilePaths.getTempFilePath( collectionFolder );
+			targetFileTemp = new File( collectionFolderTemp, filename );
+			targetFile = new File( collectionFolder, filename );
 		}
-		return new FileWithMeta( targetFile, type, fileInfo, pageIdentifier );
+		return new FileWithMeta( targetFile, targetFileTemp, type, fileInfo, pageIdentifier );
 	}
 
 	public static class FileWithMeta
 	{
 		File           file;
+		File           fileTemp;
 		IonRequestType type;
 		ArchiveIndex   archiveIndex;
 		String         pageIdentifier;
 
-		public FileWithMeta( File file, IonRequestType type, ArchiveIndex archiveIndex, String pageIdentifier )
+		public FileWithMeta( File file, File fileTemp, IonRequestType type, ArchiveIndex archiveIndex, String pageIdentifier )
 		{
 			this.file = file;
+			this.fileTemp = fileTemp;
 			this.type = type;
 			this.archiveIndex = archiveIndex;
 			this.pageIdentifier = pageIdentifier;
 		}
 	}
 
-	private static File saveCacheIndex( @NonNull FileWithMeta fileWithMeta, Collection collection, String lastModified, IonConfig config, Context context )
+	private static File saveCacheIndex( @NonNull FileWithMeta fileWithMeta, Collection collection, String lastModified, DateTime requestTime,
+										IonConfig config, Context context )
 	{
 		IonRequestType type = fileWithMeta.type;
 		if ( type == null )
@@ -251,7 +287,7 @@ class ArchiveUtils
 		switch ( type )
 		{
 			case COLLECTION:
-				CollectionCacheIndex.save( config, context, lastModified );
+				CollectionCacheIndex.save( config, context, lastModified, requestTime );
 				break;
 			case PAGE:
 				String pageIdentifier = fileWithMeta.pageIdentifier;
@@ -267,7 +303,7 @@ class ArchiveUtils
 				PageCacheIndex.save( pageIdentifier, lastChanged, config, context );
 				break;
 			case MEDIA:
-				FileCacheIndex.save( fileWithMeta.archiveIndex.url, fileWithMeta.file, config, fileWithMeta.archiveIndex.checksum, context );
+				FileCacheIndex.save( fileWithMeta.archiveIndex.url, fileWithMeta.file, config, fileWithMeta.archiveIndex.checksum, requestTime, context );
 				break;
 		}
 		return fileWithMeta.file;

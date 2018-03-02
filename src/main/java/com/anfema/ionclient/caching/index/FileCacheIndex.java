@@ -1,6 +1,7 @@
 package com.anfema.ionclient.caching.index;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.utils.DateTimeUtils;
@@ -10,8 +11,6 @@ import com.anfema.utils.HashUtils;
 import org.joda.time.DateTime;
 
 import java.io.File;
-
-import okhttp3.HttpUrl;
 
 
 public class FileCacheIndex extends CacheIndex
@@ -26,19 +25,8 @@ public class FileCacheIndex extends CacheIndex
 	 */
 	private DateTime lastUpdated;
 
-	public FileCacheIndex( String filename, String checksum, DateTime lastUpdated )
+	public FileCacheIndex( String checksum, DateTime lastUpdated )
 	{
-		super( filename );
-		this.checksum = checksum;
-		this.lastUpdated = lastUpdated;
-	}
-
-	/**
-	 * Use MD5 of request URL as filename
-	 */
-	public FileCacheIndex( HttpUrl requestUrl, String checksum, DateTime lastUpdated )
-	{
-		super( requestUrl );
 		this.checksum = checksum;
 		this.lastUpdated = lastUpdated;
 	}
@@ -78,7 +66,7 @@ public class FileCacheIndex extends CacheIndex
 	/**
 	 * @param checksum can be null
 	 */
-	public static void save( String requestUrl, File file, IonConfig config, String checksum, Context context )
+	public static void save( String requestUrl, File file, IonConfig config, String checksum, @Nullable DateTime requestTime, Context context )
 	{
 		if ( file == null )
 		{
@@ -90,7 +78,11 @@ public class FileCacheIndex extends CacheIndex
 		{
 			checksum = "sha256:" + HashUtils.getSha256( file );
 		}
-		FileCacheIndex cacheIndex = new FileCacheIndex( requestUrl, checksum, DateTimeUtils.now() );
+		if ( requestTime == null )
+		{
+			requestTime = DateTimeUtils.now();
+		}
+		FileCacheIndex cacheIndex = new FileCacheIndex( checksum, requestTime );
 		CacheIndexStore.save( requestUrl, cacheIndex, config, context );
 	}
 }

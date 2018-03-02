@@ -13,32 +13,32 @@ import com.anfema.ionclient.utils.IonLog;
 import com.anfema.utils.StringUtils;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
+/**
+ * This is the global caching index table.
+ * Single entries (either for collections, pages, or files) are stored in shared preferences.
+ * There is a separate shared preferences instance for each collection.
+ * An entry in shared preferences consist of the key, which is the URL the file has been requested from,
+ * and the value, which is a subclass of {@link CacheIndex}.
+ */
 public class CacheIndexStore
 {
 	public static <T extends CacheIndex> T retrieve( String requestUrl, Class<T> cacheIndexSubclass, IonConfig config, Context context )
 	{
-		// check memory cache
-		T index = MemoryCacheIndex.get( requestUrl, cacheIndexSubclass );
-		if ( index != null )
-		{
-			IonLog.d( "Index Lookup", requestUrl + " from memory" );
-			return index;
-		}
-
 		// check shared preferences
 		IonLog.d( "Index Lookup", requestUrl + " from shared preferences" );
 		SharedPreferences prefs = getPrefs( config, context );
 		String json = prefs.getString( requestUrl, null );
-		index = GsonHolder.getInstance().fromJson( json, cacheIndexSubclass );
+		T index = GsonHolder.getInstance().fromJson( json, cacheIndexSubclass );
 
-		// save to memory cache
 		if ( index != null )
 		{
 			// make cache index aware of its size by storing byte count to its field
 			index.byteCount = ( int ) StringUtils.byteCount( json );
-			MemoryCacheIndex.put( requestUrl, index, context );
 		}
 		return index;
 	}
@@ -56,9 +56,6 @@ public class CacheIndexStore
 				// make cache index aware of its size by storing byte count to its field
 				String indexSerialized = GsonHolder.getInstance().toJson( cacheIndex );
 				cacheIndex.byteCount = ( int ) StringUtils.byteCount( indexSerialized );
-
-				// save to memory cache
-				MemoryCacheIndex.put( requestUrl, cacheIndex, context );
 
 				// save to shared preferences
 				getPrefs( config, context )
@@ -84,17 +81,43 @@ public class CacheIndexStore
 		}
 	}
 
+	public static void delete( String requestUrl, IonConfig config, Context context )
+	{
+		IonLog.d( "Cache Index", "deleting index for " + requestUrl );
+
+		// delete from shared preferences
+		getPrefs( config, context )
+				.edit()
+				.remove( requestUrl )
+				.apply();
+	}
+
+	/**
+	 * @param config to determine collection
+	 * @return all index entry URLs of collection
+	 */
+	public static Set<String> retrieveAllUrls( IonConfig config, Context context )
+	{
+		// check shared preferences
+		IonLog.d( "Cache Index", "Retrieve all index entries of collection " + config.collectionIdentifier );
+		SharedPreferences prefs = getPrefs( config, context );
+
+		Set<String> urls = new HashSet<>();
+		for ( Entry<String, ?> entry : prefs.getAll().entrySet() )
+		{
+			urls.add( entry.getKey() );
+		}
+		return urls;
+	}
+
 	/**
 	 * clear entire cache index in memory and file cache for a specific collection defined through {@param config}
 	 */
 	@SuppressLint("CommitPrefEdits")
 	public static void clearCollection( IonConfig config, Context context )
 	{
-		// clear entire memory cache
-		MemoryCacheIndex.clear();
-
 		// clear shared preferences - shared prefs file is still going to exist
-		getPrefs( config, context ).edit().clear().commit();
+		getPrefs( config, context ).edit().clear().apply();
 
 		// unregister shared prefs instance
 		getMetaPrefs( context )
@@ -109,9 +132,6 @@ public class CacheIndexStore
 	@SuppressLint("CommitPrefEdits")
 	public static void clear( Context context )
 	{
-		// clear entire memory cache
-		MemoryCacheIndex.clear();
-
 		// clear all shared preferences
 		SharedPreferences metaPrefs = getMetaPrefs( context );
 		Map<String, ?> allPrefs = metaPrefs.getAll();
@@ -119,7 +139,7 @@ public class CacheIndexStore
 		{
 			String sharedPrefsName = entry.getKey();
 			// clear preferences
-			context.getSharedPreferences( sharedPrefsName, 0 ).edit().clear().commit();
+			context.getSharedPreferences( sharedPrefsName, 0 ).edit().clear().apply();
 			// delete shared preferences' backup file
 			File sharedPrefsFile = FilePaths.getSharedPrefsFile( sharedPrefsName, context );
 			if ( sharedPrefsFile.exists() )
@@ -133,7 +153,7 @@ public class CacheIndexStore
 		}
 
 		// unregister shared prefs
-		metaPrefs.edit().clear().commit();
+		metaPrefs.edit().clear().apply();
 	}
 
 	private static SharedPreferences getPrefs( IonConfig config, Context context )
