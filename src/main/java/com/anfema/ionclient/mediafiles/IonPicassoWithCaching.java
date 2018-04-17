@@ -14,11 +14,12 @@ import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
 import com.anfema.ionclient.pages.models.contents.Downloadable;
 import com.anfema.ionclient.utils.IonLog;
+import com.anfema.utils.ExceptionUtils;
 import com.anfema.utils.Log;
 import com.anfema.utils.NetworkUtils;
-import com.jakewharton.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.LruCache;
+import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
@@ -222,7 +223,7 @@ public class IonPicassoWithCaching implements IonPicasso
 		showImage( new UriWithStatus( null, null ), target, requestTransformation, null );
 		if ( callback != null )
 		{
-			callback.onError();
+			callback.onError( ExceptionUtils.fromThrowable( throwable ) );
 		}
 	}
 
