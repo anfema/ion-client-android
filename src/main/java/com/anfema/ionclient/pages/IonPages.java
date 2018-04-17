@@ -14,6 +14,8 @@ public interface IonPages extends ConfigUpdatable
 {
 	Single<Collection> fetchCollection();
 
+	Single<Collection> fetchCollection( boolean preferNetwork );
+
 	Single<PagePreview> fetchPagePreview( String pageIdentifier );
 
 	Observable<PagePreview> fetchPagePreviews( Predicate<PagePreview> pagesFilter );

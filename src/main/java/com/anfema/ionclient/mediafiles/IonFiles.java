@@ -1,5 +1,7 @@
 package com.anfema.ionclient.mediafiles;
 
+import android.support.annotation.Nullable;
+
 import com.anfema.ionclient.pages.ConfigUpdatable;
 import com.anfema.ionclient.pages.models.contents.Downloadable;
 
@@ -14,5 +16,7 @@ public interface IonFiles extends ConfigUpdatable
 
 	Single<FileWithStatus> request( HttpUrl url, String checksum );
 
-	Single<FileWithStatus> request( HttpUrl url, String checksum, boolean ignoreCaching, File targetFile );
+	Single<FileWithStatus> request( HttpUrl url, String checksum, boolean ignoreCaching, @Nullable File targetFile );
+
+	Single<FileWithStatus> request( HttpUrl url, HttpUrl downloadUrl, String checksum, boolean ignoreCaching, @Nullable File inTargetFile );
 }

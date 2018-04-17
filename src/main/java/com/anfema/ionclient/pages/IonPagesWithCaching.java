@@ -21,6 +21,7 @@ import com.anfema.ionclient.pages.models.responses.CollectionResponse;
 import com.anfema.ionclient.pages.models.responses.PageResponse;
 import com.anfema.ionclient.serialization.GsonHolder;
 import com.anfema.ionclient.utils.ApiFactory;
+import com.anfema.ionclient.utils.DateTimeUtils;
 import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.IonLog;
 import com.anfema.ionclient.utils.PagesFilter;
@@ -28,6 +29,8 @@ import com.anfema.ionclient.utils.PendingDownloadHandler;
 import com.anfema.ionclient.utils.RxUtils;
 import com.anfema.utils.NetworkUtils;
 import com.anfema.utils.StringUtils;
+
+import org.joda.time.DateTime;
 
 import java.io.File;
 import java.util.List;
@@ -91,6 +94,16 @@ public class IonPagesWithCaching implements IonPages
 	@Override
 	public Single<Collection> fetchCollection()
 	{
+		return fetchCollection( false );
+	}
+
+	/**
+	 *
+	 * @param preferNetwork try network download as first option if set to false
+	 */
+	@Override
+	public Single<Collection> fetchCollection( boolean preferNetwork )
+	{
 		// clear incompatible cache
 		CacheCompatManager.cleanUp( context );
 
@@ -99,7 +112,7 @@ public class IonPagesWithCaching implements IonPages
 		boolean currentCacheEntry = cacheIndex != null && !cacheIndex.isOutdated( config );
 		boolean networkAvailable = NetworkUtils.isConnected( context ) && IonConfig.cachingStrategy != CachingStrategy.STRICT_OFFLINE;
 
-		if ( currentCacheEntry )
+		if ( currentCacheEntry && !preferNetwork )
 		{
 			// retrieve current version from cache
 			return fetchCollectionFromCache( cacheIndex, networkAvailable );
@@ -129,7 +142,8 @@ public class IonPagesWithCaching implements IonPages
 				.map( collection -> collection.pages )
 				.flatMapObservable( Observable::fromIterable )
 				.filter( PagesFilter.identifierEquals( pageIdentifier ) )
-				.singleOrError();
+				.singleOrError()
+				.observeOn( AndroidSchedulers.mainThread() );
 	}
 
 	@Override
@@ -138,7 +152,8 @@ public class IonPagesWithCaching implements IonPages
 		return fetchCollection()
 				.map( collection -> collection.pages )
 				.flatMapObservable( Observable::fromIterable )
-				.filter( pagesFilter );
+				.filter( pagesFilter )
+				.observeOn( AndroidSchedulers.mainThread() );
 	}
 
 	@Override
@@ -183,7 +198,6 @@ public class IonPagesWithCaching implements IonPages
 		}
 
 		return fetchCollection()
-				.observeOn( Schedulers.io() )
 				// get page's last_changed date from collection
 				.flatMap( collection -> collection.getPageLastChangedAsync( pageIdentifier ) )
 				// compare last_changed date of cached page with that of collection
@@ -228,7 +242,6 @@ public class IonPagesWithCaching implements IonPages
 	public Observable<Page> fetchPages( Predicate<PagePreview> pagesFilter )
 	{
 		return fetchCollection()
-				.observeOn( Schedulers.io() )
 				.map( collection -> collection.pages )
 				.flatMapObservable( Observable::fromIterable )
 				.filter( pagesFilter )
@@ -286,7 +299,7 @@ public class IonPagesWithCaching implements IonPages
 				{
 					return handleUnsuccessfulCollectionCacheReading( collectionUrl, cacheIndex, serverCallAsBackup, throwable );
 				} )
-				.compose( RxUtils.runSingleOnIoThread() );
+				.subscribeOn( Schedulers.io() );
 	}
 
 	private Single<Collection> handleUnsuccessfulCollectionCacheReading( String collectionUrl, CollectionCacheIndex cacheIndex, boolean serverCallAsBackup, Throwable e )
@@ -313,6 +326,7 @@ public class IonPagesWithCaching implements IonPages
 	{
 		final String lastModified = cacheIndex != null ? cacheIndex.getLastModified() : null;
 
+		DateTime requestTime = DateTimeUtils.now();
 		Single<Collection> collectionSingle = config.authenticatedRequest(
 				authorizationHeaderValue -> ionApi.getCollection( config.collectionIdentifier, config.locale, authorizationHeaderValue, config.variation, lastModified ) )
 				.flatMap( serverResponse ->
@@ -322,7 +336,7 @@ public class IonPagesWithCaching implements IonPages
 						// collection has not changed, return cached version
 						return fetchCollectionFromCache( cacheIndex, false )
 								// update cache index again (last updated needs to be reset to now)
-								.doOnSuccess( saveCollectionCacheIndex( lastModified ) );
+								.doOnSuccess( saveCollectionCacheIndex( lastModified, requestTime ) );
 					}
 					else if ( serverResponse.isSuccessful() )
 					{
@@ -338,7 +352,7 @@ public class IonPagesWithCaching implements IonPages
 									return collection;
 								} )
 								.doOnSuccess( collection -> MemoryCache.saveCollection( collection, config, context ) )
-								.doOnSuccess( saveCollectionCacheIndex( lastModifiedReceived ) )
+								.doOnSuccess( saveCollectionCacheIndex( lastModifiedReceived, requestTime ) )
 								.doOnSuccess( collection ->
 								{
 									if ( collectionListener != null )
@@ -364,8 +378,8 @@ public class IonPagesWithCaching implements IonPages
 					IonLog.e( "Failed Request", "Network request " + collectionUrl + " failed." );
 					return Single.error( new NetworkRequestException( collectionUrl, throwable ) );
 				} )
-				.compose( RxUtils.runSingleOnIoThread() )
-				.doOnSuccess( file -> runningCollectionDownload.finished( config.collectionIdentifier ) );
+				.subscribeOn( Schedulers.io() )
+				.doFinally( () -> runningCollectionDownload.finished( config.collectionIdentifier ) );
 		return runningCollectionDownload.starting( config.collectionIdentifier, collectionSingle.toObservable() ).singleOrError();
 	}
 
@@ -455,7 +469,7 @@ public class IonPagesWithCaching implements IonPages
 					return Single.error( new NetworkRequestException( pageUrl, throwable ) );
 				} )
 				.compose( RxUtils.runSingleOnIoThread() )
-				.doOnSuccess( file -> runningPageDownloads.finished( pageIdentifier ) );
+				.doFinally( () -> runningPageDownloads.finished( pageIdentifier ) );
 		return runningPageDownloads.starting( pageIdentifier, pageSingle.toObservable() ).singleOrError();
 	}
 
@@ -475,9 +489,9 @@ public class IonPagesWithCaching implements IonPages
 
 
 	@NonNull
-	private Consumer<Collection> saveCollectionCacheIndex( String lastModified )
+	private Consumer<Collection> saveCollectionCacheIndex( String lastModified, DateTime lastUpdated )
 	{
-		return collection -> CollectionCacheIndex.save( config, context, lastModified );
+		return collection -> CollectionCacheIndex.save( config, context, lastModified, lastUpdated );
 	}
 
 	@NonNull

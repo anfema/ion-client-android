@@ -1,18 +1,25 @@
 package com.anfema.ionclient.archive;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.caching.FilePaths;
+import com.anfema.ionclient.caching.index.FileCacheIndex;
+import com.anfema.ionclient.exceptions.HttpException;
 import com.anfema.ionclient.mediafiles.IonFiles;
 import com.anfema.ionclient.pages.CollectionDownloadedListener;
 import com.anfema.ionclient.pages.IonPages;
 import com.anfema.ionclient.pages.IonPagesWithCaching;
 import com.anfema.ionclient.pages.models.Collection;
+import com.anfema.ionclient.utils.DateTimeUtils;
 import com.anfema.ionclient.utils.IonLog;
 import com.anfema.ionclient.utils.RxUtils;
 
+import org.joda.time.DateTime;
+
 import java.io.File;
+import java.net.HttpURLConnection;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -85,22 +92,42 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 		Single<Collection> collectionObs;
 		if ( inCollection == null )
 		{
-			collectionObs = ionPages.fetchCollection().observeOn( Schedulers.io() );
+			collectionObs = ionPages.fetchCollection( true );
 		}
 		else
 		{
 			collectionObs = Single.just( inCollection );
 		}
 
-		Single<File> archiveObs = collectionObs
-				.map( collection -> collection.archive )
-				.flatMap( archiveUrl -> ionFiles.request( HttpUrl.parse( archiveUrl ), null, true, archivePath ) )
-				.map( fileWithStatus -> fileWithStatus.file );
-
-		return collectionObs.zipWith( archiveObs, ( collection, archivePath2 ) -> ArchiveUtils.unTar( archivePath2, collection, lastModified, config, context ) )
-				.toCompletable()
-				.doOnComplete( () -> activeArchiveDownload = false )
+		DateTime archiveRequestTime = DateTimeUtils.now();
+		return collectionObs.flatMap( collection ->
+				// download archive
+				ionFiles.request( HttpUrl.parse( collection.archive ), getDownloadUrl( collection.archive ), null, true, archivePath )
+						.map( fileWithStatus -> fileWithStatus.file )
+						.map( archiveFile -> new CollectionArchive( collection, archiveFile ) ) )
+				// untar archive
+				.flatMapObservable( collArch -> ArchiveUtils.unTar( collArch.archivePath, collArch.collection, lastModified, archiveRequestTime, config, context ) )
+				.ignoreElements()
+				.onErrorComplete( ex -> ex instanceof HttpException && ( ( HttpException ) ex ).code == HttpURLConnection.HTTP_NOT_MODIFIED )
+				.doFinally( () -> activeArchiveDownload = false )
 				.subscribeOn( Schedulers.io() );
+	}
+
+	private HttpUrl getDownloadUrl( String archive )
+	{
+		return HttpUrl.parse( archive + addLastUpdated( archive ) );
+	}
+
+	private String addLastUpdated( @NonNull String archive )
+	{
+		FileCacheIndex fileCacheIndex = FileCacheIndex.retrieve( archive, config, context );
+		if ( fileCacheIndex == null )
+		{
+			return "";
+		}
+		String divider = HttpUrl.parse( archive ).querySize() > 0 ? "&" : "?";
+		DateTime lastUpdated = fileCacheIndex.getLastUpdated();
+		return divider + "lastUpdated=" + DateTimeUtils.toString( lastUpdated );
 	}
 
 	/**
@@ -114,6 +141,18 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 			// archive needs to be downloaded again. Download runs in background and does not even inform UI when finished
 			downloadArchive( collection, lastModified )
 					.subscribe( () -> IonLog.d( "ION Archive", "Archive has been downloaded/updated in background" ), RxUtils.DEFAULT_EXCEPTION_HANDLER );
+		}
+	}
+
+	class CollectionArchive
+	{
+		Collection collection;
+		File       archivePath;
+
+		CollectionArchive( Collection collection, File archivePath )
+		{
+			this.collection = collection;
+			this.archivePath = archivePath;
 		}
 	}
 }

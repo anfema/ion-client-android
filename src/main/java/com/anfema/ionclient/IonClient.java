@@ -1,6 +1,7 @@
 package com.anfema.ionclient;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.widget.ImageView;
 
 import com.anfema.ionclient.archive.IonArchive;
@@ -119,6 +120,13 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 
 
 	@Override
+	public Single<Collection> fetchCollection( boolean preferNetwork )
+	{
+		return ionPages.fetchCollection( preferNetwork );
+	}
+
+
+	@Override
 	public Single<PagePreview> fetchPagePreview( String pageIdentifier )
 	{
 		return ionPages.fetchPagePreview( pageIdentifier );
@@ -179,31 +187,28 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 
 	// Loading media files
 
-	/**
-	 * @see IonFiles#request(Downloadable)
-	 */
 	@Override
 	public Single<FileWithStatus> request( Downloadable content )
 	{
 		return ionFiles.request( content );
 	}
 
-	/**
-	 * @see IonFiles#request(HttpUrl, String)
-	 */
 	@Override
 	public Single<FileWithStatus> request( HttpUrl url, String checksum )
 	{
 		return ionFiles.request( url, checksum );
 	}
 
-	/**
-	 * @see IonFiles#request(HttpUrl, String, boolean, File)
-	 */
 	@Override
-	public Single<FileWithStatus> request( HttpUrl url, String checksum, boolean ignoreCaching, File targetFile )
+	public Single<FileWithStatus> request( HttpUrl url, String checksum, boolean ignoreCaching, @Nullable File targetFile )
 	{
 		return ionFiles.request( url, checksum, ignoreCaching, targetFile );
+	}
+
+	@Override
+	public Single<FileWithStatus> request( HttpUrl url, HttpUrl downloadUrl, String checksum, boolean ignoreCaching, @Nullable File targetFile )
+	{
+		return ionFiles.request( url, downloadUrl, checksum, ignoreCaching, targetFile );
 	}
 
 	@Override
