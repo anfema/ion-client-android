@@ -25,7 +25,7 @@ android {
     compileSdkVersion compile_sdk_version
 
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion 21
         targetSdkVersion target_sdk_version
         versionCode 2
         // The versionCode to which the current version's cache is backwards compatible with. Update after breaking changes that require a cache reset.
@@ -35,7 +35,7 @@ android {
         // in this files proguard rules are exposed and can be used by the application project
         consumerProguardFiles 'proguard-library-consumer.pro'
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -54,34 +54,34 @@ android {
 }
 
 dependencies {
-    api fileTree(dir: 'libs', include: ['*.jar'])
-    api "com.android.support:support-v4:$support_version" // required for FileProvider and Annotations
+
+    api 'androidx.legacy:legacy-support-v4:1.0.0' // required for FileProvider and Annotations
 
     // ReactiveX
-    api 'io.reactivex.rxjava2:rxandroid:2.0.2' // rxjava (observables)
-    api 'io.reactivex.rxjava2:rxjava:2.1.10' // RxAndroid releases are few and far between, so depend on latest version for bug fixes and new features
+    api 'io.reactivex.rxjava2:rxandroid:2.1.1' // rxjava (observables)
+    api 'io.reactivex.rxjava2:rxjava:2.2.11' // RxAndroid releases are few and far between, so depend on latest version for bug fixes and new features
 
     // network
     api "com.squareup.retrofit2:retrofit:$retrofit_version" // http requests
     api "com.squareup.retrofit2:converter-gson:$retrofit_version" // json parsing
     api "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version" // retrofit with observables
     api 'com.squareup.picasso:picasso:2.71828' // ion provides a picasso wrapper adding an authorization header to requests
-    api "com.android.support:exifinterface:$support_version" // ensure picasso's dependency to support library is up-to-date
+    api 'androidx.exifinterface:exifinterface:1.2.0' // ensure picasso's dependency to support library is up-to-date
 
     // misc
-    api 'org.apache.commons:commons-compress:1.12'
-    api 'joda-time:joda-time:2.9.9' // better DateTime handling
+    implementation 'org.apache.commons:commons-compress:1.12'
+    api 'joda-time:joda-time:2.10.2' // better DateTime handling
 
     testApi 'junit:junit:4.12'
     testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     testImplementation "org.jetbrains.kotlin:kotlin-runtime:$kotlin_version"
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testApi "org.jetbrains.spek:spek:1.0.25"
-    testApi "nl.jqno.equalsverifier:equalsverifier:2.1"
+    testApi "nl.jqno.equalsverifier:equalsverifier:3.1.9"
 
-    androidTestImplementation "com.android.support:support-annotations:$support_version"
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test:rules:1.0.1'
+    androidTestImplementation 'androidx.annotation:annotation:1.1.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test:rules:1.2.0'
 }
 
 // allow unit tests to use some basic android library classes

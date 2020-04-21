@@ -1,6 +1,6 @@
 package com.anfema.ionclient.pages.models;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.webkit.URLUtil;
 
 import com.anfema.ionclient.pages.models.contents.Connection;

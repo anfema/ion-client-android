@@ -3,7 +3,7 @@ package com.anfema.ionclient.pages.models.contents;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcel;
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.Test;

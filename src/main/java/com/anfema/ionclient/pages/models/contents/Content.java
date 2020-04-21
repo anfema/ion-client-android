@@ -2,7 +2,7 @@ package com.anfema.ionclient.pages.models.contents;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class Content implements Comparable<Content>, Parcelable
 {

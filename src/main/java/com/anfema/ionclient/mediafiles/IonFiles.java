@@ -1,6 +1,6 @@
 package com.anfema.ionclient.mediafiles;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.anfema.ionclient.pages.ConfigUpdatable;
 import com.anfema.ionclient.pages.models.contents.Downloadable;

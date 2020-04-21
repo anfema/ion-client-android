@@ -1,7 +1,7 @@
 package com.anfema.ionclient.caching.index;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.pages.IonPageUrls;
