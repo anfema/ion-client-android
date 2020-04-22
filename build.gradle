@@ -7,10 +7,11 @@ buildscript {
 
     repositories {
         jcenter()
+        google()
     }
 
     dependencies {
-        classpath 'de.mobilej.unmock:UnMockPlugin:0.6.4'
+        classpath 'de.mobilej.unmock:UnMockPlugin:0.7.6'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -55,7 +56,7 @@ android {
 
 dependencies {
 
-    api 'androidx.legacy:legacy-support-v4:1.0.0' // required for FileProvider and Annotations
+    api 'androidx.core:core:1.2.0' // required for FileProvider and Annotations
 
     // ReactiveX
     api 'io.reactivex.rxjava2:rxandroid:2.1.1' // rxjava (observables)
@@ -66,7 +67,7 @@ dependencies {
     api "com.squareup.retrofit2:converter-gson:$retrofit_version" // json parsing
     api "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version" // retrofit with observables
     api 'com.squareup.picasso:picasso:2.71828' // ion provides a picasso wrapper adding an authorization header to requests
-    api 'androidx.exifinterface:exifinterface:1.2.0' // ensure picasso's dependency to support library is up-to-date
+    implementation 'androidx.exifinterface:exifinterface:1.2.0' // ensure picasso's dependency to support library is up-to-date
 
     // misc
     implementation 'org.apache.commons:commons-compress:1.12'
@@ -82,13 +83,12 @@ dependencies {
     androidTestImplementation 'androidx.annotation:annotation:1.1.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test:rules:1.2.0'
+
+    unmock 'org.robolectric:android-all:4.3_r2-robolectric-0'
 }
 
 // allow unit tests to use some basic android library classes
 unMock {
-    // URI to download the android-all.jar from. e.g. https://oss.sonatype.org/content/groups/public/org/robolectric/android-all/
-    downloadFrom 'https://oss.sonatype.org/content/groups/public/org/robolectric/android-all/4.3_r2-robolectric-0/android-all-4.3_r2-robolectric-0.jar'
-
     keep "android.net.Uri"
     keepStartingWith "android.text."
     keepStartingWith "org.ccil.cowan.tagsoup."
@@ -96,9 +96,3 @@ unMock {
     keepStartingWith "com.android.internal.util."
     keepAndRename "java.nio.charset.Charsets" to "xjava.nio.charset.Charsets"
 }
-
-// output in gradle console
-println("********************************** ------------------ **********************************")
-println("debugging: environment variable JAVA8_HOME must be set and point to Java 8 home folder")
-println("JAVA8_HOME: " + System.getenv("JAVA8_HOME"))
-println("********************************** ------------------ **********************************")
