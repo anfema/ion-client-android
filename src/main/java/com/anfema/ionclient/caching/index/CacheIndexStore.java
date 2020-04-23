@@ -3,7 +3,7 @@ package com.anfema.ionclient.caching.index;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.caching.FilePaths;

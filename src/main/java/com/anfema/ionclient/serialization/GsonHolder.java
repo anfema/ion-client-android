@@ -1,6 +1,6 @@
 package com.anfema.ionclient.serialization;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.anfema.ionclient.pages.models.Collection;
 import com.anfema.ionclient.pages.models.Meta;

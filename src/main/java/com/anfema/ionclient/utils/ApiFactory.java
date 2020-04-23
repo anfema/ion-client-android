@@ -1,6 +1,6 @@
 package com.anfema.ionclient.utils;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.serialization.GsonHolder;

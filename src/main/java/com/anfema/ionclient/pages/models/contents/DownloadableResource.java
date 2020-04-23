@@ -1,7 +1,7 @@
 package com.anfema.ionclient.pages.models.contents;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * The most basic implementation of {@link Downloadable} interface. Use to construct a Downloadable from a URL string.
