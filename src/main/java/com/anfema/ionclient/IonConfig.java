@@ -123,6 +123,12 @@ public class IonConfig
 	private final Single<String> authorizationHeaderValueCall;
 
 	/**
+	 * Add customer headers - besides the 'Authorization' header
+	 */
+	@NonNull
+	public final Map<String, String> additionalHeaders;
+
+	/**
 	 * Should the whole archive be downloaded when the collection is downloaded?
 	 */
 	public final boolean archiveDownloads;
@@ -146,16 +152,18 @@ public class IonConfig
 	@SuppressWarnings("unused")
 	public static class Builder
 	{
-		private final String         baseUrl;
-		private final String         collectionIdentifier;
-		private       String         locale;
-		private       String         variation                     = DEFAULT_VARIATION;
-		private       String         authorizationHeaderValue      = null;
-		private       Single<String> authorizationHeaderValueCall  = null;
-		private       boolean        archiveDownloads              = false;
-		private       boolean        ftsDbDownloads                = false;
-		private       int            minutesUntilCollectionRefetch = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH;
-		private       int            networkTimeout                = DEFAULT_NETWORK_TIMEOUT;
+		private final String              baseUrl;
+		private final String              collectionIdentifier;
+		private       String              locale;
+		private       String              variation                     = DEFAULT_VARIATION;
+		private       String              authorizationHeaderValue      = null;
+		private       Single<String>      authorizationHeaderValueCall  = null;
+		@NonNull
+		private final Map<String, String> additionalHeaders             = new HashMap<>();
+		private       boolean             archiveDownloads              = false;
+		private       boolean             ftsDbDownloads                = false;
+		private       int                 minutesUntilCollectionRefetch = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH;
+		private       int                 networkTimeout                = DEFAULT_NETWORK_TIMEOUT;
 
 
 		public Builder( String baseUrl, String collectionIdentifier )
@@ -194,6 +202,12 @@ public class IonConfig
 		public Builder authorization( Single<String> authorizationHeaderValueCall )
 		{
 			this.authorizationHeaderValueCall = authorizationHeaderValueCall;
+			return this;
+		}
+
+		public Builder addHeader( @NonNull String key, @NonNull String value )
+		{
+			this.additionalHeaders.put( key, value );
 			return this;
 		}
 
@@ -238,6 +252,7 @@ public class IonConfig
 					variation,
 					authorizationHeaderValue,
 					authorizationHeaderValueCall,
+					additionalHeaders,
 					archiveDownloads,
 					ftsDbDownloads,
 					minutesUntilCollectionRefetch,
@@ -253,6 +268,7 @@ public class IonConfig
 			String variation,
 			String authorizationHeaderValue,
 			Single<String> authorizationHeaderValueCall,
+			@NonNull Map<String, String> additionalHeaders,
 			boolean archiveDownloads,
 			boolean ftsDbDownloads,
 			int minutesUntilCollectionRefetch,
@@ -265,6 +281,7 @@ public class IonConfig
 		this.variation = variation;
 		this.authorizationHeaderValue = authorizationHeaderValue;
 		this.authorizationHeaderValueCall = authorizationHeaderValueCall;
+		this.additionalHeaders = additionalHeaders;
 		this.archiveDownloads = archiveDownloads;
 		this.ftsDbDownloads = ftsDbDownloads;
 		this.minutesUntilCollectionRefetch = minutesUntilCollectionRefetch;
@@ -279,6 +296,7 @@ public class IonConfig
 		this.variation = otherConfig.variation;
 		this.authorizationHeaderValue = otherConfig.authorizationHeaderValue;
 		this.authorizationHeaderValueCall = otherConfig.authorizationHeaderValueCall;
+		this.additionalHeaders = otherConfig.additionalHeaders;
 		this.archiveDownloads = otherConfig.archiveDownloads;
 		this.ftsDbDownloads = otherConfig.ftsDbDownloads;
 		this.minutesUntilCollectionRefetch = otherConfig.minutesUntilCollectionRefetch;
