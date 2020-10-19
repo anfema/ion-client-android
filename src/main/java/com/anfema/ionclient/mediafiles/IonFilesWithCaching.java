@@ -1,8 +1,6 @@
 package com.anfema.ionclient.mediafiles;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.IonConfig.CachingStrategy;
@@ -12,6 +10,7 @@ import com.anfema.ionclient.caching.index.CollectionCacheIndex;
 import com.anfema.ionclient.caching.index.FileCacheIndex;
 import com.anfema.ionclient.exceptions.FileNotAvailableException;
 import com.anfema.ionclient.exceptions.HttpException;
+import com.anfema.ionclient.interceptors.AdditionalHeadersInterceptor;
 import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
 import com.anfema.ionclient.pages.models.contents.Downloadable;
@@ -28,6 +27,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import io.reactivex.Single;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -57,6 +58,7 @@ public class IonFilesWithCaching implements IonFiles
 		OkHttpClient.Builder okHttpClientBuilder = new Builder();
 		NetworkUtils.applyTimeout( okHttpClientBuilder, config.networkTimeout );
 		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( this.config::getAuthorizationHeaderValue ) );
+		okHttpClientBuilder.addInterceptor( new AdditionalHeadersInterceptor( config.additionalHeaders ) );
 		okHttpClientBuilder.addInterceptor( new RequestLogger( "Network Request" ) );
 		// disable okHttp disk cache because it would store duplicate and un-used data because ION client uses its own cache
 		okHttpClientBuilder.cache( null );
