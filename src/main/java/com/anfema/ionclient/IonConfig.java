@@ -323,23 +323,6 @@ public class IonConfig
 				&& EqualsContract.equal( variation, other.variation );
 	}
 
-	/**
-	 * To check that EVERY attribute is equal
-	 */
-	public boolean strictEquals( Object obj )
-	{
-		if ( !equals( obj ) )
-		{
-			return false;
-		}
-		IonConfig other = ( IonConfig ) obj;
-		return EqualsContract.equal( authorizationHeaderValue, other.authorizationHeaderValue )
-				&& EqualsContract.equal( authorizationHeaderValueCall, other.authorizationHeaderValueCall )
-				&& other.archiveDownloads == archiveDownloads
-				&& other.ftsDbDownloads == ftsDbDownloads
-				&& other.minutesUntilCollectionRefetch == minutesUntilCollectionRefetch;
-	}
-
 	@Override
 	public final int hashCode()
 	{
