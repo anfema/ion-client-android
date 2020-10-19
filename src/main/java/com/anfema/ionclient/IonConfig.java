@@ -1,7 +1,6 @@
 package com.anfema.ionclient;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 
 import com.anfema.ionclient.exceptions.IonConfigInvalidException;
 import com.anfema.ionclient.utils.IonLog;
@@ -15,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+import androidx.annotation.NonNull;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import okhttp3.Response;
@@ -146,16 +146,16 @@ public class IonConfig
 	@SuppressWarnings("unused")
 	public static class Builder
 	{
-		private final String baseUrl;
-		private final String collectionIdentifier;
-		private       String locale;
-		private String         variation                     = DEFAULT_VARIATION;
-		private String         authorizationHeaderValue      = null;
-		private Single<String> authorizationHeaderValueCall  = null;
-		private boolean        archiveDownloads              = false;
-		private boolean        ftsDbDownloads                = false;
-		private int            minutesUntilCollectionRefetch = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH;
-		private int            networkTimeout                = DEFAULT_NETWORK_TIMEOUT;
+		private final String         baseUrl;
+		private final String         collectionIdentifier;
+		private       String         locale;
+		private       String         variation                     = DEFAULT_VARIATION;
+		private       String         authorizationHeaderValue      = null;
+		private       Single<String> authorizationHeaderValueCall  = null;
+		private       boolean        archiveDownloads              = false;
+		private       boolean        ftsDbDownloads                = false;
+		private       int            minutesUntilCollectionRefetch = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH;
+		private       int            networkTimeout                = DEFAULT_NETWORK_TIMEOUT;
 
 
 		public Builder( String baseUrl, String collectionIdentifier )
@@ -231,14 +231,33 @@ public class IonConfig
 			{
 				IonLog.w( "IonConfig.Builder", "Did you forget to provide an authorization?" );
 			}
-			return new IonConfig( baseUrl, collectionIdentifier, locale, variation, authorizationHeaderValue, authorizationHeaderValueCall,
-					archiveDownloads, ftsDbDownloads, minutesUntilCollectionRefetch, networkTimeout );
+			return new IonConfig(
+					baseUrl,
+					collectionIdentifier,
+					locale,
+					variation,
+					authorizationHeaderValue,
+					authorizationHeaderValueCall,
+					archiveDownloads,
+					ftsDbDownloads,
+					minutesUntilCollectionRefetch,
+					networkTimeout
+			);
 		}
 	}
 
-	public IonConfig( String baseUrl, String collectionIdentifier, String locale, String variation, String authorizationHeaderValue,
-					  Single<String> authorizationHeaderValueCall, boolean archiveDownloads, boolean ftsDbDownloads,
-					  int minutesUntilCollectionRefetch, int networkTimeout )
+	public IonConfig(
+			String baseUrl,
+			String collectionIdentifier,
+			String locale,
+			String variation,
+			String authorizationHeaderValue,
+			Single<String> authorizationHeaderValueCall,
+			boolean archiveDownloads,
+			boolean ftsDbDownloads,
+			int minutesUntilCollectionRefetch,
+			int networkTimeout
+	)
 	{
 		this.baseUrl = baseUrl;
 		this.collectionIdentifier = collectionIdentifier;
