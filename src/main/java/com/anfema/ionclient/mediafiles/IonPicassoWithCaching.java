@@ -3,13 +3,12 @@ package com.anfema.ionclient.mediafiles;
 import android.app.Application;
 import android.content.Context;
 import android.net.Uri;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.webkit.URLUtil;
 import android.widget.ImageView;
 
 import com.anfema.ionclient.IonClient;
 import com.anfema.ionclient.IonConfig;
+import com.anfema.ionclient.interceptors.AdditionalHeadersInterceptor;
 import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
 import com.anfema.ionclient.pages.models.contents.Downloadable;
@@ -23,8 +22,11 @@ import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import okhttp3.HttpUrl;
@@ -58,7 +60,12 @@ public class IonPicassoWithCaching implements IonPicasso
 	{
 		this.ionFiles = ionFiles;
 		this.config = config;
-		this.picasso = createPicassoInstance( this.config::getAuthorizationHeaderValue, context, config.networkTimeout );
+		this.picasso = createPicassoInstance(
+				this.config::getAuthorizationHeaderValue,
+				config.additionalHeaders,
+				context,
+				config.networkTimeout
+		);
 	}
 
 	@Override
@@ -70,11 +77,17 @@ public class IonPicassoWithCaching implements IonPicasso
 	/**
 	 * You may not want to acquire a Picasso instance via {@link IonClient}.
 	 */
-	public static Picasso createPicassoInstance( Callable<String> authHeaderValueRetriever, Context context, int networkTimeout )
+	public static Picasso createPicassoInstance(
+			Callable<String> authHeaderValueRetriever,
+			@NonNull Map<String, String> additionalHeaders,
+			Context context,
+			int networkTimeout
+	)
 	{
 		OkHttpClient.Builder okHttpClientBuilder = new Builder();
 		NetworkUtils.applyTimeout( okHttpClientBuilder, networkTimeout );
 		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( authHeaderValueRetriever ) );
+		okHttpClientBuilder.addInterceptor( new AdditionalHeadersInterceptor( additionalHeaders ) );
 		okHttpClientBuilder.addInterceptor( new RequestLogger( "Picasso Request" ) );
 		// keep disk cache of OkHttp client in place, in case images are loaded directly through the picasso instance instead of using a
 		// loadImage-method
@@ -93,9 +106,14 @@ public class IonPicassoWithCaching implements IonPicasso
 	 * <p>
 	 * Therefore, it is recommended to call this method in {@link Application#onCreate()}. (But do not perform any long-lasting operations there.)
 	 */
-	public static void setupDefaultPicasso( String authHeaderValue, Context context, int networkTimeout ) throws IllegalStateException
+	public static void setupDefaultPicasso(
+			String authHeaderValue,
+			@NonNull Map<String, String> additionalHeaders,
+			Context context,
+			int networkTimeout
+	) throws IllegalStateException
 	{
-		Picasso picasso = createPicassoInstance( () -> authHeaderValue, context, networkTimeout );
+		Picasso picasso = createPicassoInstance( () -> authHeaderValue, additionalHeaders, context, networkTimeout );
 		Picasso.setSingletonInstance( picasso );
 	}
 

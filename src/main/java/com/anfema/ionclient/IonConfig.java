@@ -1,7 +1,6 @@
 package com.anfema.ionclient;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 
 import com.anfema.ionclient.exceptions.IonConfigInvalidException;
 import com.anfema.ionclient.utils.IonLog;
@@ -15,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+import androidx.annotation.NonNull;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import okhttp3.Response;
@@ -123,6 +123,12 @@ public class IonConfig
 	private final Single<String> authorizationHeaderValueCall;
 
 	/**
+	 * Add customer headers - besides the 'Authorization' header
+	 */
+	@NonNull
+	public final Map<String, String> additionalHeaders;
+
+	/**
 	 * Should the whole archive be downloaded when the collection is downloaded?
 	 */
 	public final boolean archiveDownloads;
@@ -146,16 +152,18 @@ public class IonConfig
 	@SuppressWarnings("unused")
 	public static class Builder
 	{
-		private final String baseUrl;
-		private final String collectionIdentifier;
-		private       String locale;
-		private String         variation                     = DEFAULT_VARIATION;
-		private String         authorizationHeaderValue      = null;
-		private Single<String> authorizationHeaderValueCall  = null;
-		private boolean        archiveDownloads              = false;
-		private boolean        ftsDbDownloads                = false;
-		private int            minutesUntilCollectionRefetch = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH;
-		private int            networkTimeout                = DEFAULT_NETWORK_TIMEOUT;
+		private final String              baseUrl;
+		private final String              collectionIdentifier;
+		private       String              locale;
+		private       String              variation                     = DEFAULT_VARIATION;
+		private       String              authorizationHeaderValue      = null;
+		private       Single<String>      authorizationHeaderValueCall  = null;
+		@NonNull
+		private final Map<String, String> additionalHeaders             = new HashMap<>();
+		private       boolean             archiveDownloads              = false;
+		private       boolean             ftsDbDownloads                = false;
+		private       int                 minutesUntilCollectionRefetch = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH;
+		private       int                 networkTimeout                = DEFAULT_NETWORK_TIMEOUT;
 
 
 		public Builder( String baseUrl, String collectionIdentifier )
@@ -197,6 +205,12 @@ public class IonConfig
 			return this;
 		}
 
+		public Builder addHeader( @NonNull String key, @NonNull String value )
+		{
+			this.additionalHeaders.put( key, value );
+			return this;
+		}
+
 		public Builder archiveDownloads( boolean archiveDownloads )
 		{
 			this.archiveDownloads = archiveDownloads;
@@ -231,14 +245,35 @@ public class IonConfig
 			{
 				IonLog.w( "IonConfig.Builder", "Did you forget to provide an authorization?" );
 			}
-			return new IonConfig( baseUrl, collectionIdentifier, locale, variation, authorizationHeaderValue, authorizationHeaderValueCall,
-					archiveDownloads, ftsDbDownloads, minutesUntilCollectionRefetch, networkTimeout );
+			return new IonConfig(
+					baseUrl,
+					collectionIdentifier,
+					locale,
+					variation,
+					authorizationHeaderValue,
+					authorizationHeaderValueCall,
+					additionalHeaders,
+					archiveDownloads,
+					ftsDbDownloads,
+					minutesUntilCollectionRefetch,
+					networkTimeout
+			);
 		}
 	}
 
-	public IonConfig( String baseUrl, String collectionIdentifier, String locale, String variation, String authorizationHeaderValue,
-					  Single<String> authorizationHeaderValueCall, boolean archiveDownloads, boolean ftsDbDownloads,
-					  int minutesUntilCollectionRefetch, int networkTimeout )
+	public IonConfig(
+			String baseUrl,
+			String collectionIdentifier,
+			String locale,
+			String variation,
+			String authorizationHeaderValue,
+			Single<String> authorizationHeaderValueCall,
+			@NonNull Map<String, String> additionalHeaders,
+			boolean archiveDownloads,
+			boolean ftsDbDownloads,
+			int minutesUntilCollectionRefetch,
+			int networkTimeout
+	)
 	{
 		this.baseUrl = baseUrl;
 		this.collectionIdentifier = collectionIdentifier;
@@ -246,6 +281,7 @@ public class IonConfig
 		this.variation = variation;
 		this.authorizationHeaderValue = authorizationHeaderValue;
 		this.authorizationHeaderValueCall = authorizationHeaderValueCall;
+		this.additionalHeaders = additionalHeaders;
 		this.archiveDownloads = archiveDownloads;
 		this.ftsDbDownloads = ftsDbDownloads;
 		this.minutesUntilCollectionRefetch = minutesUntilCollectionRefetch;
@@ -260,6 +296,7 @@ public class IonConfig
 		this.variation = otherConfig.variation;
 		this.authorizationHeaderValue = otherConfig.authorizationHeaderValue;
 		this.authorizationHeaderValueCall = otherConfig.authorizationHeaderValueCall;
+		this.additionalHeaders = otherConfig.additionalHeaders;
 		this.archiveDownloads = otherConfig.archiveDownloads;
 		this.ftsDbDownloads = otherConfig.ftsDbDownloads;
 		this.minutesUntilCollectionRefetch = otherConfig.minutesUntilCollectionRefetch;
@@ -302,23 +339,6 @@ public class IonConfig
 				&& EqualsContract.equal( collectionIdentifier, other.collectionIdentifier )
 				&& EqualsContract.equal( locale, other.locale )
 				&& EqualsContract.equal( variation, other.variation );
-	}
-
-	/**
-	 * To check that EVERY attribute is equal
-	 */
-	public boolean strictEquals( Object obj )
-	{
-		if ( !equals( obj ) )
-		{
-			return false;
-		}
-		IonConfig other = ( IonConfig ) obj;
-		return EqualsContract.equal( authorizationHeaderValue, other.authorizationHeaderValue )
-				&& EqualsContract.equal( authorizationHeaderValueCall, other.authorizationHeaderValueCall )
-				&& other.archiveDownloads == archiveDownloads
-				&& other.ftsDbDownloads == ftsDbDownloads
-				&& other.minutesUntilCollectionRefetch == minutesUntilCollectionRefetch;
 	}
 
 	@Override
