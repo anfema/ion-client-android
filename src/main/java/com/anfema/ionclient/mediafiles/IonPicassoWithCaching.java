@@ -28,6 +28,7 @@ import java.util.concurrent.Callable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -192,6 +193,7 @@ public class IonPicassoWithCaching implements IonPicasso
 		}
 
 		fetchImageFile( Uri.parse( path ), checksum )
+				.observeOn( AndroidSchedulers.mainThread() )
 				.subscribe( fileUri -> showImage( fileUri, target, requestTransformation, callback ), throwable -> imageDownloadFailed( throwable, target, requestTransformation, callback ) );
 	}
 

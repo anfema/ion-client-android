@@ -26,7 +26,6 @@ import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.IonLog;
 import com.anfema.ionclient.utils.PagesFilter;
 import com.anfema.ionclient.utils.PendingDownloadHandler;
-import com.anfema.ionclient.utils.RxUtils;
 import com.anfema.utils.NetworkUtils;
 import com.anfema.utils.StringUtils;
 
@@ -37,7 +36,6 @@ import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
@@ -98,7 +96,6 @@ public class IonPagesWithCaching implements IonPages
 	}
 
 	/**
-	 *
 	 * @param preferNetwork try network download as first option if set to false
 	 */
 	@Override
@@ -142,8 +139,7 @@ public class IonPagesWithCaching implements IonPages
 				.map( collection -> collection.pages )
 				.flatMapObservable( Observable::fromIterable )
 				.filter( PagesFilter.identifierEquals( pageIdentifier ) )
-				.singleOrError()
-				.observeOn( AndroidSchedulers.mainThread() );
+				.singleOrError();
 	}
 
 	@Override
@@ -152,8 +148,7 @@ public class IonPagesWithCaching implements IonPages
 		return fetchCollection()
 				.map( collection -> collection.pages )
 				.flatMapObservable( Observable::fromIterable )
-				.filter( pagesFilter )
-				.observeOn( AndroidSchedulers.mainThread() );
+				.filter( pagesFilter );
 	}
 
 	@Override
@@ -220,8 +215,7 @@ public class IonPagesWithCaching implements IonPages
 						// no network available, but an old cached version exists
 						return fetchPageFromCache( pageIdentifier, false );
 					}
-				} )
-				.observeOn( AndroidSchedulers.mainThread() );
+				} );
 	}
 
 	/**
@@ -246,8 +240,7 @@ public class IonPagesWithCaching implements IonPages
 				.flatMapObservable( Observable::fromIterable )
 				.filter( pagesFilter )
 				.map( page -> page.identifier )
-				.concatMap( pageIdentifier -> fetchPage( pageIdentifier ).toObservable() )
-				.observeOn( AndroidSchedulers.mainThread() );
+				.concatMap( pageIdentifier -> fetchPage( pageIdentifier ).toObservable() );
 	}
 
 	/**
@@ -425,7 +418,7 @@ public class IonPagesWithCaching implements IonPages
 				// save to memory cache
 				.doOnSuccess( page -> MemoryCache.savePage( page, config, context ) )
 				.onErrorResumeNext( throwable -> handleUnsuccessfulPageCacheReading( pageIdentifier, serverCallAsBackup, pageUrl, throwable ) )
-				.compose( RxUtils.runSingleOnIoThread() );
+				.subscribeOn( Schedulers.io() );
 	}
 
 	private Single<Page> handleUnsuccessfulPageCacheReading( String pageIdentifier, boolean serverCallAsBackup, String pageUrl, Throwable e )
@@ -468,7 +461,7 @@ public class IonPagesWithCaching implements IonPages
 					IonLog.e( "Failed Request", "Network request " + pageUrl + " failed." );
 					return Single.error( new NetworkRequestException( pageUrl, throwable ) );
 				} )
-				.compose( RxUtils.runSingleOnIoThread() )
+				.subscribeOn( Schedulers.io() )
 				.doFinally( () -> runningPageDownloads.finished( pageIdentifier ) );
 		return runningPageDownloads.starting( pageIdentifier, pageSingle.toObservable() ).singleOrError();
 	}

@@ -18,7 +18,6 @@ import com.anfema.ionclient.utils.DateTimeUtils;
 import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.IonLog;
 import com.anfema.ionclient.utils.PendingDownloadHandler;
-import com.anfema.ionclient.utils.RxUtils;
 import com.anfema.utils.NetworkUtils;
 
 import org.joda.time.DateTime;
@@ -30,6 +29,7 @@ import java.io.InputStream;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
@@ -135,7 +135,7 @@ public class IonFilesWithCaching implements IonFiles
 				// force new download, do not create cache index entry
 				return authenticatedFileRequest( downloadUrl, targetFile )
 						.map( file -> new FileWithStatus( file, FileStatus.NETWORK ) )
-						.compose( RxUtils.runSingleOnIoThread() );
+						.subscribeOn( Schedulers.io() );
 			}
 			else
 			{
@@ -160,7 +160,7 @@ public class IonFilesWithCaching implements IonFiles
 				// download media file
 				Single<File> downloadSingle = authenticatedFileRequest( downloadUrl, targetFile )
 						.doOnSuccess( file -> FileCacheIndex.save( url.toString(), file, config, null, requestTime, context ) )
-						.compose( RxUtils.runSingleOnIoThread() )
+						.subscribeOn( Schedulers.io() )
 						.doOnSuccess( file -> runningDownloads.finished( url ) );
 				return runningDownloads.starting( url, downloadSingle.toObservable() ).singleOrError()
 						.map( file -> new FileWithStatus( file, FileStatus.NETWORK ) );

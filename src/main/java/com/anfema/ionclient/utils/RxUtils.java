@@ -27,44 +27,6 @@ public class RxUtils
 		IonLog.ex( exception );
 	}
 
-	/**
-	 * Convenience action for onNext function.
-	 * This is an action that receives one argument and does nothing.
-	 */
-	public static final Consumer<Object> NOTHING = o -> doNothing();
-
-	public static void doNothing()
-	{
-		// does what you would expect
-	}
-
-	/**
-	 * Use in compose operator to apply to an observable stream
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T> ObservableTransformer<T, T> runOnIoThread()
-	{
-		return observable -> observable.subscribeOn( Schedulers.io() ).observeOn( AndroidSchedulers.mainThread() );
-	}
-
-	/**
-	 * Use in compose operator to apply to a single
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T> SingleTransformer<T, T> runSingleOnIoThread()
-	{
-		return single -> single.subscribeOn( Schedulers.io() ).observeOn( AndroidSchedulers.mainThread() );
-	}
-
-	/**
-	 * Use in compose operator to apply to an observable stream
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T> ObservableTransformer<T, T> runOnComputationThread()
-	{
-		return tObservable -> tObservable.subscribeOn( Schedulers.computation() ).observeOn( AndroidSchedulers.mainThread() );
-	}
-
 	public static <A, B, C> Observable<C> flatZip( Observable<A> o1, Observable<B> o2, BiFunction<A, B, Observable<C>> func )
 	{
 		Observable<Observable<C>> obob = Observable.zip( o1, o2, func );
