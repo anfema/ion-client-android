@@ -1,7 +1,5 @@
 package com.anfema.ionclient.pages.models;
 
-import androidx.annotation.NonNull;
-
 import com.anfema.ionclient.pages.models.contents.Connection;
 import com.anfema.ionclient.pages.models.contents.ConnectionContent;
 import com.anfema.ionclient.pages.models.contents.Content;
@@ -13,6 +11,9 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * A page holds all the information about its content.
@@ -44,6 +45,7 @@ public class Page implements SizeAware
 	/**
 	 * page identifier of the parent's page
 	 */
+	// TODO add @Nullable annotation?
 	public String parent;
 
 	/**
@@ -59,6 +61,7 @@ public class Page implements SizeAware
 	 * @param outlet outlet identifier to identify content
 	 * @return content or null if not available
 	 */
+	@Nullable
 	public Content getContent( String outlet )
 	{
 		if ( outlet == null )
@@ -83,6 +86,7 @@ public class Page implements SizeAware
 	 * @param outlet          outlet identifier to identify content
 	 * @return content or null if not available
 	 */
+	@Nullable
 	public <T extends Content> T getContent( String outlet, Class<T> contentSubclass )
 	{
 		Content content = getContent( outlet );
@@ -101,6 +105,7 @@ public class Page implements SizeAware
 	 *
 	 * @param outlet outlet identifier to identify array of contents
 	 */
+	@NonNull
 	public List<Content> getContents( String outlet )
 	{
 		List<Content> contents = new ArrayList<>();
@@ -123,6 +128,7 @@ public class Page implements SizeAware
 	 * @param contentSubclass the type of the requested contents, it must be a subclass of {@link Content}
 	 * @param outlet          outlet identifier to identify array of contents
 	 */
+	@NonNull
 	public <T extends Content> List<T> getContents( String outlet, Class<T> contentSubclass )
 	{
 		List<T> contents = new ArrayList<>();
@@ -154,6 +160,7 @@ public class Page implements SizeAware
 	 * @param outlet outlet identifier to identify content
 	 * @return formatted text if exists, {@code null} otherwise
 	 */
+	@Nullable
 	public CharSequence getTextOrNull( String outlet )
 	{
 		TextContent content = getContent( outlet, TextContent.class );
@@ -183,6 +190,7 @@ public class Page implements SizeAware
 	 * @param outlet outlet identifier to identify content
 	 * @return text without formatting if exists, {@code null} otherwise
 	 */
+	@Nullable
 	public String getPlainTextOrNull( String outlet )
 	{
 		CharSequence text = getTextOrNull( outlet );
@@ -209,6 +217,7 @@ public class Page implements SizeAware
 	 * @param outlet outlet identifier to identify content
 	 * @return @return link to another collection, page, content if data exists, {@code null} otherwise
 	 */
+	@Nullable
 	public DateTime getDateTimeOrNull( String outlet )
 	{
 		DatetimeContent content = getContent( outlet, DatetimeContent.class );
@@ -221,6 +230,7 @@ public class Page implements SizeAware
 	 * @param outlet outlet identifier to identify content
 	 * @return @return link to another collection, page, content if data exists, {@code null} otherwise
 	 */
+	@Nullable
 	public Connection getConnectionOrNull( String outlet )
 	{
 		ConnectionContent content = getContent( outlet, ConnectionContent.class );
@@ -233,6 +243,7 @@ public class Page implements SizeAware
 	 * @param outlet outlet identifier to identify content
 	 * @return content if it is a {@link Downloadable} content, or {@code null} otherwise
 	 */
+	@Nullable
 	public Downloadable getDownloadableOrNull( String outlet )
 	{
 		Content content = getContent( outlet );
