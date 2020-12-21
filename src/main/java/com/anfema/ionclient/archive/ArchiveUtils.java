@@ -1,7 +1,6 @@
 package com.anfema.ionclient.archive;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.archive.models.ArchiveIndex;
@@ -11,6 +10,7 @@ import com.anfema.ionclient.caching.index.CacheIndexStore;
 import com.anfema.ionclient.caching.index.CollectionCacheIndex;
 import com.anfema.ionclient.caching.index.FileCacheIndex;
 import com.anfema.ionclient.caching.index.PageCacheIndex;
+import com.anfema.ionclient.exceptions.FileMoveException;
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException;
 import com.anfema.ionclient.exceptions.PageNotInCollectionException;
 import com.anfema.ionclient.pages.IonPageUrls;
@@ -41,6 +41,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import androidx.annotation.NonNull;
 import io.reactivex.Observable;
 
 
@@ -151,10 +152,18 @@ class ArchiveUtils
 		// merge files from archive download into collection's cache
 		for ( FileWithMeta fileWithMeta : untaredFiles )
 		{
-			boolean writeSuccess = FileUtils.move( fileWithMeta.fileTemp, fileWithMeta.file, true );
-			if ( !writeSuccess )
+			try
 			{
-				throw new IOException( "File could not be moved to its final path '" + fileWithMeta.file.getPath() + "'" );
+				boolean writeSuccess = FileUtils.move( fileWithMeta.fileTemp, fileWithMeta.file, true );
+				if ( !writeSuccess )
+				{
+					throw new IOException( "File could not be moved to its final path '" + fileWithMeta.file.getPath() + "'" );
+				}
+			}
+			catch ( FileMoveException e )
+			{
+				Log.e( "FileMoveException", "URL: " + fileWithMeta.originUrl );
+				throw e;
 			}
 		}
 
@@ -253,7 +262,7 @@ class ArchiveUtils
 			targetFileTemp = new File( collectionFolderTemp, filename );
 			targetFile = new File( collectionFolder, filename );
 		}
-		return new FileWithMeta( targetFile, targetFileTemp, type, fileInfo, pageIdentifier );
+		return new FileWithMeta( targetFile, targetFileTemp, type, url, fileInfo, pageIdentifier );
 	}
 
 	public static class FileWithMeta
@@ -261,14 +270,16 @@ class ArchiveUtils
 		File           file;
 		File           fileTemp;
 		IonRequestType type;
+		String         originUrl;
 		ArchiveIndex   archiveIndex;
 		String         pageIdentifier;
 
-		public FileWithMeta( File file, File fileTemp, IonRequestType type, ArchiveIndex archiveIndex, String pageIdentifier )
+		public FileWithMeta( File file, File fileTemp, IonRequestType type, String originUrl, ArchiveIndex archiveIndex, String pageIdentifier )
 		{
 			this.file = file;
 			this.fileTemp = fileTemp;
 			this.type = type;
+			this.originUrl = originUrl;
 			this.archiveIndex = archiveIndex;
 			this.pageIdentifier = pageIdentifier;
 		}
