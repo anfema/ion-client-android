@@ -192,6 +192,7 @@ public class IonPicassoWithCaching implements IonPicasso
 			return;
 		}
 
+		// FIXME This subscription leaks the view
 		fetchImageFile( Uri.parse( path ), checksum )
 				.observeOn( AndroidSchedulers.mainThread() )
 				.subscribe( fileUri -> showImage( fileUri, target, requestTransformation, callback ), throwable -> imageDownloadFailed( throwable, target, requestTransformation, callback ) );
