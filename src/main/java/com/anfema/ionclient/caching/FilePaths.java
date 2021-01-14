@@ -1,7 +1,6 @@
 package com.anfema.ionclient.caching;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException;
@@ -11,6 +10,8 @@ import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.utils.HashUtils;
 
 import java.io.File;
+
+import androidx.annotation.NonNull;
 
 public class FilePaths
 {
@@ -126,7 +127,7 @@ public class FilePaths
 	@NonNull
 	public static File getMediaFolderPath( IonConfig config, Context context, boolean tempCollectionFolder )
 	{
-		return new File( getBasicCollectionFilePath( config, context ) + FileUtils.SLASH + MEDIA + appendTemp( tempCollectionFolder ) );
+		return new File( getBasicCollectionFilePath( config.collectionIdentifier, context ) + FileUtils.SLASH + MEDIA + appendTemp( tempCollectionFolder ) );
 	}
 
 	/**
@@ -134,7 +135,7 @@ public class FilePaths
 	 */
 	public static File getCollectionFolderPath( IonConfig config, Context context )
 	{
-		File folder = new File( getBasicCollectionFilePath( config, context ) + FileUtils.SLASH + config.locale + FileUtils.SLASH + config.variation );
+		File folder = new File( getBasicCollectionFilePath( config.collectionIdentifier, context ) + FileUtils.SLASH + config.locale + FileUtils.SLASH + config.variation );
 		if ( !folder.exists() )
 		{
 			folder.mkdirs();
@@ -144,13 +145,7 @@ public class FilePaths
 
 	public static File getArchiveFilePath( IonConfig config, Context context )
 	{
-		return new File( getBasicCollectionFilePath( config, context ) + FileUtils.SLASH + config.locale + FileUtils.SLASH + config.variation + ".archive" );
-	}
-
-	@NonNull
-	private static String getBasicCollectionFilePath( IonConfig config, Context context )
-	{
-		return getBasicCollectionFilePath( config.collectionIdentifier, context );
+		return new File( getBasicCollectionFilePath( config.collectionIdentifier, context ) + FileUtils.SLASH + config.locale + FileUtils.SLASH + config.variation + ".archive" );
 	}
 
 	@NonNull
