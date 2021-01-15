@@ -1,13 +1,12 @@
 package com.anfema.ionclient.utils;
 
-import androidx.annotation.NonNull;
-
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.serialization.GsonHolder;
 import com.anfema.utils.NetworkUtils;
 
 import java.util.Collection;
 
+import androidx.annotation.NonNull;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -22,6 +21,21 @@ public class ApiFactory
 	{
 		baseUrl = ensureEndsWithSlash( baseUrl );
 
+		OkHttpClient okHttpClient = okHttpClient( interceptors, networkTimeout );
+
+		// configure retrofit
+		final Builder retrofitBuilder = new Builder();
+		retrofitBuilder.addCallAdapterFactory( RxJava2CallAdapterFactory.createWithScheduler( Schedulers.io() ) );
+		retrofitBuilder.addConverterFactory( GsonConverterFactory.create( GsonHolder.getInstance() ) );
+		retrofitBuilder.baseUrl( baseUrl );
+		retrofitBuilder.client( okHttpClient );
+		Retrofit retrofit = retrofitBuilder.build();
+
+		return retrofit.create( serviceApi );
+	}
+
+	private static OkHttpClient okHttpClient( Collection<Interceptor> interceptors, int networkTimeout )
+	{
 		// configure okHttp client: add interceptors
 		OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
 		NetworkUtils.applyTimeout( okHttpClientBuilder, networkTimeout );
@@ -32,17 +46,7 @@ public class ApiFactory
 				okHttpClientBuilder.addInterceptor( interceptor );
 			}
 		}
-		OkHttpClient okHttpClient = okHttpClientBuilder.build();
-
-		// configure retrofit
-		final Builder retrofitBuilder = new Builder();
-		retrofitBuilder.addCallAdapterFactory( RxJava2CallAdapterFactory.createWithScheduler( Schedulers.io()) ); // enable returning Observables
-		retrofitBuilder.addConverterFactory( GsonConverterFactory.create( GsonHolder.getInstance() ) );
-		retrofitBuilder.baseUrl( baseUrl );
-		retrofitBuilder.client( okHttpClient );
-		Retrofit retrofit = retrofitBuilder.build();
-
-		return retrofit.create( serviceApi );
+		return okHttpClientBuilder.build();
 	}
 
 	@NonNull
