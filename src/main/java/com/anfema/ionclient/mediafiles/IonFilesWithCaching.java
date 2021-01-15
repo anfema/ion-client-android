@@ -46,10 +46,10 @@ import okhttp3.ResponseBody;
  */
 public class IonFilesWithCaching implements IonFiles
 {
-	private       IonConfig                             config;
-	private       Context                               context;
-	private final OkHttpClient                          client;
-	private       PendingDownloadHandler<HttpUrl, File> runningDownloads;
+	private IonConfig                             config;
+	private Context                               context;
+	private OkHttpClient                          client;
+	private PendingDownloadHandler<HttpUrl, File> runningDownloads;
 
 	public IonFilesWithCaching( IonConfig config, Context context )
 	{
@@ -70,6 +70,9 @@ public class IonFilesWithCaching implements IonFiles
 	public void updateConfig( IonConfig config )
 	{
 		this.config = config;
+		OkHttpClient.Builder newClient = client.newBuilder();
+		NetworkUtils.applyTimeout( newClient, config.networkTimeout );
+		this.client = newClient.build();
 	}
 
 	/**
