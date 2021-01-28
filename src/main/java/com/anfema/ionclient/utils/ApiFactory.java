@@ -8,6 +8,7 @@ import com.anfema.utils.NetworkUtils;
 
 import java.util.Collection;
 
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
@@ -35,7 +36,7 @@ public class ApiFactory
 
 		// configure retrofit
 		final Builder retrofitBuilder = new Builder();
-		retrofitBuilder.addCallAdapterFactory( RxJava2CallAdapterFactory.create() ); // enable returning Observables
+		retrofitBuilder.addCallAdapterFactory( RxJava2CallAdapterFactory.createWithScheduler( Schedulers.io()) ); // enable returning Observables
 		retrofitBuilder.addConverterFactory( GsonConverterFactory.create( GsonHolder.getInstance() ) );
 		retrofitBuilder.baseUrl( baseUrl );
 		retrofitBuilder.client( okHttpClient );
