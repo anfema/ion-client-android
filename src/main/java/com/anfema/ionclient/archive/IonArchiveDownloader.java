@@ -74,7 +74,7 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 	 * @param inCollection If collection already is available it can be passed in order to save time.
 	 * @param lastModified when the collection has been last modified
 	 */
-	public Completable downloadArchive( Collection inCollection, String lastModified )
+	private Completable downloadArchive( Collection inCollection, String lastModified )
 	{
 		if ( inCollection != null && !inCollection.identifier.equals( config.collectionIdentifier ) )
 		{
