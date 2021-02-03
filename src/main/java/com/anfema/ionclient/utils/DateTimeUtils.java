@@ -9,6 +9,9 @@ import org.joda.time.format.DateTimeFormatterBuilder;
 
 import java.util.Locale;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 /**
  * These methods fully operate in UTC time zone.
  * {@link DateTime} objects are parsed with UTC and format and toString methods print dates assuming not local time zone but UTC.
@@ -45,6 +48,7 @@ public class DateTimeUtils extends org.joda.time.DateTimeUtils
 	 * @throws IllegalArgumentException if {@param dateString} is does not fit with the default datetime patterns of this class
 	 * @throws NullPointerException     if {@param dateString} is null
 	 */
+	@NonNull
 	public static DateTime parseOrThrow( String dateString ) throws IllegalArgumentException, NullPointerException
 	{
 		try
@@ -70,6 +74,7 @@ public class DateTimeUtils extends org.joda.time.DateTimeUtils
 	 * @param dateString string representation of a date
 	 * @return parsed {@link DateTime} object or null if parsing was not successful
 	 */
+	@Nullable
 	public static DateTime parseOrNull( String dateString )
 	{
 		try
@@ -91,6 +96,7 @@ public class DateTimeUtils extends org.joda.time.DateTimeUtils
 	 * @throws IllegalArgumentException if {@param dateString} is does not fit with the default datetime patterns of this class
 	 * @throws NullPointerException     if {@param dateString} is null
 	 */
+	@NonNull
 	public static DateTime parseOrThrow( String dateString, String inputPattern ) throws IllegalArgumentException, NullPointerException
 	{
 		return DateTimeFormat.forPattern( inputPattern ).withZoneUTC().withLocale( Locale.US ).parseDateTime( dateString );
@@ -103,6 +109,7 @@ public class DateTimeUtils extends org.joda.time.DateTimeUtils
 	 * @param inputPattern e.g. "dd.MM.yy"
 	 * @return parsed {@link DateTime} object or null if parsing was not successful
 	 */
+	@Nullable
 	public static DateTime parseOrNull( String dateString, String inputPattern )
 	{
 		try
@@ -119,6 +126,7 @@ public class DateTimeUtils extends org.joda.time.DateTimeUtils
 	 * @param outPattern e.g. "dd.MM.yy"
 	 * @return string representation of {@link DateTime} object or empty string if {@param dateTime} is not valid
 	 */
+	@NonNull
 	public static String format( DateTime dateTime, String outPattern )
 	{
 		if ( dateTime == null )
@@ -136,6 +144,7 @@ public class DateTimeUtils extends org.joda.time.DateTimeUtils
 	 * @param outPattern   e.g. "dd.MM.yy"
 	 * @return string representation of {@link DateTime} object or empty string if {@param dateTime} is not valid
 	 */
+	@NonNull
 	public static String format( String inDateString, String outPattern )
 	{
 		DateTime dateDeserialized = parseOrNull( inDateString );
@@ -145,6 +154,7 @@ public class DateTimeUtils extends org.joda.time.DateTimeUtils
 	/**
 	 * Return string representation according to {@link DateTimeUtils#DATETIME_PATTERN}
 	 */
+	@NonNull
 	public static String toString( DateTime dateTime )
 	{
 		return FORMATTER.print( dateTime );
@@ -154,6 +164,7 @@ public class DateTimeUtils extends org.joda.time.DateTimeUtils
 	 * Use this now method instead of {@link DateTime#now()} ensuring that timezone is UTC and milliseconds
 	 * to allow isEqual comparisons with DateTime objects originating from server.
 	 */
+	@NonNull
 	public static DateTime now()
 	{
 		return DateTime.now().withMillisOfSecond( 0 ).withZone( DateTimeZone.UTC );
