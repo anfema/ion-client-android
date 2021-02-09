@@ -16,7 +16,8 @@ import java.util.Map;
 public class ContentDeserializer implements JsonDeserializer<Content>
 {
 	// element name where content type is stored in Json
-	private static final String ELEMENT_NAME_FOR_TYPE = "type";
+	private static final String ELEMENT_NAME_FOR_TYPE   = "type";
+	private static final String ELEMENT_NAME_FOR_OUTLET = "outlet";
 
 	Map<String, Class<? extends Content>> contentTypeRegistry = new HashMap<>();
 
@@ -38,7 +39,15 @@ public class ContentDeserializer implements JsonDeserializer<Content>
 		if ( isAvailable )
 		{
 			// determine content type
-			String typeName = jsonObject.get( ELEMENT_NAME_FOR_TYPE ).getAsString();
+			JsonElement typeElement = jsonObject.get( ELEMENT_NAME_FOR_TYPE );
+			if ( typeElement == null )
+			{
+				JsonElement outletElement = jsonObject.get( ELEMENT_NAME_FOR_OUTLET );
+				String outletName = outletElement != null ? outletElement.getAsString() : "n/a";
+				IonLog.w( "Content deserialization failed because no type was sent. Outlet: " + outletName );
+				return null;
+			}
+			String typeName = typeElement.getAsString();
 			type = contentTypeRegistry.get( typeName );
 
 			if ( type == null )
