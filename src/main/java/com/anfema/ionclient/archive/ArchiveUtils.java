@@ -124,6 +124,8 @@ class ArchiveUtils
 					}
 				}
 			}
+			IonLog.d( TAG, "Number of index entries found in archive: " + index.size() );
+			IonLog.d( TAG, "Number of files found in archive: " + untaredFiles.size() );
 		}
 		finally
 		{
