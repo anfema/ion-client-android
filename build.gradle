@@ -24,11 +24,11 @@ repositories {
 }
 
 android {
-    compileSdkVersion compile_sdk_version
+    compileSdkVersion 29
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion target_sdk_version
+        targetSdkVersion 29
         versionCode 2
         // The versionCode to which the current version's cache is backwards compatible with. Update after breaking changes that require a cache reset.
         buildConfigField "int", "CACHE_COMPATIBILITY", "2"
