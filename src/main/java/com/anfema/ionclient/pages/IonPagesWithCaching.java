@@ -1,7 +1,6 @@
 package com.anfema.ionclient.pages;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.IonConfig.CachingStrategy;
@@ -34,6 +33,7 @@ import org.joda.time.DateTime;
 import java.io.File;
 import java.util.List;
 
+import androidx.annotation.NonNull;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
@@ -443,9 +443,13 @@ public class IonPagesWithCaching implements IonPages
 				// unwrap page and remember byte count
 				.map( response ->
 				{
-					Page page = response.body().getPage();
-					page.byteCount = getContentByteCount( response );
-					return page;
+					if (response.isSuccessful()) {
+						Page page = response.body().getPage();
+						page.byteCount = getContentByteCount( response );
+						return page;
+					} else {
+						throw new HttpException( response );
+					}
 				} )
 				.doOnSuccess( savePageCacheIndex() )
 				.doOnSuccess( page -> MemoryCache.savePage( page, config, context ) )
