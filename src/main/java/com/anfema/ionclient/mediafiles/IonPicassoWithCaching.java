@@ -8,6 +8,7 @@ import android.widget.ImageView;
 
 import com.anfema.ionclient.IonClient;
 import com.anfema.ionclient.IonConfig;
+import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.interceptors.AdditionalHeadersInterceptor;
 import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.interceptors.RequestLogger;
@@ -22,6 +23,7 @@ import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
+import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -30,6 +32,7 @@ import androidx.annotation.Nullable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
+import okhttp3.Cache;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
@@ -48,6 +51,7 @@ import static com.squareup.picasso.MemoryPolicy.NO_CACHE;
  */
 public class IonPicassoWithCaching implements IonPicasso
 {
+	private static final int MAX_IMAGE_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
 	/**
 	 * Global image memory cache, shared across all picasso instances
 	 */
@@ -64,6 +68,7 @@ public class IonPicassoWithCaching implements IonPicasso
 		this.picasso = createPicassoInstance(
 				this.config::getAuthorizationHeaderValue,
 				config.additionalHeaders,
+				config,
 				context,
 				config.networkTimeout
 		);
@@ -81,6 +86,7 @@ public class IonPicassoWithCaching implements IonPicasso
 	public static Picasso createPicassoInstance(
 			Callable<String> authHeaderValueRetriever,
 			@NonNull Map<String, String> additionalHeaders,
+			IonConfig config,
 			Context context,
 			int networkTimeout
 	)
@@ -90,8 +96,10 @@ public class IonPicassoWithCaching implements IonPicasso
 		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( authHeaderValueRetriever ) );
 		okHttpClientBuilder.addInterceptor( new AdditionalHeadersInterceptor( additionalHeaders ) );
 		okHttpClientBuilder.addInterceptor( new RequestLogger( "Picasso Request" ) );
-		// keep disk cache of OkHttp client in place, in case images are loaded directly through the picasso instance instead of using a
-		// loadImage-method
+		// set a disk cache in OkHttp client, in case images are loaded directly through the picasso
+		// instance instead of using a loadImage-method
+		File mediaFolderPath = FilePaths.getMediaFolderPath( config, context, false );
+		okHttpClientBuilder.cache( new Cache( mediaFolderPath, MAX_IMAGE_DISK_CACHE_SIZE ) );
 		OkHttpClient picassoClient = okHttpClientBuilder.build();
 
 		return new Picasso.Builder( context )
@@ -110,11 +118,12 @@ public class IonPicassoWithCaching implements IonPicasso
 	public static void setupDefaultPicasso(
 			String authHeaderValue,
 			@NonNull Map<String, String> additionalHeaders,
+			IonConfig config,
 			Context context,
 			int networkTimeout
 	) throws IllegalStateException
 	{
-		Picasso picasso = createPicassoInstance( () -> authHeaderValue, additionalHeaders, context, networkTimeout );
+		Picasso picasso = createPicassoInstance( () -> authHeaderValue, additionalHeaders, config, context, networkTimeout );
 		Picasso.setSingletonInstance( picasso );
 	}
 
