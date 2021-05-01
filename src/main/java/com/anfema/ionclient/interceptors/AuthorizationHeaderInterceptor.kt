@@ -1,5 +1,6 @@
 package com.anfema.ionclient.interceptors
 
+import com.anfema.ionclient.utils.IonLog
 import com.anfema.utils.Log
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -37,16 +38,16 @@ class AuthorizationHeaderInterceptor : Interceptor {
             Log.ex(e)
             null
         }
-        return requestWithAuthHeader(authHeaderValue, chain)
-    }
-
-    companion object {
-        @Throws(IOException::class)
-        private fun requestWithAuthHeader(authHeaderValue: String?, chain: Interceptor.Chain): Response {
-            val newRequest = chain.request().newBuilder()
-                .addHeader("Authorization", authHeaderValue)
-                .build()
-            return chain.proceed(newRequest)
-        }
+        val newRequest = chain.request().newBuilder().apply {
+            if (authHeaderValue != null) {
+                addHeader("Authorization", authHeaderValue)
+            } else {
+                IonLog.e(
+                    javaClass.simpleName,
+                    "No Authorization header was added to request ${chain.request().url()}"
+                )
+            }
+        }.build()
+        return chain.proceed(newRequest)
     }
 }
