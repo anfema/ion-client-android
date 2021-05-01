@@ -19,15 +19,13 @@ public class ApiFactory
 {
 	public static <T> T newInstance( String baseUrl, Collection<Interceptor> interceptors, Class<T> serviceApi, int networkTimeout )
 	{
-		baseUrl = ensureEndsWithSlash( baseUrl );
-
 		OkHttpClient okHttpClient = okHttpClient( interceptors, networkTimeout );
 
 		// configure retrofit
 		final Builder retrofitBuilder = new Builder();
 		retrofitBuilder.addCallAdapterFactory( RxJava2CallAdapterFactory.createWithScheduler( Schedulers.io() ) );
 		retrofitBuilder.addConverterFactory( GsonConverterFactory.create( GsonHolder.getInstance() ) );
-		retrofitBuilder.baseUrl( baseUrl );
+		retrofitBuilder.baseUrl( ensureEndsWithSlash( baseUrl ) );
 		retrofitBuilder.client( okHttpClient );
 		Retrofit retrofit = retrofitBuilder.build();
 
