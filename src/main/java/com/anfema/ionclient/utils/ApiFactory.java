@@ -17,6 +17,11 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiFactory
 {
+	public static <T> T newInstance( String baseUrl, Class<T> serviceApi )
+	{
+		return newInstance( baseUrl, null, serviceApi, IonConfig.DEFAULT_NETWORK_TIMEOUT );
+	}
+
 	public static <T> T newInstance( String baseUrl, Collection<Interceptor> interceptors, Class<T> serviceApi, int networkTimeout )
 	{
 		OkHttpClient okHttpClient = okHttpClient( interceptors, networkTimeout );
@@ -56,10 +61,5 @@ public class ApiFactory
 			IonLog.i( "API factory", "slash was appended to base URL" );
 		}
 		return baseUrl;
-	}
-
-	public static <T> T newInstance( String baseUrl, Class<T> serviceApi )
-	{
-		return newInstance( baseUrl, null, serviceApi, IonConfig.DEFAULT_NETWORK_TIMEOUT );
 	}
 }
