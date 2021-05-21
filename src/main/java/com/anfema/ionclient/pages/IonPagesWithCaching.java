@@ -225,7 +225,8 @@ public class IonPagesWithCaching implements IonPages
 	@Override
 	public Observable<Page> fetchPages( List<String> pageIdentifiers )
 	{
-		return fetchPages( PagesFilter.identifierIn( pageIdentifiers ) );
+		return Observable.fromIterable( pageIdentifiers )
+				.concatMapSingle( this::fetchPage );
 	}
 
 	/**
