@@ -240,7 +240,7 @@ public class IonPagesWithCaching implements IonPages
 				.flatMapObservable( Observable::fromIterable )
 				.filter( pagesFilter )
 				.map( page -> page.identifier )
-				.concatMap( pageIdentifier -> fetchPage( pageIdentifier ).toObservable() );
+				.concatMapSingle( this::fetchPage );
 	}
 
 	/**
