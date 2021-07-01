@@ -61,7 +61,6 @@ apply plugin: 'me.tatarka.retrolambda' // apply last because it might interfere 
 buildscript {
     repositories {
         mavenCentral()
-        jcenter()
     }
 
     dependencies {
