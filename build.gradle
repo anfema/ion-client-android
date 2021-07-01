@@ -17,12 +17,6 @@ buildscript {
     }
 }
 
-repositories {
-    maven {
-        url "http://repository.jetbrains.com/all" // source of Spek
-    }
-}
-
 android {
     compileSdkVersion 29
 
