@@ -12,7 +12,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.github.bjoernq:unmockplugin:0.7.6'
+        classpath 'com.github.bjoernq:unmockplugin:0.7.8'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -71,7 +71,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
-    testImplementation "org.jetbrains.spek:spek:1.0.25"
+    testImplementation "org.jetbrains.spek:spek-api:1.0.89"
     testImplementation "nl.jqno.equalsverifier:equalsverifier:3.1.9"
 
     androidTestImplementation 'androidx.annotation:annotation:1.1.0'

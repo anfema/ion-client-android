@@ -3,6 +3,10 @@ package com.anfema.ionclient.serialization;
 import com.anfema.ionclient.pages.models.PagePreview
 import com.google.gson.JsonPrimitive
 import org.jetbrains.spek.api.Spek
+import org.jetbrains.spek.api.dsl.context
+import org.jetbrains.spek.api.dsl.given
+import org.jetbrains.spek.api.dsl.it
+import org.jetbrains.spek.api.dsl.on
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
