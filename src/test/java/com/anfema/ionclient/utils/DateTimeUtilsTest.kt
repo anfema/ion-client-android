@@ -1,5 +1,7 @@
 package com.anfema.ionclient.utils
 
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -7,8 +9,12 @@ import org.junit.Test
 class DateTimeUtilsTest {
 
     @Test
-    fun testRoundtripDateTime() {
-        val original = DateTimeUtils.now()
+    fun testRoundtripsForDateTimes() {
+        testRoundtripDateTime(DateTimeUtils.now())
+        testRoundtripDateTime(DateTimeUtils.now().withZone(DateTimeZone.UTC))
+    }
+
+    private fun testRoundtripDateTime(original: DateTime) {
         println("original toString(): $original")
         val intermediate = DateTimeUtils.toString(original)
         println("intermediate String: $intermediate")
@@ -19,8 +25,12 @@ class DateTimeUtilsTest {
     }
 
     @Test
-    fun testRoundtripString() {
-        val original = "2015-11-12T20:52:51Z"
+    fun testRoundtripsForStrings() {
+        testRoundtripString("2015-11-12T20:52:51Z")
+        testRoundtripString("2015-11-12T20:52:51+02:00")
+    }
+
+    private fun testRoundtripString(original: String) {
         println("original String: $original")
         val intermediate = DateTimeUtils.parseOrThrow(original)
         println("intermediate toString(): $intermediate")
