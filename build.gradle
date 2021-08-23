@@ -67,6 +67,7 @@ dependencies {
     // misc
     implementation 'org.apache.commons:commons-compress:1.12'
     api 'net.danlew:android.joda:2.10.6' // better DateTime handling
+    testImplementation "joda-time:joda-time:2.10.10" // Time zone db for unit tests
 
     testImplementation 'junit:junit:4.12'
     testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
