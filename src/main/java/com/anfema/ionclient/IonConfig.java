@@ -86,8 +86,8 @@ public class IonConfig
 	public static int logLevel = IonLog.NONE;
 
 
-	private static final Map<IonConfig, String>                    authorizations = new HashMap<>();
-	private static final PendingDownloadHandler<IonConfig, String> pendingLogins  = new PendingDownloadHandler<>();
+	private static final Map<IonConfig, String>                    authorizationCache = new HashMap<>();
+	private static final PendingDownloadHandler<IonConfig, String> pendingLogins      = new PendingDownloadHandler<>();
 
 
 	// *** configuration of client instance ***
@@ -415,7 +415,7 @@ public class IonConfig
 
 		if ( !forceUpdate )
 		{
-			String authorizationFromCache = authorizations.get( this );
+			String authorizationFromCache = authorizationCache.get( this );
 			if ( authorizationFromCache != null )
 			{
 				return Single.just( authorizationFromCache );
@@ -425,7 +425,7 @@ public class IonConfig
 		Single<String> updatedAuthorization = authorizationHeaderValueCall
 				.map( authorizationHeaderValue ->
 				{
-					authorizations.put( IonConfig.this, authorizationHeaderValue );
+					authorizationCache.put( IonConfig.this, authorizationHeaderValue );
 					this.authorizationHeaderValue = authorizationHeaderValue;
 					return authorizationHeaderValue;
 				} )
@@ -437,18 +437,18 @@ public class IonConfig
 	{
 		if ( authorizationHeaderValue == null && authorizationHeaderValueCall != null )
 		{
-			authorizationHeaderValue = authorizations.get( this );
+			authorizationHeaderValue = authorizationCache.get( this );
 		}
 		return authorizationHeaderValue;
 	}
 
 	public void clearCachedAuthorization()
 	{
-		authorizations.remove( this );
+		authorizationCache.remove( this );
 	}
 
 	public static void clearEntireAuthorizationCache()
 	{
-		authorizations.clear();
+		authorizationCache.clear();
 	}
 }
