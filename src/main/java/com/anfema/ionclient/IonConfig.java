@@ -8,6 +8,8 @@ import com.anfema.ionclient.utils.MemoryUtils;
 import com.anfema.ionclient.utils.PendingDownloadHandler;
 import com.anfema.utils.EqualsContract;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,6 +19,7 @@ import java.util.concurrent.Callable;
 import androidx.annotation.NonNull;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
+import kotlin.jvm.functions.Function0;
 import okhttp3.Response;
 
 public class IonConfig
@@ -113,14 +116,14 @@ public class IonConfig
 	public final String variation;
 
 	/**
-	 * Authorization header value is required to use the ION API. Primary option: provide it directly by passing the value.
+	 * Authorization header value is required to use the ION API. Primary option: provide it through a synchronous call.
 	 */
-	private String authorizationHeaderValue;
+	private Function0<String> authHeaderProvider;
 
 	/**
 	 * Authorization header value is required to use the ION API. Secondary option: provide it indirectly through an async call.
 	 */
-	private final Single<String> authorizationHeaderValueCall;
+	private final Single<String> authHeaderNetworkCall;
 
 	/**
 	 * Add customer headers - besides the 'Authorization' header
@@ -156,8 +159,8 @@ public class IonConfig
 		private final String              collectionIdentifier;
 		private       String              locale;
 		private       String              variation                     = DEFAULT_VARIATION;
-		private       String              authorizationHeaderValue      = null;
-		private       Single<String>      authorizationHeaderValueCall  = null;
+		private       Function0<String>   authHeaderProvider            = null;
+		private       Single<String>      authHeaderNetworkCall         = null;
 		@NonNull
 		private final Map<String, String> additionalHeaders             = new HashMap<>();
 		private       boolean             archiveDownloads              = false;
@@ -193,15 +196,14 @@ public class IonConfig
 			return this;
 		}
 
-		public Builder authorization( String authorizationHeaderValue )
+		public void authorization( @NotNull Function0<String> authHeaderSyncProvider )
 		{
-			this.authorizationHeaderValue = authorizationHeaderValue;
-			return this;
+			this.authHeaderProvider = authHeaderSyncProvider;
 		}
 
 		public Builder authorization( Single<String> authorizationHeaderValueCall )
 		{
-			this.authorizationHeaderValueCall = authorizationHeaderValueCall;
+			this.authHeaderNetworkCall = authorizationHeaderValueCall;
 			return this;
 		}
 
@@ -241,7 +243,7 @@ public class IonConfig
 			{
 				throw new IllegalStateException( "locale == null" );
 			}
-			if ( authorizationHeaderValue == null && authorizationHeaderValueCall == null )
+			if ( authHeaderProvider == null && authHeaderNetworkCall == null )
 			{
 				IonLog.w( "IonConfig.Builder", "Did you forget to provide an authorization?" );
 			}
@@ -250,8 +252,8 @@ public class IonConfig
 					collectionIdentifier,
 					locale,
 					variation,
-					authorizationHeaderValue,
-					authorizationHeaderValueCall,
+					authHeaderProvider,
+					authHeaderNetworkCall,
 					additionalHeaders,
 					archiveDownloads,
 					ftsDbDownloads,
@@ -266,8 +268,8 @@ public class IonConfig
 			String collectionIdentifier,
 			String locale,
 			String variation,
-			String authorizationHeaderValue,
-			Single<String> authorizationHeaderValueCall,
+			Function0<String> authHeaderProvider,
+			Single<String> authHeaderNetworkCall,
 			@NonNull Map<String, String> additionalHeaders,
 			boolean archiveDownloads,
 			boolean ftsDbDownloads,
@@ -279,8 +281,8 @@ public class IonConfig
 		this.collectionIdentifier = collectionIdentifier;
 		this.locale = locale;
 		this.variation = variation;
-		this.authorizationHeaderValue = authorizationHeaderValue;
-		this.authorizationHeaderValueCall = authorizationHeaderValueCall;
+		this.authHeaderProvider = authHeaderProvider;
+		this.authHeaderNetworkCall = authHeaderNetworkCall;
 		this.additionalHeaders = additionalHeaders;
 		this.archiveDownloads = archiveDownloads;
 		this.ftsDbDownloads = ftsDbDownloads;
@@ -294,8 +296,8 @@ public class IonConfig
 		this.collectionIdentifier = otherConfig.collectionIdentifier;
 		this.locale = otherConfig.locale;
 		this.variation = otherConfig.variation;
-		this.authorizationHeaderValue = otherConfig.authorizationHeaderValue;
-		this.authorizationHeaderValueCall = otherConfig.authorizationHeaderValueCall;
+		this.authHeaderProvider = otherConfig.authHeaderProvider;
+		this.authHeaderNetworkCall = otherConfig.authHeaderNetworkCall;
 		this.additionalHeaders = otherConfig.additionalHeaders;
 		this.archiveDownloads = otherConfig.archiveDownloads;
 		this.ftsDbDownloads = otherConfig.ftsDbDownloads;
@@ -308,7 +310,7 @@ public class IonConfig
 		return baseUrl != null && baseUrl.contains( "://" )
 				&& collectionIdentifier != null
 				&& locale != null && locale.length() > 0
-				&& ( authorizationHeaderValue != null || authorizationHeaderValueCall != null );
+				&& ( authHeaderProvider != null || authHeaderNetworkCall != null );
 	}
 
 	public static void assertConfigIsValid( IonConfig config )
@@ -406,11 +408,9 @@ public class IonConfig
 
 	public Single<String> updateAuthorizationHeaderValue( boolean forceUpdate )
 	{
-		// IonLog.d( "IonConfig", "UpdateAuthorization: authorizationHeaderValue != null: " + ( authorizationHeaderValue != null ) + ", call != null: " + ( authorizationHeaderValueCall != null ) );
-
-		if ( authorizationHeaderValueCall == null || ( authorizationHeaderValue != null && !forceUpdate ) )
+		if ( authHeaderProvider != null )
 		{
-			return Single.just( authorizationHeaderValue );
+			return Single.just( authHeaderProvider.invoke() );
 		}
 
 		if ( !forceUpdate )
@@ -422,24 +422,27 @@ public class IonConfig
 			}
 		}
 
-		Single<String> updatedAuthorization = authorizationHeaderValueCall
+		Single<String> updatedAuthorization = authHeaderNetworkCall
 				.map( authorizationHeaderValue ->
 				{
 					authorizationCache.put( IonConfig.this, authorizationHeaderValue );
-					this.authorizationHeaderValue = authorizationHeaderValue;
 					return authorizationHeaderValue;
 				} )
 				.doOnSuccess( authorizationHeaderValue -> pendingLogins.finished( this ) );
+
 		return pendingLogins.starting( this, updatedAuthorization.toObservable() ).singleOrError();
 	}
 
 	public String getAuthorizationHeaderValue()
 	{
-		if ( authorizationHeaderValue == null && authorizationHeaderValueCall != null )
+		if ( authHeaderProvider != null )
 		{
-			authorizationHeaderValue = authorizationCache.get( this );
+			return authHeaderProvider.invoke();
 		}
-		return authorizationHeaderValue;
+		else
+		{
+			return authorizationCache.get( this );
+		}
 	}
 
 	public void clearCachedAuthorization()
