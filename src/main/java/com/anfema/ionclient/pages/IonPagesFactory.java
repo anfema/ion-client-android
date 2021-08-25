@@ -5,11 +5,15 @@ import android.content.Context;
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.interceptors.CachingInterceptor;
 import com.anfema.ionclient.interceptors.DeviceIdHeaderInterceptor;
-import com.anfema.ionclient.interceptors.RequestLogger;
 
 import java.util.ArrayList;
 
 import okhttp3.Interceptor;
+import okhttp3.logging.HttpLoggingInterceptor;
+import okhttp3.logging.HttpLoggingInterceptor.Level;
+
+import static com.anfema.ionclient.utils.IonLog.INFO;
+import static com.anfema.ionclient.utils.IonLog.VERBOSE;
 
 public class IonPagesFactory
 {
@@ -17,7 +21,10 @@ public class IonPagesFactory
 	{
 		ArrayList<Interceptor> interceptors = new ArrayList<>();
 		interceptors.add( new DeviceIdHeaderInterceptor( context ) );
-		interceptors.add( new RequestLogger( "Network Request" ) );
+		if ( IonConfig.logLevel <= INFO && IonConfig.logLevel >= VERBOSE )
+		{
+			interceptors.add( new HttpLoggingInterceptor().setLevel( Level.BASIC ) );
+		}
 		interceptors.add( new CachingInterceptor( config, context ) );
 
 		return new IonPagesWithCaching( config, context, interceptors );

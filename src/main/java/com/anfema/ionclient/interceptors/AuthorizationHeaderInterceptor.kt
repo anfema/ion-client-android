@@ -44,7 +44,7 @@ class AuthorizationHeaderInterceptor : Interceptor {
             } else {
                 IonLog.e(
                     javaClass.simpleName,
-                    "No Authorization header was added to request ${chain.request().url()}"
+                    "No Authorization header was added to request ${chain.request().url}"
                 )
             }
         }.build()

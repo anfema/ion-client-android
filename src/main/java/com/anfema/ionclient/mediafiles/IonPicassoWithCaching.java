@@ -11,7 +11,6 @@ import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.interceptors.AdditionalHeadersInterceptor;
 import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
-import com.anfema.ionclient.interceptors.RequestLogger;
 import com.anfema.ionclient.pages.models.contents.Downloadable;
 import com.anfema.ionclient.utils.IonLog;
 import com.anfema.utils.ExceptionUtils;
@@ -36,7 +35,11 @@ import okhttp3.Cache;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
+import okhttp3.logging.HttpLoggingInterceptor;
+import okhttp3.logging.HttpLoggingInterceptor.Level;
 
+import static com.anfema.ionclient.utils.IonLog.INFO;
+import static com.anfema.ionclient.utils.IonLog.VERBOSE;
 import static com.squareup.picasso.MemoryPolicy.NO_CACHE;
 
 /**
@@ -95,7 +98,10 @@ public class IonPicassoWithCaching implements IonPicasso
 		NetworkUtils.applyTimeout( okHttpClientBuilder, networkTimeout );
 		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( authHeaderValueRetriever ) );
 		okHttpClientBuilder.addInterceptor( new AdditionalHeadersInterceptor( additionalHeaders ) );
-		okHttpClientBuilder.addInterceptor( new RequestLogger( "Picasso Request" ) );
+		if ( IonConfig.logLevel <= INFO && IonConfig.logLevel >= VERBOSE )
+		{
+			okHttpClientBuilder.addInterceptor( new HttpLoggingInterceptor().setLevel( Level.BASIC ) );
+		}
 		// set a disk cache in OkHttp client, in case images are loaded directly through the picasso
 		// instance instead of using a loadImage-method
 		File mediaFolderPath = FilePaths.getMediaFolderPath( config, context, false );
