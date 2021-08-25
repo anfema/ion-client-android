@@ -441,4 +441,14 @@ public class IonConfig
 		}
 		return authorizationHeaderValue;
 	}
+
+	public void clearCachedAuthorization()
+	{
+		authorizations.remove( this );
+	}
+
+	public static void clearEntireAuthorizationCache()
+	{
+		authorizations.clear();
+	}
 }
