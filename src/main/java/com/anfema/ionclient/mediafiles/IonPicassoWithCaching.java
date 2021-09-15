@@ -24,13 +24,13 @@ import com.squareup.picasso.RequestCreator;
 
 import java.io.File;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
+import kotlin.jvm.functions.Function0;
 import okhttp3.Cache;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -87,7 +87,7 @@ public class IonPicassoWithCaching implements IonPicasso
 	 * You may not want to acquire a Picasso instance via {@link IonClient}.
 	 */
 	public static Picasso createPicassoInstance(
-			Callable<String> authHeaderValueRetriever,
+			Function0<String> authHeaderValueRetriever,
 			@NonNull Map<String, String> additionalHeaders,
 			IonConfig config,
 			Context context,
