@@ -45,7 +45,7 @@ public class PageDeserializer implements JsonDeserializer<Page>
 			ContainerContent containerContent = ( ContainerContent ) page.contents.get( 0 );
 			if ( containerContent != null )
 			{
-				page.contents = containerContent.children;
+				page.contents = containerContent.getChildren();
 				ListUtils.sort( page.contents );
 			}
 		}
