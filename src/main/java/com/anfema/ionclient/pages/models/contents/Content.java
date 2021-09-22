@@ -2,7 +2,11 @@ package com.anfema.ionclient.pages.models.contents;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import java.util.Objects;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class Content implements Comparable<Content>, Parcelable
 {
@@ -14,16 +18,18 @@ public class Content implements Comparable<Content>, Parcelable
 	public String outlet;
 
 	/**
-	 * When there are more contents of same kind an array, position indicates their order.
+	 * Non-null if the Content is a list element within a {@link ContainerContent}
 	 */
-	public long position;
+	@Nullable
+	public Long index;
 
 	public boolean is_searchable; // not used by container outlet
 
 	@Override
 	public String toString()
 	{
-		return "Content [class: " + getClass().getSimpleName() + ", outlet = " + outlet + ", variation = " + variation + ", position = " + position
+		return "Content [class: " + getClass().getSimpleName() + ", outlet = " + outlet
+				+ ", variation = " + variation + ", index = " + index
 				+ ", is_searchable = " + is_searchable + "]";
 	}
 
@@ -33,12 +39,22 @@ public class Content implements Comparable<Content>, Parcelable
 	@Override
 	public int compareTo( @NonNull Content another )
 	{
-		// Alternatively, one long could be subtracted from the other resulting in a long in the right range. However, casting to int might not be safe.
-		if ( position == another.position )
+		if ( Objects.equals( index, another.index ) )
 		{
 			return 0;
 		}
-		return position < another.position ? -1 : 1;
+		else if ( index == null )
+		{
+			return 1;
+		}
+		else if ( another.index == null )
+		{
+			return -1;
+		}
+		else
+		{
+			return index < another.index ? -1 : 1;
+		}
 	}
 
 	@Override
@@ -52,7 +68,7 @@ public class Content implements Comparable<Content>, Parcelable
 	{
 		dest.writeString( this.variation );
 		dest.writeString( this.outlet );
-		dest.writeLong( this.position );
+		dest.writeSerializable( this.index );
 		dest.writeByte( this.is_searchable ? ( byte ) 1 : ( byte ) 0 );
 	}
 
@@ -64,7 +80,7 @@ public class Content implements Comparable<Content>, Parcelable
 	{
 		this.variation = in.readString();
 		this.outlet = in.readString();
-		this.position = in.readLong();
+		this.index = ( Long ) in.readSerializable();
 		this.is_searchable = in.readByte() != 0;
 	}
 

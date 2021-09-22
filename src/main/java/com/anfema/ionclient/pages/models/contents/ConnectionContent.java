@@ -25,7 +25,7 @@ public class ConnectionContent extends Content
 		{
 			outlet = content.outlet;
 			variation = content.variation;
-			position = content.position;
+			index = content.index;
 			is_searchable = content.is_searchable;
 		}
 		this.connection = connection;
