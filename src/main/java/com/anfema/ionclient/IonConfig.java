@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import kotlin.jvm.functions.Function0;
@@ -118,7 +119,7 @@ public class IonConfig
 	/**
 	 * Authorization header value is required to use the ION API. Primary option: provide it through a synchronous call.
 	 */
-	private Function0<String> authHeaderProvider;
+	private final Function0<String> authHeaderProvider;
 
 	/**
 	 * Authorization header value is required to use the ION API. Secondary option: provide it indirectly through an async call.
@@ -410,7 +411,14 @@ public class IonConfig
 	{
 		if ( authHeaderProvider != null )
 		{
-			return Single.just( authHeaderProvider.invoke() );
+			String authHeaderValue = authHeaderProvider.invoke();
+			if (authHeaderValue != null)
+			{
+				return Single.just( authHeaderValue );
+			}
+			else{
+				return Single.error( new IllegalStateException("AuthHeaderValue is null") );
+			}
 		}
 
 		if ( !forceUpdate )
@@ -433,7 +441,7 @@ public class IonConfig
 		return pendingLogins.starting( this, updatedAuthorization.toObservable() ).singleOrError();
 	}
 
-	public String getAuthorizationHeaderValue()
+	public @Nullable String getAuthorizationHeaderValue()
 	{
 		if ( authHeaderProvider != null )
 		{
