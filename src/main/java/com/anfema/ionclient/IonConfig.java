@@ -197,9 +197,10 @@ public class IonConfig
 			return this;
 		}
 
-		public void authorization( @NotNull Function0<String> authHeaderSyncProvider )
+		public Builder authorization( @NotNull Function0<String> authHeaderSyncProvider )
 		{
 			this.authHeaderProvider = authHeaderSyncProvider;
+			return this;
 		}
 
 		public Builder authorization( Single<String> authorizationHeaderValueCall )
