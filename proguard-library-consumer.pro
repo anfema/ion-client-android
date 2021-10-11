@@ -1,7 +1,3 @@
-# *** Retrolambda ***
-
--dontwarn java.lang.invoke.*
-
 # *** Gson ***
 
 # Gson uses generic type information stored in a class file when working with fields. Proguard
