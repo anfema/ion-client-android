@@ -8,7 +8,10 @@ package com.anfema.utils;
  * This should be done in application's onCreate method by calling {@link #setup(int, String)} method.
  * You should always set log level to {@link #NONE} in release mode!
  * - easy logging of exceptions with {@link #ex(Throwable)} or {@link #ex(String, Throwable)}
+ *
+ * @deprecated Replace with Logger from androidkit or IonLog
  */
+@Deprecated
 public class Log
 {
 	public static final int VERBOSE = android.util.Log.VERBOSE;
@@ -26,6 +29,7 @@ public class Log
 	{
 	}
 
+	@SuppressWarnings("deprecation")
 	public static void setup( int logLevel, String defaultTag )
 	{
 		Log.logLevel = logLevel;
