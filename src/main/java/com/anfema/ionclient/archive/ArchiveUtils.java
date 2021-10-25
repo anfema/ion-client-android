@@ -21,7 +21,6 @@ import com.anfema.ionclient.pages.models.responses.CollectionResponse;
 import com.anfema.ionclient.serialization.GsonHolder;
 import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.IonLog;
-import com.anfema.utils.Log;
 
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
@@ -164,7 +163,7 @@ class ArchiveUtils
 			}
 			catch ( FileMoveException e )
 			{
-				Log.e( "FileMoveException", "URL: " + fileWithMeta.originUrl );
+				IonLog.e( "FileMoveException", "URL: " + fileWithMeta.originUrl );
 				throw e;
 			}
 		}
@@ -194,7 +193,7 @@ class ArchiveUtils
 			}
 			catch ( NoIonPagesRequestException e )
 			{
-				Log.e( TAG, "Tried to delete file for URL " + outdatedUrl + "\nBut the URL is not a valid ION Request URL" );
+				IonLog.e( TAG, "Tried to delete file for URL " + outdatedUrl + "\nBut the URL is not a valid ION Request URL" );
 			}
 		}
 

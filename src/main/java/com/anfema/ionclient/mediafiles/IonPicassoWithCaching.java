@@ -14,7 +14,6 @@ import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.pages.models.contents.Downloadable;
 import com.anfema.ionclient.utils.IonLog;
 import com.anfema.utils.ExceptionUtils;
-import com.anfema.utils.Log;
 import com.anfema.utils.NetworkUtils;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.LruCache;
@@ -151,7 +150,7 @@ public class IonPicassoWithCaching implements IonPicasso
 			}
 			catch ( Exception e )
 			{
-				Log.ex( e );
+				IonLog.ex( e );
 			}
 		}
 		requestCreator.into( target, callback );
@@ -200,7 +199,7 @@ public class IonPicassoWithCaching implements IonPicasso
 				}
 				catch ( Exception e )
 				{
-					Log.ex( e );
+					IonLog.ex( e );
 				}
 			}
 			requestCreator.into( target, callback );
@@ -246,7 +245,7 @@ public class IonPicassoWithCaching implements IonPicasso
 			}
 			catch ( Exception e )
 			{
-				Log.ex( e );
+				IonLog.ex( e );
 			}
 		}
 
