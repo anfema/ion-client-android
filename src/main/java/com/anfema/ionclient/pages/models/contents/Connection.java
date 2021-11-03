@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+
 public class Connection implements Parcelable
 {
 	public final String       scheme;
@@ -76,6 +78,7 @@ public class Connection implements Parcelable
 		this.outletIdentifier = outletIdentifier;
 	}
 
+	@NonNull
 	@Override
 	public String toString()
 	{
