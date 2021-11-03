@@ -9,9 +9,6 @@ import com.google.gson.JsonPrimitive;
 
 import junit.framework.TestCase;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ConnectionContentSerializerTest extends TestCase
 {
 	Gson gson;
@@ -25,10 +22,7 @@ public class ConnectionContentSerializerTest extends TestCase
 
 	public void testRoundtripConnectionContent() throws Exception
 	{
-		List<String> pageIdentifierPath = new ArrayList<>();
-		pageIdentifierPath.add( "page_identifier1" );
-		pageIdentifierPath.add( "page_identifier2" );
-		Connection conn = new Connection( "ion", "collection_identifier", pageIdentifierPath, "outlet_identifier" );
+		Connection conn = new Connection( "ion://collection_identifier/page_identifier1/page_identifier2#outlet_identifier" );
 		ConnectionContent original = new ConnectionContent( null, conn );
 		System.out.println( "original toString(): " + original );
 

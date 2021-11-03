@@ -1,8 +1,5 @@
 package com.anfema.ionclient.serialization;
 
-import android.net.Uri;
-import android.net.Uri.Builder;
-
 import com.anfema.ionclient.pages.models.contents.ConnectionContent;
 import com.anfema.ionclient.pages.models.contents.Content;
 import com.google.gson.Gson;
@@ -29,17 +26,7 @@ public class ConnectionContentSerializer implements JsonDeserializer<ConnectionC
 	{
 		JsonObject jsonObject = new Gson().toJsonTree( connection, Content.class ).getAsJsonObject();
 
-		Builder uriBuilder = new Builder()
-				.scheme( connection.getScheme() )
-				.authority( connection.getCollectionIdentifier() );
-		for ( String pageIdentifier : connection.getPageIdentifierPath() )
-		{
-			uriBuilder.appendPath( pageIdentifier );
-		}
-		Uri connectionUri = uriBuilder
-				.fragment( connection.getOutletIdentifier() )
-				.build();
-		String connectionString = connectionUri.toString();
+		String connectionString = connection.connection.getUrl().toString();
 		jsonObject.add( CONNECTION_STRING, new JsonPrimitive( connectionString ) );
 		return jsonObject;
 	}

@@ -3,8 +3,6 @@ package com.anfema.ionclient.pages.models.contents;
 
 import android.os.Parcel;
 
-import java.util.List;
-
 public class ConnectionContent extends Content
 {
 	public Connection connection;
@@ -29,31 +27,6 @@ public class ConnectionContent extends Content
 			is_searchable = content.is_searchable;
 		}
 		this.connection = connection;
-	}
-
-	public String getScheme()
-	{
-		return connection.scheme;
-	}
-
-	public String getCollectionIdentifier()
-	{
-		return connection.collectionIdentifier;
-	}
-
-	public List<String> getPageIdentifierPath()
-	{
-		return connection.pageIdentifierPath;
-	}
-
-	public String getPageIdentifier()
-	{
-		return connection.pageIdentifier;
-	}
-
-	public String getOutletIdentifier()
-	{
-		return connection.outletIdentifier;
 	}
 
 	@Override
