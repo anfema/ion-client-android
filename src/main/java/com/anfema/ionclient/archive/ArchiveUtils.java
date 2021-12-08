@@ -163,8 +163,25 @@ class ArchiveUtils
 			}
 			catch ( FileMoveException e )
 			{
-				IonLog.e( "FileMoveException", "URL: " + fileWithMeta.originUrl );
-				throw e;
+				int entriesWithSameIdentifier = 0;
+				for ( FileWithMeta meta : untaredFiles )
+				{
+					if ( fileWithMeta.pageIdentifier != null && fileWithMeta.pageIdentifier.equals( meta.pageIdentifier ) )
+					{
+						entriesWithSameIdentifier += 1;
+					}
+				}
+				if ( fileWithMeta.file.exists() && entriesWithSameIdentifier > 1 )
+				{
+					IonLog.w( "FileMoveException", "URL: " + fileWithMeta.originUrl
+							+ ", ignore it because it was probably caused by the file being duplicated in the TAR file."
+					);
+				}
+				else
+				{
+					IonLog.e( "FileMoveException", "URL: " + fileWithMeta.originUrl );
+					throw e;
+				}
 			}
 		}
 
