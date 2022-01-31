@@ -9,6 +9,7 @@ class IonConfigTest
     @Throws(Exception::class)
     fun equalsContract()
     {
-        EqualsVerifier.forClass(IonConfig::class.java).withOnlyTheseFields("baseUrl", "collectionIdentifier", "locale", "variation").verify();
+        EqualsVerifier.forClass(IonConfig::class.java)
+            .withOnlyTheseFields("baseUrl", "collectionIdentifier", "locale", "variation").verify()
     }
 }

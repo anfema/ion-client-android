@@ -9,6 +9,6 @@ class ConnectionTest
     @Throws(Exception::class)
     fun equalsContract()
     {
-        EqualsVerifier.forClass(Connection::class.java).verify();
+        EqualsVerifier.forClass(Connection::class.java).verify()
     }
 }

@@ -1,4 +1,4 @@
-package com.anfema.ionclient.serialization;
+package com.anfema.ionclient.serialization
 
 import com.anfema.ionclient.pages.models.PagePreview
 import com.google.gson.JsonPrimitive
