@@ -144,7 +144,7 @@ class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 		}
 	}
 
-	class CollectionArchive
+	static class CollectionArchive
 	{
 		Collection collection;
 		File       archivePath;

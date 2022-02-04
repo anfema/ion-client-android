@@ -66,11 +66,11 @@ class ArchiveUtils
 	 * @param archiveFile  input TAR file
 	 * @param lastModified when collection has been last modified
 	 * @param requestTime  the time, when the archive download was initiated
-	 * @throws FileNotFoundException
+	 * @throws IOException
 	 * @throws ArchiveException
 	 */
 	private static List<FileWithMeta> performUnTar( File archiveFile, IonConfig config, Collection collection, String lastModified,
-													DateTime requestTime, Context context ) throws FileNotFoundException, IOException, ArchiveException
+													DateTime requestTime, Context context ) throws IOException, ArchiveException
 	{
 		File collectionFolder = FilePaths.getCollectionFolderPath( config, context );
 

@@ -19,7 +19,7 @@ object ApiFactory {
     fun <T> newInstance(
         baseUrl: String,
         interceptors: Collection<Interceptor>?,
-        serviceApi: Class<T>?,
+        serviceApi: Class<T>,
         networkTimeout: Int,
     ): T {
         val okHttpClient = okHttpClient(interceptors, networkTimeout)
