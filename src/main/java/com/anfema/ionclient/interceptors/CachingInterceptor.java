@@ -12,6 +12,7 @@ import com.anfema.ionclient.utils.IonLog;
 import java.io.File;
 import java.io.IOException;
 
+import androidx.annotation.NonNull;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.Request;
@@ -20,7 +21,7 @@ import okhttp3.Response;
 public class CachingInterceptor implements Interceptor
 {
 	private final IonConfig config;
-	private       Context   context;
+	private final Context   context;
 
 	public CachingInterceptor( IonConfig config, Context context )
 	{
@@ -28,6 +29,7 @@ public class CachingInterceptor implements Interceptor
 		this.context = ContextUtils.getApplicationContext( context );
 	}
 
+	@NonNull
 	@Override
 	public Response intercept( Chain chain ) throws IOException
 	{
@@ -55,8 +57,6 @@ public class CachingInterceptor implements Interceptor
 
 	/**
 	 * Reads response body without closing the buffer.
-	 *
-	 * @throws IOException
 	 */
 	private String getResponseBody( Response response ) throws IOException
 	{
