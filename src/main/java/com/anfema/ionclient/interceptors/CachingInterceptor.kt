@@ -4,7 +4,6 @@ import android.content.Context
 import com.anfema.ionclient.IonConfig
 import com.anfema.ionclient.caching.FilePaths
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException
-import com.anfema.ionclient.utils.ContextUtils
 import com.anfema.ionclient.utils.FileUtils
 import com.anfema.ionclient.utils.IonLog
 import okhttp3.Interceptor
@@ -12,8 +11,10 @@ import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
 
-class CachingInterceptor(private val config: IonConfig, context: Context?) : Interceptor {
-    private val context: Context = ContextUtils.getApplicationContext(context)
+class CachingInterceptor(
+    private val config: IonConfig,
+    private val context: Context,
+) : Interceptor {
 
     @Throws(IOException::class)
     override fun intercept(chain: Interceptor.Chain): Response {
