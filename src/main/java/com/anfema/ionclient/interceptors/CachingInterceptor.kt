@@ -26,7 +26,8 @@ class CachingInterceptor(
         if (response.isSuccessful) {
 
             // write response to cache
-            val responseBody = getResponseBody(response)
+            val responseBody = response.peekBody(Long.MAX_VALUE).string()
+
             try {
                 val filePath = FilePaths.getFilePath(url.toString(), config, context)
                 FileUtils.writeTextToFile(responseBody, filePath)
@@ -35,13 +36,5 @@ class CachingInterceptor(
             }
         }
         return response
-    }
-
-    /**
-     * Reads response body without closing the buffer.
-     */
-    @Throws(IOException::class)
-    private fun getResponseBody(response: Response): String {
-        return response.peekBody(Long.MAX_VALUE).string()
     }
 }
