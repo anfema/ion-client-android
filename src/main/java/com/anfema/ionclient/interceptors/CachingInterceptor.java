@@ -11,16 +11,11 @@ import com.anfema.ionclient.utils.IonLog;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
-import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
-import okio.Buffer;
-import okio.BufferedSource;
 
 public class CachingInterceptor implements Interceptor
 {
@@ -65,24 +60,6 @@ public class CachingInterceptor implements Interceptor
 	 */
 	private String getResponseBody( Response response ) throws IOException
 	{
-		ResponseBody responseBody = response.body();
-		BufferedSource source = responseBody.source();
-		source.request( Long.MAX_VALUE ); // Buffer the entire body.
-		Buffer buffer = source.buffer();
-
-		Charset UTF8 = Charset.forName( "UTF-8" );
-		Charset charset = UTF8;
-		MediaType contentType = responseBody.contentType();
-		if ( contentType != null )
-		{
-			charset = contentType.charset( UTF8 );
-		}
-
-		if ( responseBody.contentLength() == 0 )
-		{
-			return "";
-		}
-
-		return buffer.clone().readString( charset );
+		return response.peekBody( Long.MAX_VALUE ).string();
 	}
 }
