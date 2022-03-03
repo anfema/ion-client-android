@@ -16,34 +16,6 @@ implementation project(':ionclient')
 
 TBD: Make ION client available as a dependency.
 
-### General
-
-Overwrite string resource "file_provider_authority" with a value that contains the application ID.
-
-There are two possibilities to guarantee this:
-
-- define string resource in an XML file:
-```
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="file_provider_authority">{YOUR_APPLICATION_ID}.fileprovider</string>
-</resources>
-```
-If you want to be able to install multiple variants of your app at the same time on a device you need to define the differing values of "file_provider_authority" for each variant.
-The following approach automatically takes care of this.
-
-- define string resource in build.gradle of app module: 
-```
-    applicationVariants.all { variant ->
-        variant.resValue 'string', 'file_provider_authority', variant.applicationId + '.fileprovider'
-    }
-```
-
-Explanation: The ION client internally uses a file provider in order to pass PDFs to a PDF viewer app. File provider authorities must be unique among apps - i.e. a unique authority should be defined by each application ID.
-However, there are technical limitations: Application ID can neither be accessed in resource XMLs nor programmatically - only in the build.gradle file of the app module (and in the Manifest).
-Hence, the app module must take responsibility to avoid conflicts.  
-
-
 ## Usage
 
 The recommended way to access the ION client is to create an adapter class (e.g. "Ion.java") to obtain an instance of IonClient with a concise syntax. The adapter class takes responsibility for creating an instance of IonConfig.
