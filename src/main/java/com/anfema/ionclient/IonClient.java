@@ -6,9 +6,6 @@ import android.widget.ImageView;
 
 import com.anfema.ionclient.archive.IonArchive;
 import com.anfema.ionclient.archive.IonArchiveFactory;
-import com.anfema.ionclient.fulltextsearch.IonFts;
-import com.anfema.ionclient.fulltextsearch.IonFtsFactory;
-import com.anfema.ionclient.fulltextsearch.SearchResult;
 import com.anfema.ionclient.mediafiles.FileWithStatus;
 import com.anfema.ionclient.mediafiles.IonFiles;
 import com.anfema.ionclient.mediafiles.IonFilesFactory;
@@ -43,11 +40,11 @@ import okhttp3.HttpUrl;
  * <p>
  * Serving as entry point IonClient holds interfaces providing the actual implementation of its functionality.
  */
-public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, IonFts
+public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive
 {
 	/// Multiton
 
-	private static Map<IonConfig, IonClient> instances = new HashMap<>();
+	private static final Map<IonConfig, IonClient> instances = new HashMap<>();
 
 	/**
 	 * @param config configuration for ION client
@@ -77,14 +74,13 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 
 
 	// stored to verify on #getInstance(IonConfig, Context) that context (which is passed to delegate classes) is not null.
-	private Context context;
+	private final Context context;
 
 	// delegate classes
 	private final IonPages   ionPages;
 	private final IonFiles   ionFiles;
 	private final IonPicasso ionPicasso;
 	private final IonArchive ionArchive;
-	private final IonFts     ionFts;
 
 	private IonClient( IonConfig config, Context context )
 	{
@@ -93,7 +89,6 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 		ionFiles = IonFilesFactory.newInstance( config, context );
 		ionPicasso = IonPicassoFactory.newInstance( ionFiles, config, context );
 		ionArchive = IonArchiveFactory.newInstance( ionPages, ionFiles, config, context );
-		ionFts = IonFtsFactory.newInstance( ionPages, ionFiles, config, context );
 	}
 
 	@Override
@@ -103,7 +98,6 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 		ionFiles.updateConfig( config );
 		ionPicasso.updateConfig( config );
 		ionArchive.updateConfig( config );
-		ionFts.updateConfig( config );
 	}
 
 	/// Collection and page calls
@@ -269,26 +263,5 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive, Io
 	public Completable downloadArchive()
 	{
 		return ionArchive.downloadArchive();
-	}
-
-
-	/// Full text search
-
-	/**
-	 * @see IonFts#downloadSearchDatabase()
-	 */
-	@Override
-	public Completable downloadSearchDatabase()
-	{
-		return ionFts.downloadSearchDatabase();
-	}
-
-	/**
-	 * @see IonFts#fullTextSearch(String, String, String)
-	 */
-	@Override
-	public Single<List<SearchResult>> fullTextSearch( String searchTerm, String locale, String pageLayout )
-	{
-		return ionFts.fullTextSearch( searchTerm, locale, pageLayout );
 	}
 }
