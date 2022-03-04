@@ -20,7 +20,7 @@ class PageCacheIndex(
     companion object {
 
         @JvmStatic
-        fun retrieve(requestUrl: String?, config: IonConfig?, context: Context?): PageCacheIndex {
+        fun retrieve(requestUrl: String?, config: IonConfig?, context: Context?): PageCacheIndex? {
             return CacheIndexStore.retrieve(requestUrl, PageCacheIndex::class.java, config, context)
         }
 

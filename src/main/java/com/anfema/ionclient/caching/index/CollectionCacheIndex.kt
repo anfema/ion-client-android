@@ -43,7 +43,7 @@ class CollectionCacheIndex(
     companion object {
 
         @JvmStatic
-        fun retrieve(config: IonConfig?, context: Context?): CollectionCacheIndex {
+        fun retrieve(config: IonConfig?, context: Context?): CollectionCacheIndex? {
             val requestUrl = IonPageUrls.getCollectionUrl(config)
             return CacheIndexStore.retrieve(requestUrl, CollectionCacheIndex::class.java, config, context)
         }

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.caching.FilePaths;
@@ -27,6 +28,7 @@ import java.util.Set;
  */
 public class CacheIndexStore
 {
+	@Nullable
 	public static <T extends CacheIndex> T retrieve( String requestUrl, Class<T> cacheIndexSubclass, IonConfig config, Context context )
 	{
 		// check shared preferences
