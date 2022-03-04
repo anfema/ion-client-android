@@ -20,17 +20,17 @@ class PageCacheIndex(
     companion object {
 
         @JvmStatic
-        fun retrieve(requestUrl: String?, config: IonConfig?, context: Context?): PageCacheIndex? {
+        fun retrieve(requestUrl: String, config: IonConfig, context: Context): PageCacheIndex? {
             return CacheIndexStore.retrieve(requestUrl, PageCacheIndex::class.java, config, context)
         }
 
         @JvmStatic
-        fun save(page: Page, config: IonConfig?, context: Context?) {
+        fun save(page: Page, config: IonConfig, context: Context) {
             save(page.identifier, page.last_changed, config, context)
         }
 
         @JvmStatic
-        fun save(pageIdentifier: String?, pageLastChanged: DateTime, config: IonConfig?, context: Context?) {
+        fun save(pageIdentifier: String?, pageLastChanged: DateTime, config: IonConfig, context: Context) {
             val url = IonPageUrls.getPageUrl(config, pageIdentifier)
             val cacheIndex = PageCacheIndex(pageLastChanged)
             CacheIndexStore.save(url, cacheIndex, config, context)

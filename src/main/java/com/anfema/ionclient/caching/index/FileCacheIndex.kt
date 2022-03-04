@@ -25,7 +25,7 @@ data class FileCacheIndex(
     companion object {
 
         @JvmStatic
-        fun retrieve(requestUrl: String?, config: IonConfig?, context: Context?): FileCacheIndex? {
+        fun retrieve(requestUrl: String, config: IonConfig, context: Context): FileCacheIndex? {
             return CacheIndexStore.retrieve(requestUrl, FileCacheIndex::class.java, config, context)
         }
 
@@ -36,10 +36,10 @@ data class FileCacheIndex(
         fun save(
             requestUrl: String,
             file: File?,
-            config: IonConfig?,
+            config: IonConfig,
             checksum: String?,
             requestTime: DateTime?,
-            context: Context?,
+            context: Context,
         ) {
             if (file == null) {
                 IonLog.e("File Cache Index", "Could not save cache index for $requestUrl\nBecause file is null.")

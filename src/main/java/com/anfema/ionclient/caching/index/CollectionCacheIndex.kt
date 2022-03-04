@@ -43,13 +43,13 @@ class CollectionCacheIndex(
     companion object {
 
         @JvmStatic
-        fun retrieve(config: IonConfig?, context: Context?): CollectionCacheIndex? {
+        fun retrieve(config: IonConfig, context: Context): CollectionCacheIndex? {
             val requestUrl = IonPageUrls.getCollectionUrl(config)
             return CacheIndexStore.retrieve(requestUrl, CollectionCacheIndex::class.java, config, context)
         }
 
         @JvmStatic
-        fun save(config: IonConfig?, context: Context?, lastModified: String?, lastUpdated: DateTime?) {
+        fun save(config: IonConfig, context: Context, lastModified: String?, lastUpdated: DateTime?) {
             val url = IonPageUrls.getCollectionUrl(config)
             val cacheIndex = CollectionCacheIndex(
                 lastUpdated ?: DateTimeUtils.now(),
