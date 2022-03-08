@@ -54,8 +54,6 @@ android {
 
 dependencies {
 
-    api 'androidx.core:core-ktx:1.7.0' // required for FileProvider and Annotations
-
     // ReactiveX
     api 'io.reactivex.rxjava2:rxandroid:2.1.1' // rxjava (observables)
     api 'io.reactivex.rxjava2:rxjava:2.2.21' // RxAndroid releases are few and far between, so depend on latest version for bug fixes and new features
