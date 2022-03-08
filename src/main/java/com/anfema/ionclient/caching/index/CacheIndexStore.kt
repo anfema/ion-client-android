@@ -8,7 +8,7 @@ import com.anfema.ionclient.caching.FilePaths
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException
 import com.anfema.ionclient.serialization.GsonHolder
 import com.anfema.ionclient.utils.IonLog
-import com.anfema.utils.StringUtils
+import com.anfema.utils.byteCount
 
 /**
  * This is the global caching index table.
@@ -31,7 +31,7 @@ object CacheIndexStore {
         val index = GsonHolder.getInstance().fromJson(json, cacheIndexSubclass)
         if (index != null) {
             // make cache index aware of its size by storing byte count to its field
-            index.byteCount = StringUtils.byteCount(json).toInt()
+            index.byteCount = json?.byteCount()?.toInt() ?: 0
         }
         return index
     }
@@ -43,7 +43,7 @@ object CacheIndexStore {
             if (file.exists() && file.length() > 0) {
                 // make cache index aware of its size by storing byte count to its field
                 val indexSerialized = GsonHolder.getInstance().toJson(cacheIndex)
-                cacheIndex!!.byteCount = StringUtils.byteCount(indexSerialized).toInt()
+                cacheIndex!!.byteCount = indexSerialized.byteCount().toInt()
 
                 // save to shared preferences
                 getPrefs(config, context)

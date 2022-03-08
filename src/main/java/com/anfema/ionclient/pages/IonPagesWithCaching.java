@@ -26,7 +26,7 @@ import com.anfema.ionclient.utils.IonLog;
 import com.anfema.ionclient.utils.PagesFilter;
 import com.anfema.ionclient.utils.PendingDownloadHandler;
 import com.anfema.utils.NetworkUtils;
-import com.anfema.utils.StringUtils;
+import com.anfema.utils.StringUtilsKt;
 
 import org.joda.time.DateTime;
 
@@ -284,7 +284,7 @@ public class IonPagesWithCaching implements IonPages
 				{
 					CollectionResponse collectionResponse = GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class );
 					Collection collection1 = collectionResponse.getCollection();
-					collection1.byteCount = StringUtils.byteCount( collectionsString );
+					collection1.byteCount = StringUtilsKt.byteCount( collectionsString );
 					return collection1;
 				} )
 				// save to memory cache
@@ -413,7 +413,7 @@ public class IonPagesWithCaching implements IonPages
 				{
 					PageResponse pageResponse = GsonHolder.getInstance().fromJson( pagesString, PageResponse.class );
 					Page page = pageResponse.getPage();
-					page.byteCount = StringUtils.byteCount( pagesString );
+					page.byteCount = StringUtilsKt.byteCount( pagesString );
 					return page;
 				} )
 				// save to memory cache
