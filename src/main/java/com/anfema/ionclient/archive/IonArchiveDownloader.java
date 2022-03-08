@@ -13,7 +13,6 @@ import com.anfema.ionclient.pages.IonPagesWithCaching;
 import com.anfema.ionclient.pages.models.Collection;
 import com.anfema.ionclient.utils.DateTimeUtils;
 import com.anfema.ionclient.utils.IonLog;
-import com.anfema.ionclient.utils.RxUtils;
 
 import org.joda.time.DateTime;
 
@@ -140,7 +139,7 @@ public class IonArchiveDownloader implements IonArchive, CollectionDownloadedLis
 		{
 			// archive needs to be downloaded again. Download runs in background and does not even inform UI when finished
 			downloadArchive( collection, lastModified )
-					.subscribe( () -> IonLog.d( "ION Archive", "Archive has been downloaded/updated in background" ), RxUtils.DEFAULT_EXCEPTION_HANDLER );
+					.subscribe( () -> IonLog.d( "ION Archive", "Archive has been downloaded/updated in background" ), IonLog::ex );
 		}
 	}
 
