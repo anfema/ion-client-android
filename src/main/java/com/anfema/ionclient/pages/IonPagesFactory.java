@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.interceptors.AdditionalHeadersInterceptor;
-import com.anfema.ionclient.interceptors.CachingInterceptor;
+import com.anfema.ionclient.interceptors.WriteIonCacheInterceptor;
 import com.anfema.ionclient.interceptors.DeviceIdHeaderInterceptor;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class IonPagesFactory
 		{
 			interceptors.add( new HttpLoggingInterceptor().setLevel( Level.BODY ) );
 		}
-		interceptors.add( new CachingInterceptor( config, context ) );
+		interceptors.add( new WriteIonCacheInterceptor( config, context ) );
 		interceptors.add( new AdditionalHeadersInterceptor( config.additionalHeaders ) );
 
 		return new IonPagesWithCaching( config, context, interceptors );

@@ -11,7 +11,12 @@ import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
 
-class CachingInterceptor(
+/**
+ * Writes responses to the file cache
+ * but does not create a cache index entry!
+ * That's bad coherence/encapsulation.
+ */
+class WriteIonCacheInterceptor(
     private val config: IonConfig,
     private val context: Context,
 ) : Interceptor {
@@ -26,11 +31,11 @@ class CachingInterceptor(
         if (response.isSuccessful) {
 
             // write response to cache
-            val responseBody = response.peekBody(Long.MAX_VALUE).string()
+            val responseBody = response.peekBody(Long.MAX_VALUE)
 
             try {
                 val filePath = FilePaths.getFilePath(url.toString(), config, context)
-                FileUtils.writeTextToFile(responseBody, filePath)
+                FileUtils.writeToFile(responseBody.byteStream(), filePath)
             } catch (e: NoIonPagesRequestException) {
                 IonLog.ex(e)
             }
