@@ -1,7 +1,6 @@
 package com.anfema.ionclient.archive;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.caching.FilePaths;
@@ -21,12 +20,13 @@ import org.joda.time.DateTime;
 import java.io.File;
 import java.net.HttpURLConnection;
 
+import androidx.annotation.NonNull;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.HttpUrl;
 
-class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
+public class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 {
 	private final IonPages  ionPages;
 	private final IonFiles  ionFiles;

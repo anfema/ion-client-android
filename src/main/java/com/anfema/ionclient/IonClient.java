@@ -5,12 +5,12 @@ import androidx.annotation.Nullable;
 import android.widget.ImageView;
 
 import com.anfema.ionclient.archive.IonArchive;
-import com.anfema.ionclient.archive.IonArchiveFactory;
+import com.anfema.ionclient.archive.IonArchiveDownloader;
 import com.anfema.ionclient.mediafiles.FileWithStatus;
 import com.anfema.ionclient.mediafiles.IonFiles;
-import com.anfema.ionclient.mediafiles.IonFilesFactory;
+import com.anfema.ionclient.mediafiles.IonFilesWithCaching;
 import com.anfema.ionclient.mediafiles.IonPicasso;
-import com.anfema.ionclient.mediafiles.IonPicassoFactory;
+import com.anfema.ionclient.mediafiles.IonPicassoWithCaching;
 import com.anfema.ionclient.pages.IonPages;
 import com.anfema.ionclient.pages.IonPagesFactory;
 import com.anfema.ionclient.pages.models.Collection;
@@ -86,9 +86,9 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive
 	{
 		this.context = context;
 		ionPages = IonPagesFactory.newInstance( config, context );
-		ionFiles = IonFilesFactory.newInstance( config, context );
-		ionPicasso = IonPicassoFactory.newInstance( ionFiles, config, context );
-		ionArchive = IonArchiveFactory.newInstance( ionPages, ionFiles, config, context );
+		ionFiles = new IonFilesWithCaching( config, context );
+		ionPicasso = new IonPicassoWithCaching( ionFiles, config, context );
+		ionArchive = new IonArchiveDownloader( ionPages, ionFiles, config, context );
 	}
 
 	@Override
