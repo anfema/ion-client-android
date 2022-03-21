@@ -35,14 +35,14 @@ object CacheIndexStore {
         return index
     }
 
-    fun <T : CacheIndex?> save(requestUrl: String, cacheIndex: T, config: IonConfig, context: Context) {
+    fun <T : CacheIndex> save(requestUrl: String, cacheIndex: T, config: IonConfig, context: Context) {
         IonLog.d("Cache Index", "saving index for $requestUrl")
         try {
             val file = FilePaths.getFilePath(requestUrl, config, context)
             if (file.exists() && file.length() > 0) {
                 // make cache index aware of its size by storing byte count to its field
                 val indexSerialized = GsonHolder.getInstance().toJson(cacheIndex)
-                cacheIndex!!.byteCount = indexSerialized.byteCount().toInt()
+                cacheIndex.byteCount = indexSerialized.byteCount().toInt()
 
                 // save to shared preferences
                 getPrefs(config, context)
