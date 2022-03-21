@@ -114,6 +114,7 @@ class IonFileCacheInterceptor(
         val file = peekBody(Long.MAX_VALUE).byteStream()
             .use { FileUtils.writeToFile(it, targetFile) }
 
-        return file ?: throw IOException("Failure writing " + targetFile.path + " to local storage.")
+        return file.takeIf { it.exists() }
+            ?: throw IOException("Failure writing " + targetFile.path + " to local storage.")
     }
 }
