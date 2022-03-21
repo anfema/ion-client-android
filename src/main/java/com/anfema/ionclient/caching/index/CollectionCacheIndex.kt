@@ -45,7 +45,7 @@ class CollectionCacheIndex(
         @JvmStatic
         fun retrieve(config: IonConfig, context: Context): CollectionCacheIndex? {
             val requestUrl = IonPageUrls.getCollectionUrl(config)
-            return CacheIndexStore.retrieve(requestUrl, CollectionCacheIndex::class.java, config, context)
+            return CacheIndexStore.retrieve(requestUrl, config, context)
         }
 
         @JvmStatic

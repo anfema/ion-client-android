@@ -2,7 +2,6 @@ package com.anfema.ionclient.caching.index
 
 import android.content.Context
 import com.anfema.ionclient.IonConfig
-import com.anfema.ionclient.caching.index.PageCacheIndex
 import com.anfema.ionclient.pages.IonPageUrls
 import com.anfema.ionclient.pages.models.Page
 import org.joda.time.DateTime
@@ -20,9 +19,8 @@ class PageCacheIndex(
     companion object {
 
         @JvmStatic
-        fun retrieve(requestUrl: String, config: IonConfig, context: Context): PageCacheIndex? {
-            return CacheIndexStore.retrieve(requestUrl, PageCacheIndex::class.java, config, context)
-        }
+        fun retrieve(requestUrl: String, config: IonConfig, context: Context): PageCacheIndex? =
+            CacheIndexStore.retrieve(requestUrl, config, context)
 
         @JvmStatic
         fun save(page: Page, config: IonConfig, context: Context) {

@@ -18,9 +18,8 @@ import com.anfema.utils.byteCount
  * and the value, which is a subclass of [CacheIndex].
  */
 object CacheIndexStore {
-    fun <T : CacheIndex?> retrieve(
+    internal inline fun <reified T : CacheIndex> retrieve(
         requestUrl: String,
-        cacheIndexSubclass: Class<T>?,
         config: IonConfig,
         context: Context,
     ): T? {
@@ -28,7 +27,7 @@ object CacheIndexStore {
         IonLog.d("Index Lookup", "$requestUrl from shared preferences")
         val prefs = getPrefs(config, context)
         val json = prefs.getString(requestUrl, null)
-        val index = GsonHolder.getInstance().fromJson(json, cacheIndexSubclass)
+        val index = GsonHolder.getInstance().fromJson(json, T::class.java)
         if (index != null) {
             // make cache index aware of its size by storing byte count to its field
             index.byteCount = json?.byteCount()?.toInt() ?: 0

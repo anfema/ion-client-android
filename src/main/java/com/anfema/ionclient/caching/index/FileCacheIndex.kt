@@ -25,9 +25,8 @@ data class FileCacheIndex(
     companion object {
 
         @JvmStatic
-        fun retrieve(requestUrl: String, config: IonConfig, context: Context): FileCacheIndex? {
-            return CacheIndexStore.retrieve(requestUrl, FileCacheIndex::class.java, config, context)
-        }
+        fun retrieve(requestUrl: String, config: IonConfig, context: Context): FileCacheIndex? =
+            CacheIndexStore.retrieve(requestUrl, config, context)
 
         /**
          * @param checksum can be null
