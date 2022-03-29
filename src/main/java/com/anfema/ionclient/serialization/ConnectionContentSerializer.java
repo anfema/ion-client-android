@@ -20,11 +20,12 @@ import java.lang.reflect.Type;
 public class ConnectionContentSerializer implements JsonDeserializer<ConnectionContent>, JsonSerializer<ConnectionContent>
 {
 	public static final String CONNECTION_STRING = "connection_string";
+	private final Gson gson = GsonHolder.INSTANCE.getPlainInstance();
 
 	@Override
 	public JsonElement serialize( ConnectionContent connection, Type typeOfSrc, JsonSerializationContext context )
 	{
-		JsonObject jsonObject = new Gson().toJsonTree( connection, Content.class ).getAsJsonObject();
+		JsonObject jsonObject = gson.toJsonTree( connection, Content.class ).getAsJsonObject();
 
 		String connectionString = connection.connection.getUrl().toString();
 		jsonObject.add( CONNECTION_STRING, new JsonPrimitive( connectionString ) );
@@ -35,7 +36,7 @@ public class ConnectionContentSerializer implements JsonDeserializer<ConnectionC
 	public ConnectionContent deserialize( JsonElement json, Type typeOfT, JsonDeserializationContext context ) throws JsonParseException
 	{
 		JsonObject jsonObject = json.getAsJsonObject();
-		Content content = new Gson().fromJson( jsonObject, Content.class );
+		Content content = gson.fromJson( jsonObject, Content.class );
 		String connectionString = jsonObject.get( CONNECTION_STRING ).getAsString();
 
 		return new ConnectionContent( content, connectionString );

@@ -6,7 +6,6 @@ import com.anfema.ionclient.pages.models.contents.ContainerContent;
 import com.anfema.ionclient.pages.models.contents.Content;
 import com.anfema.utils.ListUtils;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -22,7 +21,7 @@ import java.util.ArrayList;
  */
 public class PageDeserializer implements JsonDeserializer<Page>
 {
-	private static Gson gson = new GsonBuilder()
+	private static final Gson gson = GsonHolder.INSTANCE.getPlainInstance().newBuilder()
 			// parse content subtypes
 			.registerTypeAdapter( Content.class, ContentDeserializerFactory.newInstance() )
 			.registerTypeAdapter( ConnectionContent.class, new ConnectionContentSerializer() )

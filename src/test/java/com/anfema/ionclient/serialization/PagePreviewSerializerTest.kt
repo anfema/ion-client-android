@@ -11,7 +11,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class PagePreviewSerializerTest : Spek({
-    val gson = GsonHolder.getInstance()
+    val gson = GsonHolder.defaultInstance
 
     context("Deserialization", {
         given("a serialized page preview without meta data", {

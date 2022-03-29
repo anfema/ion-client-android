@@ -30,7 +30,6 @@ import org.joda.time.DateTime;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -94,7 +93,7 @@ class ArchiveUtils
 				{
 					// get index.json
 					InputStreamReader inputStreamReader = new InputStreamReader( debInputStream, "UTF-8" );
-					index = Arrays.asList( GsonHolder.getInstance().fromJson( inputStreamReader, ArchiveIndex[].class ) );
+					index = Arrays.asList( GsonHolder.INSTANCE.getDefaultInstance().fromJson( inputStreamReader, ArchiveIndex[].class ) );
 					indexHasBeenRead = true;
 					continue;
 				}
@@ -252,7 +251,7 @@ class ArchiveUtils
 	{
 		String collectionUrl = IonPageUrls.getCollectionUrl( config );
 		File filePath = FilePaths.getCollectionJsonPath( collectionUrl, config, context );
-		String collectionJson = GsonHolder.getInstance().toJson( new CollectionResponse( collection ) );
+		String collectionJson = GsonHolder.INSTANCE.getDefaultInstance().toJson( new CollectionResponse( collection ) );
 		FileUtils.writeTextToFile( collectionJson, filePath );
 	}
 

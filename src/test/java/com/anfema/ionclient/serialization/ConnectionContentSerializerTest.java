@@ -17,7 +17,7 @@ public class ConnectionContentSerializerTest extends TestCase
 	public void setUp() throws Exception
 	{
 		super.setUp();
-		gson = GsonHolder.getInstance();
+		gson = GsonHolder.INSTANCE.getDefaultInstance();
 	}
 
 	public void testRoundtripConnectionContent() throws Exception

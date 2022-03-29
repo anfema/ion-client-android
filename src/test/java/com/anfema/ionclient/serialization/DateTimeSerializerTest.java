@@ -18,7 +18,7 @@ public class DateTimeSerializerTest extends TestCase
 	public void setUp() throws Exception
 	{
 		super.setUp();
-		gson = GsonHolder.getInstance();
+		gson = GsonHolder.INSTANCE.getDefaultInstance();
 	}
 
 	public void testRoundtripDateTime() throws Exception

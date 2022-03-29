@@ -27,7 +27,7 @@ object ApiFactory {
         // configure retrofit
         val retrofit = Retrofit.Builder().apply {
             addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
-            addConverterFactory(GsonConverterFactory.create(GsonHolder.getInstance()))
+            addConverterFactory(GsonConverterFactory.create(GsonHolder.defaultInstance))
             baseUrl(ensureEndsWithSlash(baseUrl))
             client(okHttpClient)
         }.build()

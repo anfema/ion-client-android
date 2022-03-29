@@ -14,7 +14,7 @@ import kotlin.test.assertNull
 
 class MetaSerializerTest : Spek({
     given("gson serializer, serialized and object meta data", {
-        val gson = GsonHolder.getInstance()
+        val gson = GsonHolder.defaultInstance
 
         val serializedMeta = "{\"description\":\"Harley Davidson Headquarter,Neu-Isenburg, Germany,HERADESIGNfine\"}"
 

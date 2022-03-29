@@ -27,7 +27,7 @@ object CacheIndexStore {
         IonLog.d("Index Lookup", "$requestUrl from shared preferences")
         val prefs = getPrefs(config, context)
         val json = prefs.getString(requestUrl, null)
-        val index = GsonHolder.getInstance().fromJson(json, T::class.java)
+        val index = GsonHolder.defaultInstance.fromJson(json, T::class.java)
         if (index != null) {
             // make cache index aware of its size by storing byte count to its field
             index.byteCount = json?.byteCount()?.toInt() ?: 0
@@ -41,7 +41,7 @@ object CacheIndexStore {
             val file = FilePaths.getFilePath(requestUrl, config, context)
             if (file.exists() && file.length() > 0) {
                 // make cache index aware of its size by storing byte count to its field
-                val indexSerialized = GsonHolder.getInstance().toJson(cacheIndex)
+                val indexSerialized = GsonHolder.defaultInstance.toJson(cacheIndex)
                 cacheIndex.byteCount = indexSerialized.byteCount().toInt()
 
                 // save to shared preferences

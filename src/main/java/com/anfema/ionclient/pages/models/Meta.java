@@ -1,6 +1,5 @@
 package com.anfema.ionclient.pages.models;
 
-import androidx.annotation.NonNull;
 import android.webkit.URLUtil;
 
 import com.anfema.ionclient.pages.models.contents.Connection;
@@ -19,6 +18,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import androidx.annotation.NonNull;
 
 /**
  * Meta information of page previews. Meta enriches page previes with additional, flexible data.
@@ -167,7 +168,7 @@ public class Meta
 	 */
 	private String getStringOrThrow( String outlet ) throws JsonSyntaxException, NullPointerException
 	{
-		return GsonHolder.getInstance().fromJson( json.get( outlet ), String.class );
+		return GsonHolder.INSTANCE.getDefaultInstance().fromJson( json.get( outlet ), String.class );
 	}
 
 	/**
@@ -210,7 +211,7 @@ public class Meta
 		Type listType = new TypeToken<List<String>>()
 		{
 		}.getType();
-		return GsonHolder.getInstance().fromJson( json.get( outlet ), listType );
+		return GsonHolder.INSTANCE.getDefaultInstance().fromJson( json.get( outlet ), listType );
 	}
 
 	/**
@@ -234,7 +235,7 @@ public class Meta
 			Type listType = new TypeToken<List<String>>()
 			{
 			}.getType();
-			return GsonHolder.getInstance().fromJson( json.get( outlet ), listType );
+			return GsonHolder.INSTANCE.getDefaultInstance().fromJson( json.get( outlet ), listType );
 		}
 		catch ( JsonSyntaxException e )
 		{

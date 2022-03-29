@@ -282,7 +282,7 @@ public class IonPagesWithCaching implements IonPages
 				// deserialize collection and remember byte count
 				.map( collectionsString ->
 				{
-					CollectionResponse collectionResponse = GsonHolder.getInstance().fromJson( collectionsString, CollectionResponse.class );
+					CollectionResponse collectionResponse = GsonHolder.INSTANCE.getDefaultInstance().fromJson( collectionsString, CollectionResponse.class );
 					Collection collection1 = collectionResponse.getCollection();
 					collection1.byteCount = StringUtilsKt.byteCount( collectionsString );
 					return collection1;
@@ -411,7 +411,7 @@ public class IonPagesWithCaching implements IonPages
 				// deserialize page and remember byte count
 				.map( pagesString ->
 				{
-					PageResponse pageResponse = GsonHolder.getInstance().fromJson( pagesString, PageResponse.class );
+					PageResponse pageResponse = GsonHolder.INSTANCE.getDefaultInstance().fromJson( pagesString, PageResponse.class );
 					Page page = pageResponse.getPage();
 					page.byteCount = StringUtilsKt.byteCount( pagesString );
 					return page;
