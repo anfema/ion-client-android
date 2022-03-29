@@ -1,16 +1,12 @@
 package com.anfema.ionclient;
 
 import android.content.Context;
-import androidx.annotation.Nullable;
-import android.widget.ImageView;
 
 import com.anfema.ionclient.archive.IonArchive;
 import com.anfema.ionclient.archive.IonArchiveDownloader;
 import com.anfema.ionclient.mediafiles.FileWithStatus;
 import com.anfema.ionclient.mediafiles.IonFiles;
 import com.anfema.ionclient.mediafiles.IonFilesWithCaching;
-import com.anfema.ionclient.mediafiles.IonPicasso;
-import com.anfema.ionclient.mediafiles.IonPicassoWithCaching;
 import com.anfema.ionclient.pages.IonPages;
 import com.anfema.ionclient.pages.IonPagesFactory;
 import com.anfema.ionclient.pages.models.Collection;
@@ -19,19 +15,16 @@ import com.anfema.ionclient.pages.models.PagePreview;
 import com.anfema.ionclient.pages.models.contents.Downloadable;
 import com.anfema.ionclient.utils.ContextUtils;
 import com.anfema.ionclient.utils.IonLog;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.RequestCreator;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import androidx.annotation.Nullable;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import okhttp3.HttpUrl;
 
@@ -40,7 +33,7 @@ import okhttp3.HttpUrl;
  * <p>
  * Serving as entry point IonClient holds interfaces providing the actual implementation of its functionality.
  */
-public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive
+public class IonClient implements IonPages, IonFiles, IonArchive
 {
 	/// Multiton
 
@@ -79,7 +72,6 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive
 	// delegate classes
 	private final IonPages   ionPages;
 	private final IonFiles   ionFiles;
-	private final IonPicasso ionPicasso;
 	private final IonArchive ionArchive;
 
 	private IonClient( IonConfig config, Context context )
@@ -87,7 +79,6 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive
 		this.context = context;
 		ionPages = IonPagesFactory.newInstance( config, context );
 		ionFiles = new IonFilesWithCaching( config, context );
-		ionPicasso = new IonPicassoWithCaching( ionFiles, config, context );
 		ionArchive = new IonArchiveDownloader( ionPages, ionFiles, config, context );
 	}
 
@@ -96,7 +87,6 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive
 	{
 		ionPages.updateConfig( config );
 		ionFiles.updateConfig( config );
-		ionPicasso.updateConfig( config );
 		ionArchive.updateConfig( config );
 	}
 
@@ -204,55 +194,6 @@ public class IonClient implements IonPages, IonFiles, IonPicasso, IonArchive
 	{
 		return ionFiles.request( url, downloadUrl, checksum, ignoreCaching, targetFile );
 	}
-
-	@Override
-	public void loadImage( int resourceId, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation )
-	{
-		ionPicasso.loadImage( resourceId, target, requestTransformation );
-	}
-
-	@Override
-	public void loadImage( int resourceId, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
-	{
-		ionPicasso.loadImage( resourceId, target, requestTransformation, callback );
-	}
-
-	@Override
-	public void loadImage( String path, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation )
-	{
-		ionPicasso.loadImage( path, target, requestTransformation );
-	}
-
-	@Override
-	public void loadImage( String path, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
-	{
-		ionPicasso.loadImage( path, target, requestTransformation, callback );
-	}
-
-	@Override
-	public void loadImage( Downloadable image, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation )
-	{
-		ionPicasso.loadImage( image, target, requestTransformation );
-	}
-
-	@Override
-	public void loadImage( Downloadable image, ImageView target, Function<RequestCreator, RequestCreator> requestTransformation, Callback callback )
-	{
-		ionPicasso.loadImage( image, target, requestTransformation, callback );
-	}
-
-	@Override
-	public Picasso getPicassoInstance()
-	{
-		return ionPicasso.getPicassoInstance();
-	}
-
-	@Override
-	public Single<Picasso> getPicassoInstanceDoAuthCall()
-	{
-		return ionPicasso.getPicassoInstanceDoAuthCall();
-	}
-
 
 	/// Archive download
 
