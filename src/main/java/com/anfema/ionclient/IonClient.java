@@ -13,7 +13,6 @@ import com.anfema.ionclient.pages.models.Collection;
 import com.anfema.ionclient.pages.models.Page;
 import com.anfema.ionclient.pages.models.PagePreview;
 import com.anfema.ionclient.pages.models.contents.Downloadable;
-import com.anfema.ionclient.utils.ContextUtils;
 import com.anfema.ionclient.utils.IonLog;
 
 import java.io.File;
@@ -21,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -43,7 +43,7 @@ public class IonClient implements IonPages, IonFiles, IonArchive
 	 * @param config configuration for ION client
 	 * @return client instance, ready to go
 	 */
-	public static IonClient getInstance( IonConfig config, Context context )
+	public static IonClient getInstance( @NonNull IonConfig config, @NonNull Context context )
 	{
 		IonConfig.assertConfigIsValid( config );
 
@@ -56,7 +56,7 @@ public class IonClient implements IonPages, IonFiles, IonArchive
 			return storedClient;
 		}
 
-		context = ContextUtils.getApplicationContext( context );
+		context = context.getApplicationContext();
 		IonClient ionClient = new IonClient( config, context );
 		instances.put( config, ionClient );
 		IonLog.d( "IonClient", "# ION client instances: " + instances.size() );
