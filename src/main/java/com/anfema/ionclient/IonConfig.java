@@ -138,11 +138,6 @@ public class IonConfig
 	public final boolean archiveDownloads;
 
 	/**
-	 * Should the full text search database be downloaded when the collection is downloaded?
-	 */
-	public final boolean ftsDbDownloads;
-
-	/**
 	 * Time after which collection is refreshed = fetched from server again.
 	 */
 	public final int minutesUntilCollectionRefetch;
@@ -165,7 +160,6 @@ public class IonConfig
 		@NonNull
 		private final Map<String, String> additionalHeaders             = new HashMap<>();
 		private       boolean             archiveDownloads              = false;
-		private       boolean             ftsDbDownloads                = false;
 		private       int                 minutesUntilCollectionRefetch = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH;
 		private       int                 networkTimeout                = DEFAULT_NETWORK_TIMEOUT;
 
@@ -221,12 +215,6 @@ public class IonConfig
 			return this;
 		}
 
-		public Builder ftsDbDownloads( boolean ftsDbDownloads )
-		{
-			this.ftsDbDownloads = ftsDbDownloads;
-			return this;
-		}
-
 		public Builder minutesUntilCollectionRefetch( int minutesUntilCollectionRefetch )
 		{
 			this.minutesUntilCollectionRefetch = minutesUntilCollectionRefetch;
@@ -258,7 +246,6 @@ public class IonConfig
 					authHeaderNetworkCall,
 					additionalHeaders,
 					archiveDownloads,
-					ftsDbDownloads,
 					minutesUntilCollectionRefetch,
 					networkTimeout
 			);
@@ -274,7 +261,6 @@ public class IonConfig
 			Single<String> authHeaderNetworkCall,
 			@NonNull Map<String, String> additionalHeaders,
 			boolean archiveDownloads,
-			boolean ftsDbDownloads,
 			int minutesUntilCollectionRefetch,
 			int networkTimeout
 	)
@@ -287,7 +273,6 @@ public class IonConfig
 		this.authHeaderNetworkCall = authHeaderNetworkCall;
 		this.additionalHeaders = additionalHeaders;
 		this.archiveDownloads = archiveDownloads;
-		this.ftsDbDownloads = ftsDbDownloads;
 		this.minutesUntilCollectionRefetch = minutesUntilCollectionRefetch;
 		this.networkTimeout = networkTimeout;
 	}
@@ -302,7 +287,6 @@ public class IonConfig
 		this.authHeaderNetworkCall = otherConfig.authHeaderNetworkCall;
 		this.additionalHeaders = otherConfig.additionalHeaders;
 		this.archiveDownloads = otherConfig.archiveDownloads;
-		this.ftsDbDownloads = otherConfig.ftsDbDownloads;
 		this.minutesUntilCollectionRefetch = otherConfig.minutesUntilCollectionRefetch;
 		this.networkTimeout = otherConfig.networkTimeout;
 	}
