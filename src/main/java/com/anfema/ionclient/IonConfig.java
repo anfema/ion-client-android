@@ -72,19 +72,6 @@ public class IonConfig
 	public static int pagesMemCacheSize = CALC_REASONABLE_SIZE;
 
 	/**
-	 * Maximum size of memory cache, which all picasso instances share. The Unit is bytes.
-	 * <p>
-	 * Value must be overwritten before first ION request is made, otherwise it won't have any effect.
-	 * It is recommended to set it as early as possible, e.g. in onCreate() of application (or first activity).
-	 * <p>
-	 * Be careful not to exceed the available RAM of the application. You might want to define the memory cache size as a fraction of the
-	 * available space. Therefore, you can use {@link MemoryUtils#calculateAvailableMemCache(Context)}.
-	 * <p>
-	 * If not set to a positive value, default cache size will be used.
-	 */
-	public static int picassoMemCacheSize = CALC_REASONABLE_SIZE;
-
-	/**
 	 * Set log level for ION client.
 	 */
 	public static int logLevel = IonLog.NONE;
