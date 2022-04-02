@@ -50,10 +50,10 @@ import static com.anfema.ionclient.utils.IonLog.VERBOSE;
  */
 public class IonFilesWithCaching implements IonFiles
 {
-	private IonConfig                             config;
-	private Context                               context;
-	private OkHttpClient                          client;
-	private PendingDownloadHandler<HttpUrl, File> runningDownloads;
+	private       IonConfig                             config;
+	private final Context                               context;
+	private       OkHttpClient                          client;
+	private final PendingDownloadHandler<HttpUrl, File> runningDownloads;
 
 	public IonFilesWithCaching( IonConfig config, Context context )
 	{
@@ -63,7 +63,7 @@ public class IonFilesWithCaching implements IonFiles
 		NetworkUtils.applyTimeout( okHttpClientBuilder, config.networkTimeout );
 		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( this.config::getAuthorizationHeaderValue ) );
 		okHttpClientBuilder.addInterceptor( new AdditionalHeadersInterceptor( config.additionalHeaders ) );
-		if ( IonConfig.logLevel <= INFO && IonConfig.logLevel >= VERBOSE)
+		if ( IonConfig.logLevel <= INFO && IonConfig.logLevel >= VERBOSE )
 		{
 			okHttpClientBuilder.addInterceptor( new HttpLoggingInterceptor().setLevel( Level.BASIC ) );
 		}
@@ -209,7 +209,7 @@ public class IonFilesWithCaching implements IonFiles
 			CollectionCacheIndex collectionCacheIndex = CollectionCacheIndex.retrieve( config, context );
 			DateTime collectionLastModified = collectionCacheIndex == null ? null : collectionCacheIndex.getLastModifiedDate();
 			DateTime fileLastUpdated = fileCacheIndex.getLastUpdated();
-			return collectionLastModified != null && fileLastUpdated != null && !collectionLastModified.isAfter( fileLastUpdated );
+			return collectionLastModified != null && !collectionLastModified.isAfter( fileLastUpdated );
 		}
 	}
 
@@ -274,10 +274,7 @@ public class IonFilesWithCaching implements IonFiles
 			}
 			finally
 			{
-				if ( inputStream != null )
-				{
-					inputStream.close();
-				}
+				inputStream.close();
 			}
 		}
 		catch ( IOException e )
