@@ -52,11 +52,11 @@ import retrofit2.Response;
  */
 public class IonPagesWithCaching implements IonPages
 {
-	public static final int COLLECTION_NOT_MODIFIED = 304;
-	private CollectionDownloadedListener collectionListener;
+	public static final int                          COLLECTION_NOT_MODIFIED = 304;
+	private             CollectionDownloadedListener collectionListener;
 
-	private PendingDownloadHandler<String, Collection> runningCollectionDownload; //key: collection identifier
-	private PendingDownloadHandler<String, Page>       runningPageDownloads; //key: page identifier
+	private final PendingDownloadHandler<String, Collection> runningCollectionDownload; //key: collection identifier
+	private final PendingDownloadHandler<String, Page>       runningPageDownloads; //key: page identifier
 
 	private final Context context;
 
@@ -117,7 +117,7 @@ public class IonPagesWithCaching implements IonPages
 		else if ( networkAvailable )
 		{
 			// download collection
-			return fetchCollectionFromServer( cacheIndex, false );
+			return fetchCollectionFromServer( cacheIndex );
 		}
 		else if ( cacheIndex != null )
 		{
@@ -183,7 +183,7 @@ public class IonPagesWithCaching implements IonPages
 			if ( NetworkUtils.isConnected( context ) )
 			{
 				// download page
-				return fetchPageFromServer( pageIdentifier, false );
+				return fetchPageFromServer( pageIdentifier );
 			}
 			else
 			{
@@ -208,7 +208,7 @@ public class IonPagesWithCaching implements IonPages
 					else if ( networkAvailable )
 					{
 						// download page
-						return fetchPageFromServer( pageIdentifier, false );
+						return fetchPageFromServer( pageIdentifier );
 					}
 					else
 					{
@@ -290,9 +290,7 @@ public class IonPagesWithCaching implements IonPages
 				// save to memory cache
 				.doOnSuccess( collection1 -> MemoryCache.saveCollection( collection1, collectionUrl, context ) )
 				.onErrorResumeNext( throwable ->
-				{
-					return handleUnsuccessfulCollectionCacheReading( collectionUrl, cacheIndex, serverCallAsBackup, throwable );
-				} )
+						handleUnsuccessfulCollectionCacheReading( collectionUrl, cacheIndex, serverCallAsBackup, throwable ) )
 				.subscribeOn( Schedulers.io() );
 	}
 
@@ -302,7 +300,7 @@ public class IonPagesWithCaching implements IonPages
 		{
 			IonLog.w( "Backup Request", "Cache lookup " + collectionUrl + " failed. Trying network request instead..." );
 			IonLog.ex( "Cache Lookup", e );
-			return fetchCollectionFromServer( cacheIndex, false );
+			return fetchCollectionFromServer( cacheIndex );
 		}
 		else
 		{
@@ -316,7 +314,7 @@ public class IonPagesWithCaching implements IonPages
 	 * Adds collection identifier and authorization token to request.<br/>
 	 * Uses default collection identifier as specified in {@link this#config}
 	 */
-	private Single<Collection> fetchCollectionFromServer( CollectionCacheIndex cacheIndex, boolean cacheAsBackup )
+	private Single<Collection> fetchCollectionFromServer( CollectionCacheIndex cacheIndex )
 	{
 		final String lastModified = cacheIndex != null ? cacheIndex.getLastModified() : null;
 
@@ -363,12 +361,6 @@ public class IonPagesWithCaching implements IonPages
 				.onErrorResumeNext( throwable ->
 				{
 					String collectionUrl = IonPageUrls.getCollectionUrl( config );
-					if ( cacheAsBackup )
-					{
-						IonLog.w( "Backup Request", "Network request " + collectionUrl + " failed. Trying cache request instead..." );
-						IonLog.ex( "Network Request", throwable );
-						return fetchCollectionFromCache( cacheIndex, false );
-					}
 					IonLog.e( "Failed Request", "Network request " + collectionUrl + " failed." );
 					return Single.error( new NetworkRequestException( collectionUrl, throwable ) );
 				} )
@@ -428,27 +420,27 @@ public class IonPagesWithCaching implements IonPages
 		{
 			IonLog.w( "Backup Request", "Cache lookup " + pageUrl + " failed. Trying network request instead..." );
 			IonLog.ex( "Cache Lookup", e );
-			return fetchPageFromServer( pageIdentifier, false );
+			return fetchPageFromServer( pageIdentifier );
 		}
 		IonLog.e( "Failed Request", "Cache lookup " + pageUrl + " failed." );
 		return Single.error( new ReadFromCacheException( pageUrl, e ) );
 	}
 
-	/**
-	 * @param cacheAsBackup If server call is not successful, should cached version be used (even if it might be old)?
-	 */
-	private Single<Page> fetchPageFromServer( String pageIdentifier, boolean cacheAsBackup )
+	private Single<Page> fetchPageFromServer( String pageIdentifier )
 	{
 		Single<Page> pageSingle = config.authenticatedRequest(
 				authorizationHeaderValue -> ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.variation, authorizationHeaderValue ) )
 				// unwrap page and remember byte count
 				.map( response ->
 				{
-					if (response.isSuccessful()) {
+					if ( response.isSuccessful() )
+					{
 						Page page = response.body().getPage();
 						page.byteCount = getContentByteCount( response );
 						return page;
-					} else {
+					}
+					else
+					{
 						throw new HttpException( response );
 					}
 				} )
@@ -457,12 +449,6 @@ public class IonPagesWithCaching implements IonPages
 				.onErrorResumeNext( throwable ->
 				{
 					String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
-					if ( cacheAsBackup )
-					{
-						IonLog.w( "Backup Request", "Network request " + pageUrl + " failed. Trying cache request instead..." );
-						IonLog.ex( "Network Request", throwable );
-						return fetchPageFromCache( pageIdentifier, false );
-					}
 					IonLog.e( "Failed Request", "Network request " + pageUrl + " failed." );
 					return Single.error( new NetworkRequestException( pageUrl, throwable ) );
 				} )
@@ -477,10 +463,10 @@ public class IonPagesWithCaching implements IonPages
 	 *
 	 * @return unit: bytes
 	 */
-	private static int getContentByteCount( Response response )
+	private static int getContentByteCount( Response<?> response )
 	{
 		String contentLength = response.headers().get( "Content-Length" );
-		return contentLength != null ? Integer.valueOf( contentLength ) * 2 : 100 * 1024;
+		return contentLength != null ? Integer.parseInt( contentLength ) * 2 : 100 * 1024;
 	}
 
 	/// Get page methods END
