@@ -20,6 +20,7 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.functions.Predicate
 import okhttp3.HttpUrl
+import okhttp3.OkHttpClient
 import java.io.File
 
 /**
@@ -66,8 +67,9 @@ class IonClient private constructor(config: IonConfig, context: Context) : IonPa
     private val ionArchive: IonArchive
 
     init {
-        val pagesOkHttpClient = pagesOkHttpClient(config, context)
-        val filesOkHttpClient = filesOkHttpClient(config)
+        val sharedOkHttpClient = OkHttpClient()
+        val pagesOkHttpClient = pagesOkHttpClient(sharedOkHttpClient, config, context)
+        val filesOkHttpClient = filesOkHttpClient(sharedOkHttpClient, config)
 
         ionPages = IonPagesWithCaching(pagesOkHttpClient, config, context)
         ionFiles = IonFilesWithCaching(filesOkHttpClient, config, context)
