@@ -24,11 +24,13 @@ import org.joda.time.DateTime;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
+import kotlin.jvm.functions.Function0;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
@@ -38,6 +40,7 @@ import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okhttp3.logging.HttpLoggingInterceptor.Level;
 
+import static com.anfema.ionclient.okhttp.IonOkHttpKt.okHttpClient;
 import static com.anfema.ionclient.utils.IonLog.INFO;
 import static com.anfema.ionclient.utils.IonLog.VERBOSE;
 
@@ -59,17 +62,7 @@ public class IonFilesWithCaching implements IonFiles
 	{
 		this.config = config;
 		this.context = context;
-		OkHttpClient.Builder okHttpClientBuilder = new Builder();
-		NetworkUtils.applyTimeout( okHttpClientBuilder, config.networkTimeout );
-		okHttpClientBuilder.addInterceptor( new AuthorizationHeaderInterceptor( this.config::getAuthorizationHeaderValue ) );
-		okHttpClientBuilder.addInterceptor( new AdditionalHeadersInterceptor( config.additionalHeaders ) );
-		if ( IonConfig.logLevel <= INFO && IonConfig.logLevel >= VERBOSE )
-		{
-			okHttpClientBuilder.addInterceptor( new HttpLoggingInterceptor().setLevel( Level.BASIC ) );
-		}
-		// disable okHttp disk cache because it would store duplicate and un-used data because ION client uses its own cache
-		okHttpClientBuilder.cache( null );
-		client = okHttpClientBuilder.build();
+		client = okHttpClient( this.config::getAuthorizationHeaderValue, config.additionalHeaders, config.networkTimeout );
 		runningDownloads = new PendingDownloadHandler<>();
 	}
 

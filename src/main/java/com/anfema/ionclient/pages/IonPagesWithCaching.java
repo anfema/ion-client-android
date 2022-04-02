@@ -19,7 +19,6 @@ import com.anfema.ionclient.pages.models.PagePreview;
 import com.anfema.ionclient.pages.models.responses.CollectionResponse;
 import com.anfema.ionclient.pages.models.responses.PageResponse;
 import com.anfema.ionclient.serialization.GsonHolder;
-import com.anfema.ionclient.utils.ApiFactory;
 import com.anfema.ionclient.utils.DateTimeUtils;
 import com.anfema.ionclient.utils.FileUtils;
 import com.anfema.ionclient.utils.IonLog;
@@ -40,8 +39,12 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
 import retrofit2.HttpException;
 import retrofit2.Response;
+
+import static com.anfema.ionclient.okhttp.IonOkHttpKt.okHttpClient;
+import static com.anfema.ionclient.pages.RetrofitIonPagesApiKt.retrofitIonPagesApi;
 
 /**
  * A wrapper of "collections" and "pages" call of ION API.
@@ -74,7 +77,8 @@ public class IonPagesWithCaching implements IonPages
 	{
 		this.config = config;
 		this.context = context;
-		ionApi = ApiFactory.newInstance( config.baseUrl, interceptors, RetrofitIonPagesApi.class, config.networkTimeout );
+		OkHttpClient okHttpClient = okHttpClient( interceptors, config.networkTimeout );
+		ionApi = retrofitIonPagesApi( okHttpClient, config.baseUrl );
 		runningCollectionDownload = new PendingDownloadHandler<>();
 		runningPageDownloads = new PendingDownloadHandler<>();
 	}
