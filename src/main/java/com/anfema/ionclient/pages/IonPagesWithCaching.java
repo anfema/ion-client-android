@@ -38,12 +38,10 @@ import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import retrofit2.HttpException;
 import retrofit2.Response;
 
-import static com.anfema.ionclient.okhttp.IonOkHttpKt.okHttpClient;
 import static com.anfema.ionclient.pages.RetrofitIonPagesApiKt.retrofitIonPagesApi;
 
 /**
@@ -73,11 +71,10 @@ public class IonPagesWithCaching implements IonPages
 	 */
 	private final RetrofitIonPagesApi ionApi;
 
-	IonPagesWithCaching( IonConfig config, Context context, List<Interceptor> interceptors )
+	public IonPagesWithCaching( OkHttpClient okHttpClient, IonConfig config, Context context )
 	{
 		this.config = config;
 		this.context = context;
-		OkHttpClient okHttpClient = okHttpClient( interceptors, config.networkTimeout );
 		ionApi = retrofitIonPagesApi( okHttpClient, config.baseUrl );
 		runningCollectionDownload = new PendingDownloadHandler<>();
 		runningPageDownloads = new PendingDownloadHandler<>();

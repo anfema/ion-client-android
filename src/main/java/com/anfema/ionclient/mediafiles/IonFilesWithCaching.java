@@ -10,8 +10,6 @@ import com.anfema.ionclient.caching.index.CollectionCacheIndex;
 import com.anfema.ionclient.caching.index.FileCacheIndex;
 import com.anfema.ionclient.exceptions.FileNotAvailableException;
 import com.anfema.ionclient.exceptions.HttpException;
-import com.anfema.ionclient.interceptors.AdditionalHeadersInterceptor;
-import com.anfema.ionclient.interceptors.AuthorizationHeaderInterceptor;
 import com.anfema.ionclient.pages.models.contents.Downloadable;
 import com.anfema.ionclient.utils.DateTimeUtils;
 import com.anfema.ionclient.utils.FileUtils;
@@ -24,25 +22,18 @@ import org.joda.time.DateTime;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
-import kotlin.jvm.functions.Function0;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
-import okhttp3.OkHttpClient.Builder;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import okhttp3.logging.HttpLoggingInterceptor;
-import okhttp3.logging.HttpLoggingInterceptor.Level;
 
-import static com.anfema.ionclient.okhttp.IonOkHttpKt.okHttpClient;
-import static com.anfema.ionclient.utils.IonLog.INFO;
-import static com.anfema.ionclient.utils.IonLog.VERBOSE;
+import static com.anfema.ionclient.okhttp.IonOkHttpKt.withTimeout;
 
 /**
  * Does not perform calls against a specific API, but takes complete URLs as parameter to perform a GET call to.
@@ -58,11 +49,11 @@ public class IonFilesWithCaching implements IonFiles
 	private       OkHttpClient                          client;
 	private final PendingDownloadHandler<HttpUrl, File> runningDownloads;
 
-	public IonFilesWithCaching( IonConfig config, Context context )
+	public IonFilesWithCaching( OkHttpClient okHttpClient, IonConfig config, Context context )
 	{
 		this.config = config;
 		this.context = context;
-		client = okHttpClient( this.config::getAuthorizationHeaderValue, config.additionalHeaders, config.networkTimeout );
+		this.client = okHttpClient;
 		runningDownloads = new PendingDownloadHandler<>();
 	}
 
@@ -71,7 +62,7 @@ public class IonFilesWithCaching implements IonFiles
 	{
 		this.config = config;
 		OkHttpClient.Builder newClient = client.newBuilder();
-		NetworkUtils.applyTimeout( newClient, config.networkTimeout );
+		withTimeout( newClient, config.networkTimeout );
 		this.client = newClient.build();
 	}
 

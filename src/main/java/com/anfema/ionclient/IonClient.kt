@@ -6,8 +6,10 @@ import com.anfema.ionclient.archive.IonArchiveDownloader
 import com.anfema.ionclient.mediafiles.FileWithStatus
 import com.anfema.ionclient.mediafiles.IonFiles
 import com.anfema.ionclient.mediafiles.IonFilesWithCaching
+import com.anfema.ionclient.okhttp.filesOkHttpClient
+import com.anfema.ionclient.okhttp.pagesOkHttpClient
 import com.anfema.ionclient.pages.IonPages
-import com.anfema.ionclient.pages.IonPagesFactory
+import com.anfema.ionclient.pages.IonPagesWithCaching
 import com.anfema.ionclient.pages.models.Collection
 import com.anfema.ionclient.pages.models.Page
 import com.anfema.ionclient.pages.models.PagePreview
@@ -64,8 +66,11 @@ class IonClient private constructor(config: IonConfig, context: Context) : IonPa
     private val ionArchive: IonArchive
 
     init {
-        ionPages = IonPagesFactory.newInstance(config, context)
-        ionFiles = IonFilesWithCaching(config, context)
+        val pagesOkHttpClient = pagesOkHttpClient(config, context)
+        val filesOkHttpClient = filesOkHttpClient(config)
+
+        ionPages = IonPagesWithCaching(pagesOkHttpClient, config, context)
+        ionFiles = IonFilesWithCaching(filesOkHttpClient, config, context)
         ionArchive = IonArchiveDownloader(ionPages, ionFiles, config, context)
     }
 

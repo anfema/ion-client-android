@@ -4,10 +4,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import java.util.concurrent.TimeUnit;
-
-import okhttp3.OkHttpClient;
-
 public class NetworkUtils
 {
 	public static boolean isConnected( Context context )
@@ -26,15 +22,5 @@ public class NetworkUtils
 	{
 		ConnectivityManager connectivityManager = ( ConnectivityManager ) context.getSystemService( Context.CONNECTIVITY_SERVICE );
 		return connectivityManager.getActiveNetworkInfo();
-	}
-
-	public static void applyTimeout( OkHttpClient.Builder okHttpClientBuilder, int networkTimeout )
-	{
-		if ( networkTimeout > 0 )
-		{
-			okHttpClientBuilder.connectTimeout( networkTimeout, TimeUnit.SECONDS );
-			okHttpClientBuilder.readTimeout( networkTimeout, TimeUnit.SECONDS );
-			okHttpClientBuilder.writeTimeout( networkTimeout, TimeUnit.SECONDS );
-		}
 	}
 }
