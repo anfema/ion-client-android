@@ -68,13 +68,13 @@ public class IonPagesWithCaching implements IonPages
 	/**
 	 * Access to the ION API
 	 */
-	private final IonPagesApi ionApi;
+	private final RetrofitIonPagesApi ionApi;
 
 	IonPagesWithCaching( IonConfig config, Context context, List<Interceptor> interceptors )
 	{
 		this.config = config;
 		this.context = context;
-		ionApi = ApiFactory.newInstance( config.baseUrl, interceptors, IonPagesApi.class, config.networkTimeout );
+		ionApi = ApiFactory.newInstance( config.baseUrl, interceptors, RetrofitIonPagesApi.class, config.networkTimeout );
 		runningCollectionDownload = new PendingDownloadHandler<>();
 		runningPageDownloads = new PendingDownloadHandler<>();
 	}

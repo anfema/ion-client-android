@@ -9,7 +9,7 @@ import retrofit2.http.Header
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-interface IonPagesApi {
+interface RetrofitIonPagesApi {
 
     @GET("{locale}/{collection_identifier}")
     fun getCollection(
