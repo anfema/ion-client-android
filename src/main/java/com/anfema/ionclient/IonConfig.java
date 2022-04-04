@@ -5,28 +5,18 @@ import android.content.Context;
 import com.anfema.ionclient.exceptions.IonConfigInvalidException;
 import com.anfema.ionclient.utils.IonLog;
 import com.anfema.ionclient.utils.MemoryUtils;
-import com.anfema.ionclient.utils.PendingDownloadHandler;
 import com.anfema.utils.EqualsContract;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import io.reactivex.functions.Function;
-import kotlin.jvm.functions.Function0;
-import okhttp3.Response;
 
 public class IonConfig
 {
 	public static final String DEFAULT_VARIATION                        = "default";
 	public static final int    DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH = 5;
-	public static final int    DEFAULT_NETWORK_TIMEOUT                  = -1;
 	public static final int    CALC_REASONABLE_SIZE                     = -1;
 
 	/**
@@ -75,11 +65,6 @@ public class IonConfig
 	 */
 	public static int logLevel = IonLog.NONE;
 
-
-	private static final Map<IonConfig, String>                    authorizationCache = new HashMap<>();
-	private static final PendingDownloadHandler<IonConfig, String> pendingLogins      = new PendingDownloadHandler<>();
-
-
 	// *** configuration of client instance ***
 
 	/**
@@ -103,11 +88,6 @@ public class IonConfig
 	public final String variation;
 
 	/**
-	 * Authorization header value is required to use the ION API. Primary option: provide it through a synchronous call.
-	 */
-	private final Function0<String> authHeaderProvider;
-
-	/**
 	 * Add customer headers - besides the 'Authorization' header
 	 */
 	@NonNull
@@ -123,12 +103,6 @@ public class IonConfig
 	 */
 	public final int minutesUntilCollectionRefetch;
 
-	/**
-	 * Unit: seconds
-	 * If set to DEFAULT_NETWORK_TIMEOUT, the default timeouts from okhttp library are used (10 seconds).
-	 */
-	public final int networkTimeout;
-
 	@SuppressWarnings("unused")
 	public static class Builder
 	{
@@ -136,12 +110,10 @@ public class IonConfig
 		private final String              collectionIdentifier;
 		private       String              locale;
 		private       String              variation                     = DEFAULT_VARIATION;
-		private       Function0<String>   authHeaderProvider            = null;
 		@NonNull
 		private final Map<String, String> additionalHeaders             = new HashMap<>();
 		private       boolean             archiveDownloads              = false;
 		private       int                 minutesUntilCollectionRefetch = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH;
-		private       int                 networkTimeout                = DEFAULT_NETWORK_TIMEOUT;
 
 
 		public Builder( String baseUrl, String collectionIdentifier )
@@ -171,12 +143,6 @@ public class IonConfig
 			return this;
 		}
 
-		public Builder authorization( @NotNull Function0<String> authHeaderSyncProvider )
-		{
-			this.authHeaderProvider = authHeaderSyncProvider;
-			return this;
-		}
-
 		public Builder addHeader( @NonNull String key, @NonNull String value )
 		{
 			this.additionalHeaders.put( key, value );
@@ -195,32 +161,20 @@ public class IonConfig
 			return this;
 		}
 
-		public Builder networkTimeout( int networkTimeout )
-		{
-			this.networkTimeout = networkTimeout;
-			return this;
-		}
-
 		public IonConfig build()
 		{
 			if ( locale == null )
 			{
 				throw new IllegalStateException( "locale == null" );
 			}
-			if ( authHeaderProvider == null && authHeaderNetworkCall == null )
-			{
-				IonLog.w( "IonConfig.Builder", "Did you forget to provide an authorization?" );
-			}
 			return new IonConfig(
 					baseUrl,
 					collectionIdentifier,
 					locale,
 					variation,
-					authHeaderProvider,
 					additionalHeaders,
 					archiveDownloads,
-					minutesUntilCollectionRefetch,
-					networkTimeout
+					minutesUntilCollectionRefetch
 			);
 		}
 	}
@@ -230,22 +184,18 @@ public class IonConfig
 			String collectionIdentifier,
 			String locale,
 			String variation,
-			Function0<String> authHeaderProvider,
 			@NonNull Map<String, String> additionalHeaders,
 			boolean archiveDownloads,
-			int minutesUntilCollectionRefetch,
-			int networkTimeout
+			int minutesUntilCollectionRefetch
 	)
 	{
 		this.baseUrl = baseUrl;
 		this.collectionIdentifier = collectionIdentifier;
 		this.locale = locale;
 		this.variation = variation;
-		this.authHeaderProvider = authHeaderProvider;
 		this.additionalHeaders = additionalHeaders;
 		this.archiveDownloads = archiveDownloads;
 		this.minutesUntilCollectionRefetch = minutesUntilCollectionRefetch;
-		this.networkTimeout = networkTimeout;
 	}
 
 	public IonConfig( @NonNull IonConfig otherConfig )
@@ -254,19 +204,16 @@ public class IonConfig
 		this.collectionIdentifier = otherConfig.collectionIdentifier;
 		this.locale = otherConfig.locale;
 		this.variation = otherConfig.variation;
-		this.authHeaderProvider = otherConfig.authHeaderProvider;
 		this.additionalHeaders = otherConfig.additionalHeaders;
 		this.archiveDownloads = otherConfig.archiveDownloads;
 		this.minutesUntilCollectionRefetch = otherConfig.minutesUntilCollectionRefetch;
-		this.networkTimeout = otherConfig.networkTimeout;
 	}
 
 	public boolean isValid()
 	{
 		return baseUrl != null && baseUrl.contains( "://" )
 				&& collectionIdentifier != null
-				&& locale != null && locale.length() > 0
-				&& ( authHeaderProvider != null || authHeaderNetworkCall != null );
+				&& locale != null && locale.length() > 0;
 	}
 
 	public static void assertConfigIsValid( IonConfig config )
@@ -304,117 +251,5 @@ public class IonConfig
 	{
 		Object[] hashRelevantFields = { baseUrl, collectionIdentifier, locale, variation };
 		return Arrays.hashCode( hashRelevantFields );
-	}
-
-	/**
-	 * @param <T>         return type of the request
-	 * @param requestFunc the in parameter is the authorization header value
-	 * @return single of request is forwarded
-	 */
-	public <T> Single<T> authenticatedRequest( Callable<Single<T>> requestFunc )
-	{
-		return authenticatedRequest( authorizationHeaderValue -> requestFunc.call() );
-	}
-
-	/**
-	 * @param <T>         return type of the request
-	 * @param requestFunc the in parameter is the authorization header value
-	 * @return observable of request is forwarded
-	 */
-	public <T> Single<T> authenticatedRequest( Function<String, Single<T>> requestFunc )
-	{
-		return authenticatedRequest( requestFunc, true );
-	}
-
-	private <T> Single<T> authenticatedRequest( Function<String, Single<T>> requestFunc, boolean tryAgain )
-	{
-		return updateAuthorizationHeaderValue( !tryAgain )
-				.flatMap( requestFunc )
-				.flatMap( response ->
-				{
-					if ( tryAgain )
-					{
-						int responseCode = -1;
-						if ( response instanceof Response )
-						{
-							responseCode = ( ( Response ) response ).code();
-						}
-						else if ( response instanceof retrofit2.Response )
-						{
-							responseCode = ( ( retrofit2.Response ) response ).code();
-						}
-						else
-						{
-							IonLog.w( "IonConfig", "authenticatedRequest: could not determine if request was unauthorized." );
-						}
-
-						if ( responseCode == HttpURLConnection.HTTP_UNAUTHORIZED )
-						{
-							return authenticatedRequest( requestFunc, false );
-						}
-					}
-					return Single.just( response );
-				} );
-	}
-
-	public Single<String> updateAuthorizationHeaderValue()
-	{
-		return updateAuthorizationHeaderValue( false );
-	}
-
-	public Single<String> updateAuthorizationHeaderValue( boolean forceUpdate )
-	{
-		if ( authHeaderProvider != null )
-		{
-			String authHeaderValue = authHeaderProvider.invoke();
-			if (authHeaderValue != null)
-			{
-				return Single.just( authHeaderValue );
-			}
-			else{
-				return Single.error( new IllegalStateException("AuthHeaderValue is null") );
-			}
-		}
-
-		if ( !forceUpdate )
-		{
-			String authorizationFromCache = authorizationCache.get( this );
-			if ( authorizationFromCache != null )
-			{
-				return Single.just( authorizationFromCache );
-			}
-		}
-
-		Single<String> updatedAuthorization = authHeaderNetworkCall
-				.map( authorizationHeaderValue ->
-				{
-					authorizationCache.put( IonConfig.this, authorizationHeaderValue );
-					return authorizationHeaderValue;
-				} )
-				.doOnSuccess( authorizationHeaderValue -> pendingLogins.finished( this ) );
-
-		return pendingLogins.starting( this, updatedAuthorization.toObservable() ).singleOrError();
-	}
-
-	public @Nullable String getAuthorizationHeaderValue()
-	{
-		if ( authHeaderProvider != null )
-		{
-			return authHeaderProvider.invoke();
-		}
-		else
-		{
-			return authorizationCache.get( this );
-		}
-	}
-
-	public void clearCachedAuthorization()
-	{
-		authorizationCache.remove( this );
-	}
-
-	public static void clearEntireAuthorizationCache()
-	{
-		authorizationCache.clear();
 	}
 }

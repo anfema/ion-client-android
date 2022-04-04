@@ -21,7 +21,6 @@ interface RetrofitIonPagesApi {
     fun getCollection(
         @Path("collection_identifier") collectionIdentifier: String?,
         @Path("locale") locale: String?,
-        @Header("Authorization") authorizationToken: String?,
         @Query("variation") variation: String?,
         @Header("If-Modified-Since") lastModified: String?,
     ): Single<Response<CollectionResponse>>
@@ -32,7 +31,6 @@ interface RetrofitIonPagesApi {
         @Path("page_identifier") pageIdentifier: String?,
         @Path("locale") locale: String?,
         @Query("variation") variation: String?,
-        @Header("Authorization") authorizationToken: String?,
     ): Single<Response<PageResponse>>
 }
 

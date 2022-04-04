@@ -320,53 +320,53 @@ public class IonPagesWithCaching implements IonPages
 		final String lastModified = cacheIndex != null ? cacheIndex.getLastModified() : null;
 
 		DateTime requestTime = DateTimeUtils.now();
-		Single<Collection> collectionSingle = config.authenticatedRequest(
-				authorizationHeaderValue -> ionApi.getCollection( config.collectionIdentifier, config.locale, authorizationHeaderValue, config.variation, lastModified ) )
-				.flatMap( serverResponse ->
-				{
-					if ( serverResponse.code() == COLLECTION_NOT_MODIFIED )
-					{
-						// collection has not changed, return cached version
-						return fetchCollectionFromCache( cacheIndex, false )
-								// update cache index again (last updated needs to be reset to now)
-								.doOnSuccess( saveCollectionCacheIndex( lastModified, requestTime ) );
-					}
-					else if ( serverResponse.isSuccessful() )
-					{
-						String lastModifiedReceived = serverResponse.headers().get( "Last-Modified" );
+		Single<Collection> collectionSingle =
+				ionApi.getCollection( config.collectionIdentifier, config.locale, config.variation, lastModified )
+						.flatMap( serverResponse ->
+						{
+							if ( serverResponse.code() == COLLECTION_NOT_MODIFIED )
+							{
+								// collection has not changed, return cached version
+								return fetchCollectionFromCache( cacheIndex, false )
+										// update cache index again (last updated needs to be reset to now)
+										.doOnSuccess( saveCollectionCacheIndex( lastModified, requestTime ) );
+							}
+							else if ( serverResponse.isSuccessful() )
+							{
+								String lastModifiedReceived = serverResponse.headers().get( "Last-Modified" );
 
-						// parse collection data from response and write cache index and memory cache
-						return Single.just( serverResponse )
-								// unwrap page and remember byte count
-								.map( ( response ) ->
-								{
-									Collection collection = response.body().getCollection();
-									collection.byteCount = getContentByteCount( response );
-									return collection;
-								} )
-								.doOnSuccess( collection -> MemoryCache.saveCollection( collection, config, context ) )
-								.doOnSuccess( saveCollectionCacheIndex( lastModifiedReceived, requestTime ) )
-								.doOnSuccess( collection ->
-								{
-									if ( collectionListener != null )
-									{
-										collectionListener.collectionDownloaded( collection, lastModifiedReceived );
-									}
-								} );
-					}
-					else
-					{
-						return Single.error( new HttpException( serverResponse ) );
-					}
-				} )
-				.onErrorResumeNext( throwable ->
-				{
-					String collectionUrl = IonPageUrls.getCollectionUrl( config );
-					IonLog.e( "Failed Request", "Network request " + collectionUrl + " failed." );
-					return Single.error( new NetworkRequestException( collectionUrl, throwable ) );
-				} )
-				.subscribeOn( Schedulers.io() )
-				.doFinally( () -> runningCollectionDownload.finished( config.collectionIdentifier ) );
+								// parse collection data from response and write cache index and memory cache
+								return Single.just( serverResponse )
+										// unwrap page and remember byte count
+										.map( ( response ) ->
+										{
+											Collection collection = response.body().getCollection();
+											collection.byteCount = getContentByteCount( response );
+											return collection;
+										} )
+										.doOnSuccess( collection -> MemoryCache.saveCollection( collection, config, context ) )
+										.doOnSuccess( saveCollectionCacheIndex( lastModifiedReceived, requestTime ) )
+										.doOnSuccess( collection ->
+										{
+											if ( collectionListener != null )
+											{
+												collectionListener.collectionDownloaded( collection, lastModifiedReceived );
+											}
+										} );
+							}
+							else
+							{
+								return Single.error( new HttpException( serverResponse ) );
+							}
+						} )
+						.onErrorResumeNext( throwable ->
+						{
+							String collectionUrl = IonPageUrls.getCollectionUrl( config );
+							IonLog.e( "Failed Request", "Network request " + collectionUrl + " failed." );
+							return Single.error( new NetworkRequestException( collectionUrl, throwable ) );
+						} )
+						.subscribeOn( Schedulers.io() )
+						.doFinally( () -> runningCollectionDownload.finished( config.collectionIdentifier ) );
 		return runningCollectionDownload.starting( config.collectionIdentifier, collectionSingle.toObservable() ).singleOrError();
 	}
 
@@ -429,32 +429,32 @@ public class IonPagesWithCaching implements IonPages
 
 	private Single<Page> fetchPageFromServer( String pageIdentifier )
 	{
-		Single<Page> pageSingle = config.authenticatedRequest(
-				authorizationHeaderValue -> ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.variation, authorizationHeaderValue ) )
-				// unwrap page and remember byte count
-				.map( response ->
-				{
-					if ( response.isSuccessful() )
-					{
-						Page page = response.body().getPage();
-						page.byteCount = getContentByteCount( response );
-						return page;
-					}
-					else
-					{
-						throw new HttpException( response );
-					}
-				} )
-				.doOnSuccess( savePageCacheIndex() )
-				.doOnSuccess( page -> MemoryCache.savePage( page, config, context ) )
-				.onErrorResumeNext( throwable ->
-				{
-					String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
-					IonLog.e( "Failed Request", "Network request " + pageUrl + " failed." );
-					return Single.error( new NetworkRequestException( pageUrl, throwable ) );
-				} )
-				.subscribeOn( Schedulers.io() )
-				.doFinally( () -> runningPageDownloads.finished( pageIdentifier ) );
+		Single<Page> pageSingle =
+				ionApi.getPage( config.collectionIdentifier, pageIdentifier, config.locale, config.variation )
+						// unwrap page and remember byte count
+						.map( response ->
+						{
+							if ( response.isSuccessful() )
+							{
+								Page page = response.body().getPage();
+								page.byteCount = getContentByteCount( response );
+								return page;
+							}
+							else
+							{
+								throw new HttpException( response );
+							}
+						} )
+						.doOnSuccess( savePageCacheIndex() )
+						.doOnSuccess( page -> MemoryCache.savePage( page, config, context ) )
+						.onErrorResumeNext( throwable ->
+						{
+							String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
+							IonLog.e( "Failed Request", "Network request " + pageUrl + " failed." );
+							return Single.error( new NetworkRequestException( pageUrl, throwable ) );
+						} )
+						.subscribeOn( Schedulers.io() )
+						.doFinally( () -> runningPageDownloads.finished( pageIdentifier ) );
 		return runningPageDownloads.starting( pageIdentifier, pageSingle.toObservable() ).singleOrError();
 	}
 

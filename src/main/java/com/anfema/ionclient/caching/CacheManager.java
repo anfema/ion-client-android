@@ -22,7 +22,6 @@ public class CacheManager
 		CacheIndexStore.clear( context );
 		MemoryCache.clear();
 		FileUtils.deleteRecursive( FilePaths.getFilesDir( context ) );
-		IonConfig.clearEntireAuthorizationCache();
 	}
 
 	/**
@@ -32,7 +31,6 @@ public class CacheManager
 	{
 		IonLog.i( "Cache Clear", "Clear memory cache" );
 		MemoryCache.clear();
-		IonConfig.clearEntireAuthorizationCache();
 	}
 
 	/**
@@ -46,6 +44,5 @@ public class CacheManager
 		CacheIndexStore.clearCollection( config, context );
 		MemoryCache.clear();
 		FileUtils.deleteRecursive( FilePaths.getCollectionFolderPath( config, context ) );
-		config.clearCachedAuthorization();
 	}
 }

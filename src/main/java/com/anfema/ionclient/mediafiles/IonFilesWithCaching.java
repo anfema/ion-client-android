@@ -33,8 +33,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-import static com.anfema.ionclient.okhttp.IonOkHttpKt.withTimeout;
-
 /**
  * Does not perform calls against a specific API, but takes complete URLs as parameter to perform a GET call to.
  * <p>
@@ -61,9 +59,6 @@ public class IonFilesWithCaching implements IonFiles
 	public void updateConfig( IonConfig config )
 	{
 		this.config = config;
-		OkHttpClient.Builder newClient = client.newBuilder();
-		withTimeout( newClient, config.networkTimeout );
-		this.client = newClient.build();
 	}
 
 	/**
@@ -127,7 +122,7 @@ public class IonFilesWithCaching implements IonFiles
 			if ( networkAvailable )
 			{
 				// force new download, do not create cache index entry
-				return authenticatedFileRequest( downloadUrl, targetFile )
+				return requestAndSaveToFile( downloadUrl, targetFile )
 						.map( file -> new FileWithStatus( file, FileStatus.NETWORK ) )
 						.subscribeOn( Schedulers.io() );
 			}
@@ -152,7 +147,7 @@ public class IonFilesWithCaching implements IonFiles
 			{
 				DateTime requestTime = DateTimeUtils.now();
 				// download media file
-				Single<File> downloadSingle = authenticatedFileRequest( downloadUrl, targetFile )
+				Single<File> downloadSingle = requestAndSaveToFile( downloadUrl, targetFile )
 						.doOnSuccess( file -> FileCacheIndex.save( url.toString(), file, config, null, requestTime, context ) )
 						.subscribeOn( Schedulers.io() )
 						.doOnSuccess( file -> runningDownloads.finished( url ) );
@@ -204,9 +199,9 @@ public class IonFilesWithCaching implements IonFiles
 	 * @param targetFile path, where file is going to be stored. if null, default "/files" directory is used
 	 * @return the file with content
 	 */
-	private Single<File> authenticatedFileRequest( HttpUrl url, File targetFile )
+	private Single<File> requestAndSaveToFile( HttpUrl url, File targetFile )
 	{
-		return config.authenticatedRequest( () -> performRequest( url ) )
+		return performRequest( url )
 				.flatMap( response -> writeToLocalStorage( response, targetFile ) );
 	}
 
