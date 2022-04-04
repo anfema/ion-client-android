@@ -12,15 +12,15 @@ public fun OkHttpClient.withIonCache(config: IonConfig, context: Context): OkHtt
         .addInterceptor(IonFileCacheInterceptor(config, context))
         .build()
 
-// TODO From IonFileWithCaching
 internal fun filesOkHttpClient(sharedOkHttpClient: OkHttpClient, config: IonConfig) =
     sharedOkHttpClient.newBuilder()
         .apply {
+            // TODO Use IonFilesWithCaching but also pass checksum via header
+
             // disable okHttp disk cache because it would store duplicate and un-used data because ION client uses its own cache
             cache(null)
         }.build()
 
-// TODO From ApiFactory used in IonPagesWithCaching
 internal fun pagesOkHttpClient(sharedOkHttpClient: OkHttpClient, config: IonConfig, context: Context) =
     sharedOkHttpClient.newBuilder()
         .apply {
