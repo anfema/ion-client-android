@@ -18,7 +18,6 @@ import java.util.concurrent.Callable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import kotlin.jvm.functions.Function0;
 import okhttp3.Response;
@@ -109,11 +108,6 @@ public class IonConfig
 	private final Function0<String> authHeaderProvider;
 
 	/**
-	 * Authorization header value is required to use the ION API. Secondary option: provide it indirectly through an async call.
-	 */
-	private final Single<String> authHeaderNetworkCall;
-
-	/**
 	 * Add customer headers - besides the 'Authorization' header
 	 */
 	@NonNull
@@ -143,7 +137,6 @@ public class IonConfig
 		private       String              locale;
 		private       String              variation                     = DEFAULT_VARIATION;
 		private       Function0<String>   authHeaderProvider            = null;
-		private       Single<String>      authHeaderNetworkCall         = null;
 		@NonNull
 		private final Map<String, String> additionalHeaders             = new HashMap<>();
 		private       boolean             archiveDownloads              = false;
@@ -181,12 +174,6 @@ public class IonConfig
 		public Builder authorization( @NotNull Function0<String> authHeaderSyncProvider )
 		{
 			this.authHeaderProvider = authHeaderSyncProvider;
-			return this;
-		}
-
-		public Builder authorization( Single<String> authorizationHeaderValueCall )
-		{
-			this.authHeaderNetworkCall = authorizationHeaderValueCall;
 			return this;
 		}
 
@@ -230,7 +217,6 @@ public class IonConfig
 					locale,
 					variation,
 					authHeaderProvider,
-					authHeaderNetworkCall,
 					additionalHeaders,
 					archiveDownloads,
 					minutesUntilCollectionRefetch,
@@ -245,7 +231,6 @@ public class IonConfig
 			String locale,
 			String variation,
 			Function0<String> authHeaderProvider,
-			Single<String> authHeaderNetworkCall,
 			@NonNull Map<String, String> additionalHeaders,
 			boolean archiveDownloads,
 			int minutesUntilCollectionRefetch,
@@ -257,7 +242,6 @@ public class IonConfig
 		this.locale = locale;
 		this.variation = variation;
 		this.authHeaderProvider = authHeaderProvider;
-		this.authHeaderNetworkCall = authHeaderNetworkCall;
 		this.additionalHeaders = additionalHeaders;
 		this.archiveDownloads = archiveDownloads;
 		this.minutesUntilCollectionRefetch = minutesUntilCollectionRefetch;
@@ -271,7 +255,6 @@ public class IonConfig
 		this.locale = otherConfig.locale;
 		this.variation = otherConfig.variation;
 		this.authHeaderProvider = otherConfig.authHeaderProvider;
-		this.authHeaderNetworkCall = otherConfig.authHeaderNetworkCall;
 		this.additionalHeaders = otherConfig.additionalHeaders;
 		this.archiveDownloads = otherConfig.archiveDownloads;
 		this.minutesUntilCollectionRefetch = otherConfig.minutesUntilCollectionRefetch;
