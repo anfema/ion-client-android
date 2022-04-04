@@ -31,6 +31,7 @@ import java.io.File
 class IonClient constructor(
     private val config: IonConfig,
     context: Context,
+    private val sharedOkHttpClient: OkHttpClient = OkHttpClient(),
 ) : IonPages, IonFiles, IonArchive {
 
     // stored to verify on #getInstance(IonConfig, Context) that context (which is passed to delegate classes) is not null.
@@ -42,7 +43,6 @@ class IonClient constructor(
     private val ionArchive: IonArchive
 
     init {
-        val sharedOkHttpClient = OkHttpClient()
         val pagesOkHttpClient = pagesOkHttpClient(sharedOkHttpClient, config, context)
         val filesOkHttpClient = filesOkHttpClient(sharedOkHttpClient, config)
 
