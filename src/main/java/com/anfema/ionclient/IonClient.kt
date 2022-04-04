@@ -23,19 +23,16 @@ import okhttp3.OkHttpClient
 import java.io.File
 
 /**
- * Main entry point for ION functionality. Obtain an instance with [.getInstance].
- *
- *
+ * Main entry point for ION functionality.
  * Serving as entry point IonClient holds interfaces providing the actual implementation of its functionality.
+ *
+ * [context] must be the application context.
  */
-class IonClient constructor(
+data class IonClient constructor(
     private val config: IonConfig,
-    context: Context,
+    private val context: Context,
     private val sharedOkHttpClient: OkHttpClient,
 ) : IonPages, IonFiles, IonArchive {
-
-    // stored to verify on #getInstance(IonConfig, Context) that context (which is passed to delegate classes) is not null.
-    private val context: Context = context.applicationContext
 
     // delegate classes
     private val ionPages: IonPages
