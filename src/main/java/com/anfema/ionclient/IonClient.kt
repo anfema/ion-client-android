@@ -14,7 +14,6 @@ import com.anfema.ionclient.pages.models.Collection
 import com.anfema.ionclient.pages.models.Page
 import com.anfema.ionclient.pages.models.PagePreview
 import com.anfema.ionclient.pages.models.contents.Downloadable
-import com.anfema.ionclient.utils.IonLog
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
@@ -29,34 +28,10 @@ import java.io.File
  *
  * Serving as entry point IonClient holds interfaces providing the actual implementation of its functionality.
  */
-class IonClient private constructor(config: IonConfig, context: Context) : IonPages, IonFiles, IonArchive {
-
-    companion object {
-        /// Multiton
-        private val instances: MutableMap<IonConfig, IonClient> = HashMap()
-
-        /**
-         * @param config configuration for ION client
-         * @return client instance, ready to go
-         */
-        @JvmStatic
-        fun getInstance(config: IonConfig, context: Context): IonClient {
-            IonConfig.assertConfigIsValid(config)
-
-            // check if client for this configuration already exists, otherwise create an instance
-            val storedClient = instances[config]
-            if (storedClient?.context != null) {
-                // update config because values, which are not included in equality check, might have changed
-                storedClient.updateConfig(config)
-                return storedClient
-            }
-            val ionClient = IonClient(config, context.applicationContext)
-            instances[config] = ionClient
-            IonLog.d("IonClient", "# ION client instances: " + instances.size)
-            return ionClient
-        }
-        /// Multiton END
-    }
+class IonClient constructor(
+    private val config: IonConfig,
+    context: Context,
+) : IonPages, IonFiles, IonArchive {
 
     // stored to verify on #getInstance(IonConfig, Context) that context (which is passed to delegate classes) is not null.
     private val context: Context = context.applicationContext
