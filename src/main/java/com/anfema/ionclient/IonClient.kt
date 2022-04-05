@@ -106,21 +106,13 @@ data class IonClient constructor(
     override fun request(content: Downloadable): Single<FileWithStatus> =
         ionFiles.request(content)
 
-    override fun request(url: HttpUrl, checksum: String): Single<FileWithStatus> =
+    override fun request(url: HttpUrl, checksum: String?): Single<FileWithStatus> =
         ionFiles.request(url, checksum)
 
     override fun request(
         url: HttpUrl,
-        checksum: String,
-        ignoreCaching: Boolean,
-        targetFile: File?,
-    ): Single<FileWithStatus> =
-        ionFiles.request(url, checksum, ignoreCaching, targetFile)
-
-    override fun request(
-        url: HttpUrl,
         downloadUrl: HttpUrl,
-        checksum: String,
+        checksum: String?,
         ignoreCaching: Boolean,
         targetFile: File?,
     ): Single<FileWithStatus> =
