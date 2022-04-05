@@ -3,7 +3,7 @@ package com.anfema.ionclient.caching
 import android.content.Context
 import com.anfema.ionclient.BuildConfig
 
-object CacheCompatManager {
+internal object CacheCompatManager {
     private const val PREFS_MAJOR_VERSION = "prefs_major_version"
     private const val KEY_MAJOR_VERSION = "key_major_version"
 
@@ -13,8 +13,7 @@ object CacheCompatManager {
     /**
      * Checks if the current client version is still compatible with persistent cache. If not, the cache is cleared.
      */
-    @JvmStatic
-    fun cleanUp(context: Context) {
+    internal fun clearCacheIfIncompatible(context: Context) {
         if (checkPerformed) {
             return
         }

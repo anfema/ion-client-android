@@ -41,8 +41,7 @@ data class IonClient constructor(
     private val ionArchive: IonArchive
 
     init {
-        // clear incompatible cache
-        CacheCompatManager.cleanUp(context)
+        CacheCompatManager.clearCacheIfIncompatible(context)
 
         val pagesOkHttpClient = pagesOkHttpClient(sharedOkHttpClient, config, context)
         val filesOkHttpClient = filesOkHttpClient(sharedOkHttpClient, config)
