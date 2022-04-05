@@ -24,11 +24,13 @@ public class FilePaths
 	 *
 	 * @throws NoIonPagesRequestException
 	 */
+	@NonNull
 	public static File getFilePath( String url, IonConfig config, Context context ) throws NoIonPagesRequestException
 	{
 		return getFilePath( url, config, context, false );
 	}
 
+	@NonNull
 	public static File getFilePath( String url, IonConfig config, Context context, boolean tempFolder ) throws NoIonPagesRequestException
 	{
 		IonRequestInfo requestInfo = IonPageUrls.analyze( url, config );
@@ -52,6 +54,7 @@ public class FilePaths
 	 * <p>
 	 * Creates folders if they do not exist yet.
 	 */
+	@NonNull
 	public static File getCollectionJsonPath( String url, IonConfig config, Context context )
 	{
 		return getCollectionJsonPath( url, config, context, false );
@@ -62,6 +65,7 @@ public class FilePaths
 	 * <p>
 	 * Creates folders if they do not exist yet.
 	 */
+	@NonNull
 	public static File getCollectionJsonPath( String url, IonConfig config, Context context, boolean tempFolder )
 	{
 		if ( url == null || url.isEmpty() )
@@ -76,6 +80,7 @@ public class FilePaths
 	 * <p>
 	 * Creates folders if they do not exist yet.
 	 */
+	@NonNull
 	public static File getPageJsonPath( String url, String pageIdentifier, IonConfig config, Context context )
 	{
 		return getPageJsonPath( url, pageIdentifier, config, context, false );
@@ -86,6 +91,7 @@ public class FilePaths
 	 * <p>
 	 * Creates folders if they do not exist yet.
 	 */
+	@NonNull
 	public static File getPageJsonPath( String url, String pageIdentifier, IonConfig config, Context context, boolean tempFolder )
 	{
 		if ( url == null || url.isEmpty() )
@@ -100,6 +106,7 @@ public class FilePaths
 	 * <p>
 	 * Creates folders if the do not exist yet.
 	 */
+	@NonNull
 	public static File getMediaFilePath( String url, IonConfig config, Context context )
 	{
 		return getMediaFilePath( url, config, context, false );
@@ -110,6 +117,7 @@ public class FilePaths
 	 * <p>
 	 * Creates folders if the do not exist yet.
 	 */
+	@NonNull
 	public static File getMediaFilePath( String url, IonConfig config, Context context, boolean tempCollectionFolder )
 	{
 		File mediaFolderPath = getMediaFolderPath( config, context, tempCollectionFolder );
@@ -133,6 +141,7 @@ public class FilePaths
 	/**
 	 * creates directories
 	 */
+	@NonNull
 	public static File getCollectionFolderPath( IonConfig config, Context context )
 	{
 		File folder = new File( getBasicCollectionFilePath( config.collectionIdentifier, context ) + FileUtils.SLASH + config.locale + FileUtils.SLASH + config.variation );
@@ -143,6 +152,7 @@ public class FilePaths
 		return folder;
 	}
 
+	@NonNull
 	public static File getArchiveFilePath( IonConfig config, Context context )
 	{
 		return new File( getBasicCollectionFilePath( config.collectionIdentifier, context ) + FileUtils.SLASH + config.locale + FileUtils.SLASH + config.variation + ".archive" );
