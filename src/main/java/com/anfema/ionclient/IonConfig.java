@@ -8,8 +8,6 @@ import com.anfema.ionclient.utils.MemoryUtils;
 import com.anfema.utils.EqualsContract;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import androidx.annotation.NonNull;
 
@@ -88,12 +86,6 @@ public class IonConfig
 	public final String variation;
 
 	/**
-	 * Add customer headers - besides the 'Authorization' header
-	 */
-	@NonNull
-	public final Map<String, String> additionalHeaders;
-
-	/**
 	 * Should the whole archive be downloaded when the collection is downloaded?
 	 */
 	public final boolean archiveDownloads;
@@ -106,14 +98,12 @@ public class IonConfig
 	@SuppressWarnings("unused")
 	public static class Builder
 	{
-		private final String              baseUrl;
-		private final String              collectionIdentifier;
-		private       String              locale;
-		private       String              variation                     = DEFAULT_VARIATION;
-		@NonNull
-		private final Map<String, String> additionalHeaders             = new HashMap<>();
-		private       boolean             archiveDownloads              = false;
-		private       int                 minutesUntilCollectionRefetch = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH;
+		private final String  baseUrl;
+		private final String  collectionIdentifier;
+		private       String  locale;
+		private       String  variation                     = DEFAULT_VARIATION;
+		private       boolean archiveDownloads              = false;
+		private       int     minutesUntilCollectionRefetch = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH;
 
 
 		public Builder( String baseUrl, String collectionIdentifier )
@@ -140,12 +130,6 @@ public class IonConfig
 		public Builder variation( String variation )
 		{
 			this.variation = variation;
-			return this;
-		}
-
-		public Builder addHeader( @NonNull String key, @NonNull String value )
-		{
-			this.additionalHeaders.put( key, value );
 			return this;
 		}
 
@@ -184,7 +168,6 @@ public class IonConfig
 			String collectionIdentifier,
 			String locale,
 			String variation,
-			@NonNull Map<String, String> additionalHeaders,
 			boolean archiveDownloads,
 			int minutesUntilCollectionRefetch
 	)
@@ -193,7 +176,6 @@ public class IonConfig
 		this.collectionIdentifier = collectionIdentifier;
 		this.locale = locale;
 		this.variation = variation;
-		this.additionalHeaders = additionalHeaders;
 		this.archiveDownloads = archiveDownloads;
 		this.minutesUntilCollectionRefetch = minutesUntilCollectionRefetch;
 	}
@@ -204,7 +186,6 @@ public class IonConfig
 		this.collectionIdentifier = otherConfig.collectionIdentifier;
 		this.locale = otherConfig.locale;
 		this.variation = otherConfig.variation;
-		this.additionalHeaders = otherConfig.additionalHeaders;
 		this.archiveDownloads = otherConfig.archiveDownloads;
 		this.minutesUntilCollectionRefetch = otherConfig.minutesUntilCollectionRefetch;
 	}
