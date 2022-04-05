@@ -147,19 +147,16 @@ public class IonConfig
 
 		public IonConfig build()
 		{
-			if ( locale == null )
-			{
-				throw new IllegalStateException( "locale == null" );
-			}
-			return new IonConfig(
+			IonConfig config = new IonConfig(
 					baseUrl,
 					collectionIdentifier,
 					locale,
 					variation,
-					additionalHeaders,
 					archiveDownloads,
 					minutesUntilCollectionRefetch
 			);
+			assertConfigIsValid( config );
+			return config;
 		}
 	}
 
