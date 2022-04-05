@@ -4,7 +4,6 @@ import android.content.Context;
 
 import com.anfema.ionclient.IonConfig;
 import com.anfema.ionclient.IonConfig.CachingStrategy;
-import com.anfema.ionclient.caching.CacheCompatManager;
 import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.caching.MemoryCache;
 import com.anfema.ionclient.caching.index.CollectionCacheIndex;
@@ -102,9 +101,6 @@ public class IonPagesWithCaching implements IonPages
 	@Override
 	public Single<Collection> fetchCollection( boolean preferNetwork )
 	{
-		// clear incompatible cache
-		CacheCompatManager.cleanUp( context );
-
 		CollectionCacheIndex cacheIndex = CollectionCacheIndex.retrieve( config, context );
 
 		boolean currentCacheEntry = cacheIndex != null && !cacheIndex.isOutdated( config );
@@ -172,9 +168,6 @@ public class IonPagesWithCaching implements IonPages
 	@Override
 	public Single<Page> fetchPage( String pageIdentifier )
 	{
-		// clear incompatible cache
-		CacheCompatManager.cleanUp( context );
-
 		String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 		PageCacheIndex pageCacheIndex = PageCacheIndex.retrieve( pageUrl, config, context );
 

@@ -3,7 +3,6 @@ package com.anfema.ionclient.mediafiles
 import android.content.Context
 import com.anfema.ionclient.IonConfig
 import com.anfema.ionclient.IonConfig.CachingStrategy
-import com.anfema.ionclient.caching.CacheCompatManager
 import com.anfema.ionclient.caching.FilePaths
 import com.anfema.ionclient.caching.index.CollectionCacheIndex.Companion.retrieve
 import com.anfema.ionclient.caching.index.FileCacheIndex.Companion.retrieve
@@ -57,9 +56,6 @@ class IonFilesWithCaching(
         ignoreCaching: Boolean,
         targetFile: File?,
     ): Single<FileWithStatus> {
-
-        // clear incompatible cache
-        CacheCompatManager.cleanUp(context)
 
         val networkAvailable =
             NetworkUtils.isConnected(context) && IonConfig.cachingStrategy != CachingStrategy.STRICT_OFFLINE

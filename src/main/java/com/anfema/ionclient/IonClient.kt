@@ -3,6 +3,7 @@ package com.anfema.ionclient
 import android.content.Context
 import com.anfema.ionclient.archive.IonArchive
 import com.anfema.ionclient.archive.IonArchiveDownloader
+import com.anfema.ionclient.caching.CacheCompatManager
 import com.anfema.ionclient.mediafiles.FileWithStatus
 import com.anfema.ionclient.mediafiles.IonFiles
 import com.anfema.ionclient.mediafiles.IonFilesWithCaching
@@ -40,6 +41,9 @@ data class IonClient constructor(
     private val ionArchive: IonArchive
 
     init {
+        // clear incompatible cache
+        CacheCompatManager.cleanUp(context)
+
         val pagesOkHttpClient = pagesOkHttpClient(sharedOkHttpClient, config, context)
         val filesOkHttpClient = filesOkHttpClient(sharedOkHttpClient, config)
 
