@@ -1,7 +1,6 @@
 package com.anfema.ionclient.utils
 
 import android.util.Log
-import com.anfema.ionclient.IonConfig
 
 object IonLog {
 
@@ -12,11 +11,15 @@ object IonLog {
     const val ERROR = Log.ERROR
     const val NONE = Int.MAX_VALUE
 
-    const val defaultTag = "IonClient"
+    /** Set log level for ION client */
+    var logLevel = NONE
+
+    /** set the default Tag used when functions are called, where no log tag is provided */
+    var defaultTag = "IonClient"
 
     @JvmStatic
     fun v(tag: String, message: String) {
-        if (IonConfig.logLevel == VERBOSE) {
+        if (logLevel == VERBOSE) {
             Log.v(tag, message)
         }
     }
@@ -28,7 +31,7 @@ object IonLog {
 
     @JvmStatic
     fun d(tag: String, message: String) {
-        if (IonConfig.logLevel in VERBOSE..DEBUG) {
+        if (logLevel in VERBOSE..DEBUG) {
             Log.d(tag, message)
         }
     }
@@ -40,7 +43,7 @@ object IonLog {
 
     @JvmStatic
     fun i(tag: String, message: String) {
-        if (IonConfig.logLevel in VERBOSE..INFO) {
+        if (logLevel in VERBOSE..INFO) {
             Log.i(tag, message)
         }
     }
@@ -52,7 +55,7 @@ object IonLog {
 
     @JvmStatic
     fun w(tag: String, message: String) {
-        if (IonConfig.logLevel in VERBOSE..WARN) {
+        if (logLevel in VERBOSE..WARN) {
             Log.w(tag, message)
         }
     }
@@ -64,7 +67,7 @@ object IonLog {
 
     @JvmStatic
     fun e(tag: String, message: String) {
-        if (IonConfig.logLevel in VERBOSE..ERROR) {
+        if (logLevel in VERBOSE..ERROR) {
             Log.e(tag, message)
         }
     }
@@ -76,7 +79,7 @@ object IonLog {
 
     @JvmStatic
     fun ex(tag: String, exception: Throwable) {
-        if (IonConfig.logLevel in VERBOSE..ERROR) {
+        if (logLevel in VERBOSE..ERROR) {
             Log.e(tag, Log.getStackTraceString(exception))
         }
     }

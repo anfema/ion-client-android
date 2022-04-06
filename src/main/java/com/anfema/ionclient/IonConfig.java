@@ -32,11 +32,6 @@ public class IonConfig
 	 */
 	public static int pagesMemCacheSize = CALC_REASONABLE_SIZE;
 
-	/**
-	 * Set log level for ION client.
-	 */
-	public static int logLevel = IonLog.NONE;
-
 	// *** configuration of client instance ***
 
 	/**
