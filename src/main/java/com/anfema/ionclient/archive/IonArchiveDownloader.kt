@@ -68,9 +68,10 @@ internal class IonArchiveDownloader(
         val archiveRequestTime = DateTimeUtils.now()
         return collectionObs.flatMap { collection: Collection ->
             // download archive
+            val archiveUrl = collection.archive.toHttpUrl()
             ionFiles.request(
-                url = collection.archive.toHttpUrl(),
-                downloadUrl = getDownloadUrl(collection.archive),
+                url = archiveUrl,
+                downloadUrl = getDownloadUrl(collection, archiveUrl),
                 checksum = null,
                 ignoreCaching = true,
                 targetFile = archivePath,
@@ -95,18 +96,14 @@ internal class IonArchiveDownloader(
             .subscribeOn(Schedulers.io())
     }
 
-    private fun getDownloadUrl(archive: String): HttpUrl =
-        (archive + addLastUpdated(archive)).toHttpUrl()
+    private fun getDownloadUrl(collection: Collection, archiveUrl: HttpUrl) =
+        getLastUpdatedValue(collection.archive)?.let {
+            archiveUrl.newBuilder().addQueryParameter("lastUpdated", it).build()
+        } ?: archiveUrl
 
-    private fun addLastUpdated(archive: String): String {
+    private fun getLastUpdatedValue(archive: String): String? {
         val fileCacheIndex = FileCacheIndex.retrieve(archive, config, context)
-
-        return if (fileCacheIndex != null) {
-            val divider = if (archive.toHttpUrl().querySize > 0) "&" else "?"
-            divider + "lastUpdated=" + DateTimeUtils.toString(fileCacheIndex.lastUpdated)
-        } else {
-            ""
-        }
+        return fileCacheIndex?.let { DateTimeUtils.toString(it.lastUpdated) }
     }
 
     /**
