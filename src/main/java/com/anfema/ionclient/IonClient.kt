@@ -50,11 +50,15 @@ enum class CachingStrategy {
  *
  * [context] must be the application context.
  */
-data class IonClient constructor(
-    private val config: IonConfig,
-    private val context: Context,
-    private val sharedOkHttpClient: OkHttpClient,
-    private val cachingStrategy: CachingStrategy = CachingStrategy.NORMAL,
+data class IonClient @JvmOverloads constructor(
+    @JvmField
+    val config: IonConfig,
+    @JvmField
+    val context: Context,
+    @JvmField
+    val sharedOkHttpClient: OkHttpClient,
+    @JvmField
+    val cachingStrategy: CachingStrategy = CachingStrategy.NORMAL,
 ) : IonPages, IonFiles, IonArchive {
 
     // delegate classes
