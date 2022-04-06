@@ -9,6 +9,7 @@ import com.anfema.ionclient.caching.index.FileCacheIndex.Companion.retrieve
 import com.anfema.ionclient.caching.index.FileCacheIndex.Companion.save
 import com.anfema.ionclient.exceptions.FileNotAvailableException
 import com.anfema.ionclient.exceptions.HttpException
+import com.anfema.ionclient.okhttp.filesOkHttpClient
 import com.anfema.ionclient.pages.models.contents.Downloadable
 import com.anfema.ionclient.utils.DateTimeUtils
 import com.anfema.ionclient.utils.FileUtils
@@ -35,11 +36,13 @@ import java.io.IOException
  * However, the ION authorization header is added (in case the URL points to protected media).
  */
 internal class IonFilesWithCaching(
-    private val client: OkHttpClient,
+    sharedOkHttpClient: OkHttpClient,
     private val config: IonConfig,
     private val context: Context,
     private val cachingStrategy: CachingStrategy,
 ) : IonFiles {
+
+    private val filesOkHttpClient = filesOkHttpClient(sharedOkHttpClient, config)
 
     private val runningDownloads: PendingDownloadHandler<HttpUrl, File> = PendingDownloadHandler()
 
@@ -136,7 +139,7 @@ internal class IonFilesWithCaching(
         val request: Request = Request.Builder().url(url).build()
 
         return try {
-            val response = client.newCall(request).execute()
+            val response = filesOkHttpClient.newCall(request).execute()
 
             if (!response.isSuccessful) {
                 val responseBody = response.body

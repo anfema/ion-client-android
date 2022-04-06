@@ -41,6 +41,7 @@ import okhttp3.OkHttpClient;
 import retrofit2.HttpException;
 import retrofit2.Response;
 
+import static com.anfema.ionclient.okhttp.IonOkHttpKt.pagesOkHttpClient;
 import static com.anfema.ionclient.pages.RetrofitIonPagesApiKt.retrofitIonPagesApi;
 
 /**
@@ -73,18 +74,21 @@ public class IonPagesWithCaching implements IonPages
 	 */
 	private final RetrofitIonPagesApi ionApi;
 
-	public IonPagesWithCaching( OkHttpClient okHttpClient, IonConfig config, Context context, CachingStrategy cachingStrategy )
+	public IonPagesWithCaching( OkHttpClient sharedOkHttpClient, IonConfig config, Context context, CachingStrategy cachingStrategy )
 	{
 		this.config = config;
 		this.context = context;
 		this.cachingStrategy = cachingStrategy;
-		ionApi = retrofitIonPagesApi( okHttpClient, config.baseUrl );
+
+		OkHttpClient pagesOkHttpClient = pagesOkHttpClient( sharedOkHttpClient, config, context );
+		ionApi = retrofitIonPagesApi( pagesOkHttpClient, config.baseUrl );
+
 		runningCollectionDownload = new PendingDownloadHandler<>();
 		runningPageDownloads = new PendingDownloadHandler<>();
 	}
 
 	/**
-	 * Retrieve collection. Strategy depends on {@link IonConfig#cachingStrategy}.
+	 * Retrieve collection. Strategy depends on {@link #cachingStrategy}.
 	 * Use default collection identifier as specified in {@link #config}
 	 */
 	@NonNull

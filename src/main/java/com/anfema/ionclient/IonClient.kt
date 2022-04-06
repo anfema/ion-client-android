@@ -7,9 +7,6 @@ import com.anfema.ionclient.caching.CacheCompatManager
 import com.anfema.ionclient.mediafiles.FileWithStatus
 import com.anfema.ionclient.mediafiles.IonFiles
 import com.anfema.ionclient.mediafiles.IonFilesWithCaching
-import com.anfema.ionclient.okhttp.filesOkHttpClient
-import com.anfema.ionclient.okhttp.pagesOkHttpClient
-import com.anfema.ionclient.pages.IonPages
 import com.anfema.ionclient.pages.IonPagesWithCaching
 import com.anfema.ionclient.pages.models.Page
 import com.anfema.ionclient.pages.models.PagePreview
@@ -59,19 +56,12 @@ data class IonClient @JvmOverloads constructor(
     val cachingStrategy: CachingStrategy = CachingStrategy.NORMAL,
 ) {
     // delegate classes
-    private val ionPages: IonPages
-    private val ionFiles: IonFiles
-    private val ionArchive: IonArchive
+    private val ionPages = IonPagesWithCaching(sharedOkHttpClient, config, context, cachingStrategy)
+    private val ionFiles: IonFiles = IonFilesWithCaching(sharedOkHttpClient, config, context, cachingStrategy)
+    private val ionArchive: IonArchive = IonArchiveDownloader(ionPages, ionFiles, config, context)
 
     init {
         CacheCompatManager.clearCacheIfIncompatible(context)
-
-        val pagesOkHttpClient = pagesOkHttpClient(sharedOkHttpClient, config, context)
-        val filesOkHttpClient = filesOkHttpClient(sharedOkHttpClient, config)
-
-        ionPages = IonPagesWithCaching(pagesOkHttpClient, config, context, cachingStrategy)
-        ionFiles = IonFilesWithCaching(filesOkHttpClient, config, context, cachingStrategy)
-        ionArchive = IonArchiveDownloader(ionPages, ionFiles, config, context)
     }
 
     fun fetchPagePreview(pageIdentifier: String): Single<PagePreview> =
