@@ -6,7 +6,11 @@ import com.anfema.ionclient.interceptors.IonFileCacheInterceptor
 import com.anfema.ionclient.interceptors.WriteIonCacheInterceptor
 import okhttp3.OkHttpClient
 
-public fun OkHttpClient.withIonCache(config: IonConfig, context: Context): OkHttpClient =
+/**
+ * Use this to configure an OkHttpClient to use the ION cache, where the ION API can't be accessed
+ * via an [com.anfema.ionclient.IonClient] instance, e.g. when using an image loader or video player.
+ */
+fun OkHttpClient.withIonFileCache(config: IonConfig, context: Context): OkHttpClient =
     newBuilder()
         .cache(null)
         .addInterceptor(IonFileCacheInterceptor(config, context))
