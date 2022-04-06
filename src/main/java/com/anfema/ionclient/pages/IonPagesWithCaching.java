@@ -63,7 +63,7 @@ public class IonPagesWithCaching implements IonPages
 	/**
 	 * Contains essential data for making calls to ION API
 	 */
-	private IonConfig config;
+	private final IonConfig config;
 
 	/**
 	 * Access to the ION API
@@ -77,12 +77,6 @@ public class IonPagesWithCaching implements IonPages
 		ionApi = retrofitIonPagesApi( okHttpClient, config.baseUrl );
 		runningCollectionDownload = new PendingDownloadHandler<>();
 		runningPageDownloads = new PendingDownloadHandler<>();
-	}
-
-	@Override
-	public void updateConfig( IonConfig config )
-	{
-		this.config = config;
 	}
 
 	/**

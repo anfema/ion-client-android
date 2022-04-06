@@ -36,15 +36,11 @@ import java.io.IOException
  */
 class IonFilesWithCaching(
     private val client: OkHttpClient,
-    private var config: IonConfig,
+    private val config: IonConfig,
     private val context: Context,
 ) : IonFiles {
 
     private val runningDownloads: PendingDownloadHandler<HttpUrl, File> = PendingDownloadHandler()
-
-    override fun updateConfig(config: IonConfig) {
-        this.config = config
-    }
 
     override fun request(content: Downloadable): Single<FileWithStatus> =
         request(content.url.toHttpUrl(), content.checksum)

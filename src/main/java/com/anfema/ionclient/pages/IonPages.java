@@ -10,7 +10,7 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.Predicate;
 
-public interface IonPages extends ConfigUpdatable
+public interface IonPages
 {
 	Single<Collection> fetchCollection();
 

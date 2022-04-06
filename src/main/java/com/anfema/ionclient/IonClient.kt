@@ -51,12 +51,6 @@ data class IonClient constructor(
         ionArchive = IonArchiveDownloader(ionPages, ionFiles, config, context)
     }
 
-    override fun updateConfig(config: IonConfig) {
-        ionPages.updateConfig(config)
-        ionFiles.updateConfig(config)
-        ionArchive.updateConfig(config)
-    }
-
     /// Collection and page calls
     /**
      * Call collections on Ion API.

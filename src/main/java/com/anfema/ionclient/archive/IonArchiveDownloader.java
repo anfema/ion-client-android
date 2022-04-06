@@ -29,7 +29,7 @@ public class IonArchiveDownloader implements IonArchive, CollectionDownloadedLis
 {
 	private final IonPages  ionPages;
 	private final IonFiles  ionFiles;
-	private       IonConfig config;
+	private final IonConfig config;
 	private final Context   context;
 
 	public IonArchiveDownloader( IonPages ionPages, IonFiles ionFiles, IonConfig config, Context context )
@@ -45,12 +45,6 @@ public class IonArchiveDownloader implements IonArchive, CollectionDownloadedLis
 			IonPagesWithCaching ionPagesWithCaching = ( IonPagesWithCaching ) ionPages;
 			ionPagesWithCaching.setCollectionListener( this );
 		}
-	}
-
-	@Override
-	public void updateConfig( IonConfig config )
-	{
-		this.config = config;
 	}
 
 	/**
