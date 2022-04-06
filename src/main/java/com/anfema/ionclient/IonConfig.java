@@ -3,8 +3,6 @@ package com.anfema.ionclient;
 import android.content.Context;
 
 import com.anfema.ionclient.exceptions.IonConfigInvalidException;
-import com.anfema.ionclient.utils.IonLog;
-import com.anfema.ionclient.utils.MemoryUtils;
 import com.anfema.utils.EqualsContract;
 
 import java.util.Arrays;
@@ -15,23 +13,6 @@ public class IonConfig
 {
 	public static final String DEFAULT_VARIATION                        = "default";
 	public static final int    DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH = 5;
-	public static final int    CALC_REASONABLE_SIZE                     = -1;
-
-	// *** global configuration ***
-
-	/**
-	 * Size of LRU memory cache (for all client instances accumulated). The Unit is bytes.
-	 * <p>
-	 * Value must be overwritten before first ION request is made, otherwise it won't have any effect.
-	 * It is recommended to set it as early as possible, e.g. in onCreate() of application (or first activity).
-	 * <p>
-	 * Be careful not to exceed the available RAM of the application. You might want to define the memory cache size as a fraction of the
-	 * available space. Therefore, you can use {@link MemoryUtils#calculateAvailableMemCache(Context)}.
-	 * <p>
-	 * If not set to a positive value, default cache size will be used.
-	 */
-	public static int pagesMemCacheSize = CALC_REASONABLE_SIZE;
-
 	// *** configuration of client instance ***
 
 	/**
