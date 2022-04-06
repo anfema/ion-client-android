@@ -83,6 +83,7 @@ public class IonPagesWithCaching implements IonPages
 	 * Retrieve collection. Strategy depends on {@link IonConfig#cachingStrategy}.
 	 * Use default collection identifier as specified in {@link #config}
 	 */
+	@NonNull
 	@Override
 	public Single<Collection> fetchCollection()
 	{
@@ -92,6 +93,7 @@ public class IonPagesWithCaching implements IonPages
 	/**
 	 * @param preferNetwork try network download as first option if set to false
 	 */
+	@NonNull
 	@Override
 	public Single<Collection> fetchCollection( boolean preferNetwork )
 	{
@@ -123,8 +125,9 @@ public class IonPagesWithCaching implements IonPages
 		}
 	}
 
+	@NonNull
 	@Override
-	public Single<PagePreview> fetchPagePreview( String pageIdentifier )
+	public Single<PagePreview> fetchPagePreview( @NonNull String pageIdentifier )
 	{
 		return fetchCollection()
 				.map( collection -> collection.pages )
@@ -133,8 +136,9 @@ public class IonPagesWithCaching implements IonPages
 				.singleOrError();
 	}
 
+	@NonNull
 	@Override
-	public Observable<PagePreview> fetchPagePreviews( Predicate<PagePreview> pagesFilter )
+	public Observable<PagePreview> fetchPagePreviews( @NonNull Predicate<PagePreview> pagesFilter )
 	{
 		return fetchCollection()
 				.map( collection -> collection.pages )
@@ -142,6 +146,7 @@ public class IonPagesWithCaching implements IonPages
 				.filter( pagesFilter );
 	}
 
+	@NonNull
 	@Override
 	public Observable<PagePreview> fetchAllPagePreviews()
 	{
@@ -159,8 +164,9 @@ public class IonPagesWithCaching implements IonPages
 	 * Add collection identifier and authorization token to request.<br/>
 	 * Use default collection identifier as specified in {@link this#config}
 	 */
+	@NonNull
 	@Override
-	public Single<Page> fetchPage( String pageIdentifier )
+	public Single<Page> fetchPage( @NonNull String pageIdentifier )
 	{
 		String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
 		PageCacheIndex pageCacheIndex = PageCacheIndex.retrieve( pageUrl, config, context );
@@ -210,8 +216,9 @@ public class IonPagesWithCaching implements IonPages
 	 * Fetch a set of pages by passing its page identifiers.
 	 * This is a convenience method for {@link #fetchPages(Predicate)}.
 	 */
+	@NonNull
 	@Override
-	public Observable<Page> fetchPages( List<String> pageIdentifiers )
+	public Observable<Page> fetchPages( @NonNull List<String> pageIdentifiers )
 	{
 		return Observable.fromIterable( pageIdentifiers )
 				.concatMapSingle( this::fetchPage );
@@ -221,8 +228,9 @@ public class IonPagesWithCaching implements IonPages
 	 * A set of pages is "returned" by emitting multiple events.<br/>
 	 * Use collection identifier as specified in {@link this#config}
 	 */
+	@NonNull
 	@Override
-	public Observable<Page> fetchPages( Predicate<PagePreview> pagesFilter )
+	public Observable<Page> fetchPages( @NonNull Predicate<PagePreview> pagesFilter )
 	{
 		return fetchCollection()
 				.map( collection -> collection.pages )
@@ -236,6 +244,7 @@ public class IonPagesWithCaching implements IonPages
 	 * A set of pages is "returned" by emitting multiple events.<br/>
 	 * Use collection identifier as specified in {@link this#config}
 	 */
+	@NonNull
 	@Override
 	public Observable<Page> fetchAllPages()
 	{
