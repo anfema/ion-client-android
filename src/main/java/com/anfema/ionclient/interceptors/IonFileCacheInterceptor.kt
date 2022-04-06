@@ -26,7 +26,7 @@ import java.net.HttpURLConnection.HTTP_OK
  * Full caching functionality for (media) files.
  * Does however not work for ION pages API.
  */
-class IonFileCacheInterceptor(
+internal class IonFileCacheInterceptor(
     private val config: IonConfig,
     private val context: Context,
     private val cachingStrategy: CachingStrategy = CachingStrategy.NORMAL,
