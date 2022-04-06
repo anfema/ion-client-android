@@ -2,8 +2,8 @@ package com.anfema.ionclient.pages;
 
 import android.content.Context;
 
+import com.anfema.ionclient.CachingStrategy;
 import com.anfema.ionclient.IonConfig;
-import com.anfema.ionclient.IonConfig.CachingStrategy;
 import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.caching.MemoryCache;
 import com.anfema.ionclient.caching.index.CollectionCacheIndex;
@@ -65,15 +65,18 @@ public class IonPagesWithCaching implements IonPages
 	 */
 	private final IonConfig config;
 
+	private final CachingStrategy cachingStrategy;
+
 	/**
 	 * Access to the ION API
 	 */
 	private final RetrofitIonPagesApi ionApi;
 
-	public IonPagesWithCaching( OkHttpClient okHttpClient, IonConfig config, Context context )
+	public IonPagesWithCaching( OkHttpClient okHttpClient, IonConfig config, Context context, CachingStrategy cachingStrategy )
 	{
 		this.config = config;
 		this.context = context;
+		this.cachingStrategy = cachingStrategy;
 		ionApi = retrofitIonPagesApi( okHttpClient, config.baseUrl );
 		runningCollectionDownload = new PendingDownloadHandler<>();
 		runningPageDownloads = new PendingDownloadHandler<>();
@@ -100,7 +103,7 @@ public class IonPagesWithCaching implements IonPages
 		CollectionCacheIndex cacheIndex = CollectionCacheIndex.retrieve( config, context );
 
 		boolean currentCacheEntry = cacheIndex != null && !cacheIndex.isOutdated( config );
-		boolean networkAvailable = NetworkUtils.isConnected( context ) && IonConfig.cachingStrategy != CachingStrategy.STRICT_OFFLINE;
+		boolean networkAvailable = NetworkUtils.isConnected( context ) && cachingStrategy != CachingStrategy.STRICT_OFFLINE;
 
 		if ( currentCacheEntry && !preferNetwork )
 		{
@@ -193,7 +196,7 @@ public class IonPagesWithCaching implements IonPages
 				.map( pageCacheIndex::isOutdated )
 				.flatMap( isOutdated ->
 				{
-					boolean networkAvailable = NetworkUtils.isConnected( context ) && IonConfig.cachingStrategy != CachingStrategy.STRICT_OFFLINE;
+					boolean networkAvailable = NetworkUtils.isConnected( context ) && cachingStrategy != CachingStrategy.STRICT_OFFLINE;
 					if ( !isOutdated )
 					{
 						// current version available

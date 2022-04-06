@@ -1,8 +1,8 @@
 package com.anfema.ionclient.interceptors
 
 import android.content.Context
+import com.anfema.ionclient.CachingStrategy
 import com.anfema.ionclient.IonConfig
-import com.anfema.ionclient.IonConfig.CachingStrategy
 import com.anfema.ionclient.caching.FilePaths
 import com.anfema.ionclient.caching.index.CollectionCacheIndex
 import com.anfema.ionclient.caching.index.FileCacheIndex
@@ -29,6 +29,7 @@ import java.net.HttpURLConnection.HTTP_OK
 class IonFileCacheInterceptor(
     private val config: IonConfig,
     private val context: Context,
+    private val cachingStrategy: CachingStrategy = CachingStrategy.NORMAL,
 ) : Interceptor {
 
     @Throws(IOException::class)
@@ -38,7 +39,7 @@ class IonFileCacheInterceptor(
         val url = request.url
 
         val networkAvailable =
-            NetworkUtils.isConnected(context) && IonConfig.cachingStrategy != CachingStrategy.STRICT_OFFLINE
+            NetworkUtils.isConnected(context) && cachingStrategy != CachingStrategy.STRICT_OFFLINE
         val targetFile: File = FilePaths.getFilePath(url.toString(), config, context)
 
         // fetch file from local storage or download it?

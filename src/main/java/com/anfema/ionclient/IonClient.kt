@@ -24,6 +24,27 @@ import okhttp3.OkHttpClient
 import java.io.File
 
 /**
+ * Defines strategies, when to fetch data from cache and when to download it from internet.
+ */
+enum class CachingStrategy {
+    /**
+     * strategy:
+     * 1. fetch current version from cache
+     * 2. download current version (if connected to internet)
+     * 3. fetch possibly outdated version from cache (if it exists)
+     * 4. error (because no version in cache exists and no internet connection)
+     */
+    NORMAL,
+
+    /**
+     * strategy:
+     * 1. fetch (possibly outdated) version from cache (if it exists)
+     * 2. error (because no version in cache exists and downloading is prohibited with this mode)
+     */
+    STRICT_OFFLINE
+}
+
+/**
  * Main entry point for ION functionality.
  * Serving as entry point IonClient holds interfaces providing the actual implementation of its functionality.
  *
@@ -33,6 +54,7 @@ data class IonClient constructor(
     private val config: IonConfig,
     private val context: Context,
     private val sharedOkHttpClient: OkHttpClient,
+    private val cachingStrategy: CachingStrategy = CachingStrategy.NORMAL,
 ) : IonPages, IonFiles, IonArchive {
 
     // delegate classes
@@ -46,8 +68,8 @@ data class IonClient constructor(
         val pagesOkHttpClient = pagesOkHttpClient(sharedOkHttpClient, config, context)
         val filesOkHttpClient = filesOkHttpClient(sharedOkHttpClient, config)
 
-        ionPages = IonPagesWithCaching(pagesOkHttpClient, config, context)
-        ionFiles = IonFilesWithCaching(filesOkHttpClient, config, context)
+        ionPages = IonPagesWithCaching(pagesOkHttpClient, config, context, cachingStrategy)
+        ionFiles = IonFilesWithCaching(filesOkHttpClient, config, context, cachingStrategy)
         ionArchive = IonArchiveDownloader(ionPages, ionFiles, config, context)
     }
 

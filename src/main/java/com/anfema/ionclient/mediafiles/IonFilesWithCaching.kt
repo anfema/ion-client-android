@@ -1,8 +1,8 @@
 package com.anfema.ionclient.mediafiles
 
 import android.content.Context
+import com.anfema.ionclient.CachingStrategy
 import com.anfema.ionclient.IonConfig
-import com.anfema.ionclient.IonConfig.CachingStrategy
 import com.anfema.ionclient.caching.FilePaths
 import com.anfema.ionclient.caching.index.CollectionCacheIndex.Companion.retrieve
 import com.anfema.ionclient.caching.index.FileCacheIndex.Companion.retrieve
@@ -38,6 +38,7 @@ class IonFilesWithCaching(
     private val client: OkHttpClient,
     private val config: IonConfig,
     private val context: Context,
+    private val cachingStrategy: CachingStrategy,
 ) : IonFiles {
 
     private val runningDownloads: PendingDownloadHandler<HttpUrl, File> = PendingDownloadHandler()
@@ -54,7 +55,7 @@ class IonFilesWithCaching(
     ): Single<FileWithStatus> {
 
         val networkAvailable =
-            NetworkUtils.isConnected(context) && IonConfig.cachingStrategy != CachingStrategy.STRICT_OFFLINE
+            NetworkUtils.isConnected(context) && cachingStrategy != CachingStrategy.STRICT_OFFLINE
 
         val targetFile = getTargetFilePath(url, targetFile)
 

@@ -17,33 +17,7 @@ public class IonConfig
 	public static final int    DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH = 5;
 	public static final int    CALC_REASONABLE_SIZE                     = -1;
 
-	/**
-	 * Defines strategies, when to fetch data from cache and when to download it from internet.
-	 */
-	public enum CachingStrategy
-	{
-		/**
-		 * strategy:
-		 * 1. fetch current version from cache
-		 * 2. download current version (if connected to internet)
-		 * 3. fetch possibly outdated version from cache (if it exists)
-		 * 4. error (because no version in cache exists and no internet connection)
-		 */
-		NORMAL,
-		/**
-		 * strategy:
-		 * 1. fetch (possibly outdated) version from cache (if it exists)
-		 * 2. error (because no version in cache exists and downloading is prohibited with this mode)
-		 */
-		STRICT_OFFLINE
-	}
-
 	// *** global configuration ***
-
-	/**
-	 * @see CachingStrategy
-	 */
-	public static CachingStrategy cachingStrategy = CachingStrategy.NORMAL;
 
 	/**
 	 * Size of LRU memory cache (for all client instances accumulated). The Unit is bytes.
