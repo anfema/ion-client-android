@@ -83,7 +83,7 @@ class IonFilesWithCaching(
                 val downloadSingle = requestAndSaveToFile(downloadUrl, targetFile)
                     .doOnSuccess { file: File? -> save(url.toString(), file, config, null, requestTime, context) }
                     .subscribeOn(Schedulers.io())
-                    .doOnSuccess { runningDownloads.finished(url) }
+                    .doFinally { runningDownloads.finished(url) }
 
                 runningDownloads.starting(url, downloadSingle.toObservable()).singleOrError()
                     .map { file: File? -> FileWithStatus(file, FileStatus.NETWORK) }
