@@ -11,7 +11,6 @@ import com.anfema.ionclient.okhttp.filesOkHttpClient
 import com.anfema.ionclient.okhttp.pagesOkHttpClient
 import com.anfema.ionclient.pages.IonPages
 import com.anfema.ionclient.pages.IonPagesWithCaching
-import com.anfema.ionclient.pages.models.Collection
 import com.anfema.ionclient.pages.models.Page
 import com.anfema.ionclient.pages.models.PagePreview
 import com.anfema.ionclient.pages.models.contents.Downloadable
@@ -21,7 +20,6 @@ import io.reactivex.Single
 import io.reactivex.functions.Predicate
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
-import java.io.File
 
 /**
  * Defines strategies, when to fetch data from cache and when to download it from internet.
@@ -60,7 +58,6 @@ data class IonClient @JvmOverloads constructor(
     @JvmField
     val cachingStrategy: CachingStrategy = CachingStrategy.NORMAL,
 ) {
-
     // delegate classes
     private val ionPages: IonPages
     private val ionFiles: IonFiles
@@ -77,17 +74,6 @@ data class IonClient @JvmOverloads constructor(
         ionArchive = IonArchiveDownloader(ionPages, ionFiles, config, context)
     }
 
-    /// Collection and page calls
-    /**
-     * Call collections on Ion API.
-     * Adds collection identifier and authorization token to request as retrieved via [IonConfig]<br></br>
-     */
-    fun fetchCollection(): Single<Collection> =
-        ionPages.fetchCollection()
-
-    fun fetchCollection(preferNetwork: Boolean): Single<Collection> =
-        ionPages.fetchCollection(preferNetwork)
-
     fun fetchPagePreview(pageIdentifier: String): Single<PagePreview> =
         ionPages.fetchPagePreview(pageIdentifier)
 
@@ -98,9 +84,6 @@ data class IonClient @JvmOverloads constructor(
      */
     fun fetchPagePreviews(pagesFilter: Predicate<PagePreview>): Observable<PagePreview> =
         ionPages.fetchPagePreviews(pagesFilter)
-
-    fun fetchAllPagePreviews(): Observable<PagePreview> =
-        ionPages.fetchAllPagePreviews()
 
     /**
      * Add collection identifier and authorization token to request.<br></br>
@@ -125,23 +108,18 @@ data class IonClient @JvmOverloads constructor(
     fun fetchAllPages(): Observable<Page> =
         ionPages.fetchAllPages()
 
-    // Loading media files
+    /**
+     * Retrieve a file through its URL either from file cache or with a network request. The result can be cached for further requests.
+     */
     fun request(content: Downloadable): Single<FileWithStatus> =
         ionFiles.request(content)
 
+    /**
+     * Retrieve a file through its URL either from file cache or with a network request. The result can be cached for further requests.
+     */
     fun request(url: HttpUrl, checksum: String?): Single<FileWithStatus> =
         ionFiles.request(url, checksum)
 
-    fun request(
-        url: HttpUrl,
-        downloadUrl: HttpUrl,
-        checksum: String?,
-        ignoreCaching: Boolean,
-        targetFile: File?,
-    ): Single<FileWithStatus> =
-        ionFiles.request(url, downloadUrl, checksum, ignoreCaching, targetFile)
-
-    /// Archive download
     /**
      * @see IonArchive.downloadArchive
      */
