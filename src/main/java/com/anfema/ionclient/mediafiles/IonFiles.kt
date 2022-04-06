@@ -5,7 +5,7 @@ import io.reactivex.Single
 import okhttp3.HttpUrl
 import java.io.File
 
-interface IonFiles {
+internal interface IonFiles {
 
     fun request(content: Downloadable): Single<FileWithStatus>
 

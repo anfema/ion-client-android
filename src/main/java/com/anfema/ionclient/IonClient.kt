@@ -59,7 +59,7 @@ data class IonClient @JvmOverloads constructor(
     val sharedOkHttpClient: OkHttpClient,
     @JvmField
     val cachingStrategy: CachingStrategy = CachingStrategy.NORMAL,
-) : IonPages, IonFiles, IonArchive {
+) {
 
     // delegate classes
     private val ionPages: IonPages
@@ -82,13 +82,13 @@ data class IonClient @JvmOverloads constructor(
      * Call collections on Ion API.
      * Adds collection identifier and authorization token to request as retrieved via [IonConfig]<br></br>
      */
-    override fun fetchCollection(): Single<Collection> =
+    fun fetchCollection(): Single<Collection> =
         ionPages.fetchCollection()
 
-    override fun fetchCollection(preferNetwork: Boolean): Single<Collection> =
+    fun fetchCollection(preferNetwork: Boolean): Single<Collection> =
         ionPages.fetchCollection(preferNetwork)
 
-    override fun fetchPagePreview(pageIdentifier: String): Single<PagePreview> =
+    fun fetchPagePreview(pageIdentifier: String): Single<PagePreview> =
         ionPages.fetchPagePreview(pageIdentifier)
 
     /**
@@ -96,19 +96,19 @@ data class IonClient @JvmOverloads constructor(
      *
      * @param pagesFilter see [com.anfema.ionclient.utils.PagesFilter] for some frequently used filter options.
      */
-    override fun fetchPagePreviews(pagesFilter: Predicate<PagePreview>): Observable<PagePreview> =
+    fun fetchPagePreviews(pagesFilter: Predicate<PagePreview>): Observable<PagePreview> =
         ionPages.fetchPagePreviews(pagesFilter)
 
-    override fun fetchAllPagePreviews(): Observable<PagePreview> =
+    fun fetchAllPagePreviews(): Observable<PagePreview> =
         ionPages.fetchAllPagePreviews()
 
     /**
      * Add collection identifier and authorization token to request.<br></br>
      */
-    override fun fetchPage(pageIdentifier: String): Single<Page> =
+    fun fetchPage(pageIdentifier: String): Single<Page> =
         ionPages.fetchPage(pageIdentifier)
 
-    override fun fetchPages(pageIdentifiers: List<String>): Observable<Page> =
+    fun fetchPages(pageIdentifiers: List<String>): Observable<Page> =
         ionPages.fetchPages(pageIdentifiers)
 
     /**
@@ -116,23 +116,23 @@ data class IonClient @JvmOverloads constructor(
      *
      * @param pagesFilter see [com.anfema.ionclient.utils.PagesFilter] for some frequently used filter options.
      */
-    override fun fetchPages(pagesFilter: Predicate<PagePreview>): Observable<Page> =
+    fun fetchPages(pagesFilter: Predicate<PagePreview>): Observable<Page> =
         ionPages.fetchPages(pagesFilter)
 
     /**
      * A set of pages is "returned" by emitting multiple events.<br></br>
      */
-    override fun fetchAllPages(): Observable<Page> =
+    fun fetchAllPages(): Observable<Page> =
         ionPages.fetchAllPages()
 
     // Loading media files
-    override fun request(content: Downloadable): Single<FileWithStatus> =
+    fun request(content: Downloadable): Single<FileWithStatus> =
         ionFiles.request(content)
 
-    override fun request(url: HttpUrl, checksum: String?): Single<FileWithStatus> =
+    fun request(url: HttpUrl, checksum: String?): Single<FileWithStatus> =
         ionFiles.request(url, checksum)
 
-    override fun request(
+    fun request(
         url: HttpUrl,
         downloadUrl: HttpUrl,
         checksum: String?,
@@ -145,6 +145,6 @@ data class IonClient @JvmOverloads constructor(
     /**
      * @see IonArchive.downloadArchive
      */
-    override fun downloadArchive(): Completable =
+    fun downloadArchive(): Completable =
         ionArchive.downloadArchive()
 }

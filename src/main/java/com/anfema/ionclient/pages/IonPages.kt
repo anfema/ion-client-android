@@ -7,7 +7,7 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.functions.Predicate
 
-interface IonPages {
+internal interface IonPages {
 
     fun fetchCollection(): Single<Collection>
     fun fetchCollection(preferNetwork: Boolean): Single<Collection>

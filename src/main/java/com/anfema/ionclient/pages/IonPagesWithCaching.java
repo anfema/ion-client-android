@@ -50,6 +50,7 @@ import static com.anfema.ionclient.pages.RetrofitIonPagesApiKt.retrofitIonPagesA
  * <p>
  * Uses a file and a memory cache.
  */
+// TODO set visibility to internal when converted to Kotlin
 public class IonPagesWithCaching implements IonPages
 {
 	public static final int                          COLLECTION_NOT_MODIFIED = 304;

@@ -25,6 +25,7 @@ import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.HttpUrl;
 
+// TODO set visibility to internal when converted to Kotlin
 public class IonArchiveDownloader implements IonArchive, CollectionDownloadedListener
 {
 	private final IonPages  ionPages;

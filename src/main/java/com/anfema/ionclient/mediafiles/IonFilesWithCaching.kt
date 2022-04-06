@@ -34,7 +34,7 @@ import java.io.IOException
  *
  * However, the ION authorization header is added (in case the URL points to protected media).
  */
-class IonFilesWithCaching(
+internal class IonFilesWithCaching(
     private val client: OkHttpClient,
     private val config: IonConfig,
     private val context: Context,
