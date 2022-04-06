@@ -1,7 +1,5 @@
 package com.anfema.ionclient
 
-import com.anfema.ionclient.exceptions.IonConfigInvalidException
-
 class IonConfig @JvmOverloads constructor(
     /**
      * base URL pointing to the ION endpoint
@@ -45,15 +43,9 @@ class IonConfig @JvmOverloads constructor(
     }
 
     init {
-        assertIsValid()
+        assert(baseUrl.contains("://"))
+        assert(collectionIdentifier.isNotEmpty())
+        assert(locale.isNotEmpty())
+        assert(variation.isNotEmpty())
     }
-
-    private fun assertIsValid() {
-        if (!isValid) {
-            throw IonConfigInvalidException()
-        }
-    }
-
-    private val isValid: Boolean
-        get() = baseUrl.contains("://") && locale.isNotEmpty()
 }
