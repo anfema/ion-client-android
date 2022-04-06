@@ -55,6 +55,7 @@ public class IonArchiveDownloader implements IonArchive, CollectionDownloadedLis
 	/**
 	 * Download the archive file for current collection, which should make app usable in offline mode.
 	 */
+	@NonNull
 	@Override
 	public Completable downloadArchive()
 	{
@@ -67,6 +68,7 @@ public class IonArchiveDownloader implements IonArchive, CollectionDownloadedLis
 	 * @param inCollection If collection already is available it can be passed in order to save time.
 	 * @param lastModified when the collection has been last modified
 	 */
+	@NonNull
 	private Completable downloadArchive( Collection inCollection, String lastModified )
 	{
 		if ( inCollection != null && !inCollection.identifier.equals( config.collectionIdentifier ) )
