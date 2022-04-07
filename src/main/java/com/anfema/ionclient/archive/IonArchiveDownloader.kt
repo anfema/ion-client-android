@@ -7,14 +7,13 @@ import com.anfema.ionclient.caching.index.FileCacheIndex
 import com.anfema.ionclient.exceptions.HttpException
 import com.anfema.ionclient.mediafiles.FileWithStatus
 import com.anfema.ionclient.mediafiles.IonFiles
-import com.anfema.ionclient.pages.CollectionDownloadedListener
 import com.anfema.ionclient.pages.IonPages
-import com.anfema.ionclient.pages.IonPagesWithCaching
 import com.anfema.ionclient.pages.models.Collection
 import com.anfema.ionclient.utils.DateTimeUtils
 import com.anfema.ionclient.utils.IonLog
 import io.reactivex.Completable
 import io.reactivex.Single
+import io.reactivex.disposables.Disposables
 import io.reactivex.schedulers.Schedulers
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -26,11 +25,20 @@ internal class IonArchiveDownloader(
     private val ionFiles: IonFiles,
     private val config: IonConfig,
     private val context: Context,
-) : IonArchive, CollectionDownloadedListener {
+) : IonArchive {
     /**
      * Prevent multiple archive downloads at the same time.
      */
     var activeArchiveDownload = false
+    private var backgroundDownloadDisposable = Disposables.disposed()
+
+    init {
+        if (config.archiveDownloads) {
+            ionPages.onCollectionDownloaded
+                .doOnNext { downloadArchiveInBackground(it.collection, it.lastModified) }
+                .subscribe()
+        }
+    }
 
     /**
      * Download the archive file for current collection, which should make app usable in offline mode.
@@ -96,6 +104,8 @@ internal class IonArchiveDownloader(
             .subscribeOn(Schedulers.io())
     }
 
+    private class CollectionArchive(val collection: Collection, val archivePath: File)
+
     private fun getDownloadUrl(collection: Collection, archiveUrl: HttpUrl) =
         getLastUpdatedValue(collection.archive)?.let {
             archiveUrl.newBuilder().addQueryParameter("lastUpdated", it).build()
@@ -107,26 +117,17 @@ internal class IonArchiveDownloader(
     }
 
     /**
-     * Check if archive needs to be updated.
+     * Download archive in background and do not inform UI when finished
      */
-    override fun collectionDownloaded(collection: Collection, lastModified: String) {
-        if (config.archiveDownloads && !activeArchiveDownload) {
-            // archive needs to be downloaded again. Download runs in background and does not even inform UI when finished
-            downloadArchive(collection, lastModified)
+    private fun downloadArchiveInBackground(collection: Collection, lastModified: String?) {
+        if (!activeArchiveDownload) {
+            // There could still be a parallel foreground archive download
+            backgroundDownloadDisposable.dispose()
+            backgroundDownloadDisposable = downloadArchive(collection, lastModified)
                 .subscribe(
                     { IonLog.d("ION Archive", "Archive has been downloaded/updated in background") },
                     IonLog::ex,
                 )
-        }
-    }
-
-    private class CollectionArchive(val collection: Collection, val archivePath: File)
-
-    init {
-
-        // if ionPages uses caching provide archive update check when collection downloaded
-        if (ionPages is IonPagesWithCaching) {
-            ionPages.setCollectionListener(this)
         }
     }
 }

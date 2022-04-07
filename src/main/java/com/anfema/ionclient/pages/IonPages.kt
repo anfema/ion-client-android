@@ -9,6 +9,8 @@ import io.reactivex.functions.Predicate
 
 internal interface IonPages {
 
+    val onCollectionDownloaded: Observable<CollectionDownloaded>
+
     fun fetchCollection(): Single<Collection>
     fun fetchCollection(preferNetwork: Boolean): Single<Collection>
 
@@ -22,3 +24,6 @@ internal interface IonPages {
     fun fetchPages(pagesFilter: Predicate<PagePreview>): Observable<Page>
     fun fetchAllPages(): Observable<Page>
 }
+
+internal class CollectionDownloaded(val collection: Collection, val lastModified: String?)
+

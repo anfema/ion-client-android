@@ -29,6 +29,7 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.functions.Predicate
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
 import okhttp3.OkHttpClient
 import org.joda.time.DateTime
 import retrofit2.HttpException
@@ -65,7 +66,8 @@ internal class IonPagesWithCaching(
         }
     }
 
-    private var collectionListener: CollectionDownloadedListener? = null
+    private val _onCollectionDownloaded = PublishSubject.create<CollectionDownloaded>()
+    override val onCollectionDownloaded: Observable<CollectionDownloaded> = _onCollectionDownloaded
 
     //key: collection identifier
     private val runningCollectionDownload: PendingDownloadHandler<String, Collection>
@@ -299,7 +301,8 @@ internal class IonPagesWithCaching(
                                 }
                                 .doOnSuccess { saveCollectionCacheIndex(lastModifiedReceived, requestTime) }
                                 .doOnSuccess { collection: Collection ->
-                                    collectionListener?.collectionDownloaded(collection, lastModifiedReceived)
+                                    _onCollectionDownloaded.onNext(CollectionDownloaded(collection,
+                                        lastModifiedReceived))
                                 }
                         }
                         else -> {
@@ -401,9 +404,5 @@ internal class IonPagesWithCaching(
 
     private fun saveCollectionCacheIndex(lastModified: String?, lastUpdated: DateTime) {
         CollectionCacheIndex.save(config, context, lastModified, lastUpdated)
-    }
-
-    fun setCollectionListener(collectionListener: CollectionDownloadedListener) {
-        this.collectionListener = collectionListener
     }
 }
