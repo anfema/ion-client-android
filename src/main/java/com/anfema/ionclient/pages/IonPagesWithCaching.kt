@@ -82,7 +82,7 @@ internal class IonPagesWithCaching(
 
     init {
         val pagesOkHttpClient = pagesOkHttpClient(sharedOkHttpClient, config, context)
-        ionApi = retrofitIonPagesApi(pagesOkHttpClient, config.baseUrl)
+        ionApi = retrofitIonPagesApi(pagesOkHttpClient, config.pagesBaseUrl)
         runningCollectionDownload = PendingDownloadHandler()
         runningPageDownloads = PendingDownloadHandler()
     }

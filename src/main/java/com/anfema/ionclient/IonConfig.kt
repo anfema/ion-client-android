@@ -5,7 +5,7 @@ class IonConfig @JvmOverloads constructor(
      * base URL pointing to the ION endpoint
      */
     @JvmField
-    val baseUrl: String,
+    val pagesBaseUrl: String,
 
     /**
      * the collection identifier, [IonClient] will use for its calls
@@ -43,7 +43,7 @@ class IonConfig @JvmOverloads constructor(
     }
 
     init {
-        assert(baseUrl.contains("://"))
+        assert(pagesBaseUrl.contains("://"))
         assert(collectionIdentifier.isNotEmpty())
         assert(locale.isNotEmpty())
         assert(variation.isNotEmpty())

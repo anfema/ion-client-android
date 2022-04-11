@@ -32,7 +32,7 @@ public class IonPageUrls
 		}
 		else
 		{
-			String relativeUrlPath = url.replace( config.baseUrl, "" );
+			String relativeUrlPath = url.replace( config.pagesBaseUrl, "" );
 			String[] urlPathSegments = relativeUrlPath.split( SLASH );
 
 			if ( urlPathSegments.length < 2 || urlPathSegments.length > 3 )
@@ -92,12 +92,12 @@ public class IonPageUrls
 
 	public static String getCollectionUrl( IonConfig config )
 	{
-		return config.baseUrl + config.locale + SLASH + config.collectionIdentifier + QUERY_BEGIN + QUERY_VARIATION + config.variation;
+		return config.pagesBaseUrl + config.locale + SLASH + config.collectionIdentifier + QUERY_BEGIN + QUERY_VARIATION + config.variation;
 	}
 
 	public static String getPageUrl( IonConfig config, String pageId )
 	{
-		return config.baseUrl + config.locale + SLASH + config.collectionIdentifier + SLASH + pageId + QUERY_BEGIN + QUERY_VARIATION + config.variation;
+		return config.pagesBaseUrl + config.locale + SLASH + config.collectionIdentifier + SLASH + pageId + QUERY_BEGIN + QUERY_VARIATION + config.variation;
 	}
 
 	public static class IonRequestInfo
