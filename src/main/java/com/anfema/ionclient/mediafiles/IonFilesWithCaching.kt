@@ -4,9 +4,8 @@ import android.content.Context
 import com.anfema.ionclient.CachingStrategy
 import com.anfema.ionclient.IonConfig
 import com.anfema.ionclient.caching.FilePaths
-import com.anfema.ionclient.caching.index.CollectionCacheIndex.Companion.retrieve
-import com.anfema.ionclient.caching.index.FileCacheIndex.Companion.retrieve
-import com.anfema.ionclient.caching.index.FileCacheIndex.Companion.save
+import com.anfema.ionclient.caching.index.CollectionCacheIndex
+import com.anfema.ionclient.caching.index.FileCacheIndex
 import com.anfema.ionclient.exceptions.FileNotAvailableException
 import com.anfema.ionclient.exceptions.HttpException
 import com.anfema.ionclient.okhttp.filesOkHttpClient
@@ -85,7 +84,9 @@ internal class IonFilesWithCaching(
                 val requestTime = DateTimeUtils.now()
                 // download media file
                 val downloadSingle = requestAndSaveToFile(downloadUrl, targetFile)
-                    .doOnSuccess { file: File? -> save(url.toString(), file, config, null, requestTime, context) }
+                    .doOnSuccess { file: File ->
+                        FileCacheIndex.save(url.toString(), file, config, null, requestTime, context)
+                    }
                     .subscribeOn(Schedulers.io())
                     .doFinally { runningDownloads.finished(url) }
 
@@ -106,13 +107,13 @@ internal class IonFilesWithCaching(
     }
 
     private fun isFileUpToDate(url: HttpUrl, checksum: String?): Boolean {
-        val fileCacheIndex = retrieve(url.toString(), config, context) ?: return false
+        val fileCacheIndex = FileCacheIndex.retrieve(url.toString(), config, context) ?: return false
         return if (checksum != null) {
             // check with file's checksum
             !fileCacheIndex.isOutdated(checksum)
         } else {
             // check with collection's last_modified (previewPage.last_changed would be slightly more precise)
-            val collectionCacheIndex = retrieve(config, context)
+            val collectionCacheIndex = CollectionCacheIndex.retrieve(config, context)
             val collectionLastModified = collectionCacheIndex?.lastModifiedDate
             val fileLastUpdated = fileCacheIndex.lastUpdated
             collectionLastModified != null && !collectionLastModified.isAfter(fileLastUpdated)
