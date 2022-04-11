@@ -26,8 +26,8 @@ internal object IonPageUrls {
 
     @JvmStatic
     @Throws(NoIonPagesRequestException::class)
-    fun analyze(url: String, collectionProperties: CollectionProperties): IonRequestInfo {
-        return when {
+    fun analyze(url: String, collectionProperties: CollectionProperties): IonRequestInfo =
+        when {
             isMediaRequestUrl(url) -> {
                 IonRequestInfo(IonRequestType.MEDIA, null, null, null, null)
             }
@@ -73,7 +73,6 @@ internal object IonPageUrls {
                 }
             }
         }
-    }
 
     private fun isMediaRequestUrl(url: String) =
         MEDIA_URL_INDICATORS.any { mediaIndicator -> url.contains(mediaIndicator) }
