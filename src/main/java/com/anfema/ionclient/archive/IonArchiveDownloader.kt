@@ -90,7 +90,7 @@ internal class IonArchiveDownloader(
                 .map { fileWithStatus: FileWithStatus -> fileWithStatus.file }
                 .map { archiveFile: File -> CollectionArchive(collection, archiveFile) }
         }
-            .flatMapObservable { collArch: CollectionArchive ->
+            .flatMapCompletable { collArch: CollectionArchive ->
                 // untar archive
                 ArchiveUtils.unTar(
                     collArch.archivePath,
@@ -101,7 +101,6 @@ internal class IonArchiveDownloader(
                     context
                 )
             }
-            .ignoreElements()
             .onErrorComplete { ex: Throwable? -> ex is HttpException && ex.code == HttpURLConnection.HTTP_NOT_MODIFIED }
             .doFinally { activeArchiveDownload = false }
             .subscribeOn(Schedulers.io())
