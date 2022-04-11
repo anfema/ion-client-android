@@ -3,12 +3,12 @@ package com.anfema.ionclient.pages
 import com.anfema.ionclient.CollectionProperties
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException
 import com.anfema.ionclient.utils.FileUtils.SLASH
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import java.util.regex.Pattern
 
 internal object IonPageUrls {
 
-    private const val QUERY_BEGIN = "?"
-    private const val QUERY_VARIATION = "variation="
+    private const val QUERY_VARIATION = "variation"
     private val MEDIA_URL_INDICATORS = arrayOf("/media/", "/protected_media/")
     private const val ARCHIVE_URL_INDICATOR = ".tar"
 
@@ -83,13 +83,17 @@ internal object IonPageUrls {
 
     @JvmStatic
     fun CollectionProperties.getCollectionUrl(): String =
-        baseUrl + locale + SLASH + collectionIdentifier + QUERY_BEGIN + QUERY_VARIATION + variation
-
-    @JvmStatic
-    fun CollectionProperties.getCollectionUrl2(): String =
-        baseUrl + locale + SLASH + collectionIdentifier + QUERY_BEGIN + QUERY_VARIATION + variation
+        (baseUrl + locale + SLASH + collectionIdentifier)
+            .addVariation(variation)
 
     @JvmStatic
     fun CollectionProperties.getPageUrl(pageId: String): String =
-        baseUrl + locale + SLASH + collectionIdentifier + SLASH + pageId + QUERY_BEGIN + QUERY_VARIATION + variation
+        (baseUrl + locale + SLASH + collectionIdentifier + SLASH + pageId)
+            .addVariation(variation)
+
+    private fun String.addVariation(variation: String): String {
+        return toHttpUrl()
+            .newBuilder().addQueryParameter(QUERY_VARIATION, variation).build()
+            .toString()
+    }
 }
