@@ -35,11 +35,11 @@ class IonConfig @JvmOverloads constructor(
      * Time after which collection is refreshed = fetched from server again.
      */
     @JvmField
-    val minutesUntilCollectionRefetch: Int = DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH,
+    val collectionRefetchIntervalInMin: Int = DEFAULT_COLLECTION_REFETCH_INTERVAL_IN_MIN,
 ) {
     companion object {
         const val DEFAULT_VARIATION = "default"
-        const val DEFAULT_MINUTES_UNTIL_COLLECTION_REFETCH = 5
+        const val DEFAULT_COLLECTION_REFETCH_INTERVAL_IN_MIN = 5
     }
 
     init {

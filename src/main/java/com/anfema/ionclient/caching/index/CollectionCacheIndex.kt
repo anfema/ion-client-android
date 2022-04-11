@@ -2,7 +2,6 @@ package com.anfema.ionclient.caching.index
 
 import android.content.Context
 import com.anfema.ionclient.IonConfig
-import com.anfema.ionclient.caching.index.CollectionCacheIndex
 import com.anfema.ionclient.pages.IonPageUrls
 import com.anfema.ionclient.utils.DateTimeUtils
 import com.anfema.ionclient.utils.IonLog
@@ -20,7 +19,7 @@ class CollectionCacheIndex(
 ) : CacheIndex() {
 
     fun isOutdated(config: IonConfig): Boolean =
-        lastUpdated.isBefore(DateTimeUtils.now().minusMinutes(config.minutesUntilCollectionRefetch))
+        lastUpdated.isBefore(DateTimeUtils.now().minusMinutes(config.collectionRefetchIntervalInMin))
 
     val lastModifiedDate: DateTime?
         get() {
