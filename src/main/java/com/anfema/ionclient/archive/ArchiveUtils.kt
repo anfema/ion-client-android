@@ -216,7 +216,7 @@ internal object ArchiveUtils {
         }
 
         // add archive to file cache again - not the actual file, but the last updated information is required for subsequent archive downloads
-        if (archiveFile.exists()) {
+        if (archiveFile.exists() && collection.archive != null) {
             FileCacheIndex.save(collection.archive, archiveFile, collectionProperties, null, requestTime, context)
             // delete archiveFile - yes that introduces an inconsistency, but it saves storage space on the other side
             archiveFile.delete()
@@ -296,14 +296,14 @@ internal object ArchiveUtils {
                 lastUpdated = requestTime,
             )
             IonRequestType.PAGE -> {
-                val pageIdentifier = fileWithMeta.pageIdentifier
+                val pageIdentifier = fileWithMeta.pageIdentifier!!
                 val lastChanged: DateTime? = try {
                     collection.getPageLastChanged(pageIdentifier)
                 } catch (e: PageNotInCollectionException) {
                     IonLog.ex(TAG, e)
                     null
                 }
-                PageCacheIndex.save(pageIdentifier!!, lastChanged!!, collectionProperties, context)
+                PageCacheIndex.save(pageIdentifier, lastChanged!!, collectionProperties, context)
             }
             IonRequestType.MEDIA -> FileCacheIndex.save(
                 requestUrl = fileWithMeta.archiveIndex.url,
