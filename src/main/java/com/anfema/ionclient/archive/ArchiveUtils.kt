@@ -17,7 +17,7 @@ import com.anfema.ionclient.pages.IonPageUrls.IonRequestType
 import com.anfema.ionclient.pages.IonPageUrls.getCollectionUrl
 import com.anfema.ionclient.pages.models.Collection
 import com.anfema.ionclient.pages.models.responses.CollectionResponse
-import com.anfema.ionclient.serialization.GsonHolder.defaultInstance
+import com.anfema.ionclient.serialization.GsonHolder
 import com.anfema.ionclient.utils.FileUtils
 import com.anfema.ionclient.utils.IonLog
 import io.reactivex.Completable
@@ -127,7 +127,7 @@ internal object ArchiveUtils {
                                 // get index.json
                                 val inputStreamReader = InputStreamReader(debInputStream, "UTF-8")
                                 archiveIndexes =
-                                    listOf(*defaultInstance.fromJson(inputStreamReader,
+                                    listOf(*GsonHolder.defaultInstance.fromJson(inputStreamReader,
                                         Array<ArchiveIndex>::class.java))
                                 indexHasBeenRead = true
                                 continue
@@ -240,7 +240,7 @@ internal object ArchiveUtils {
     ) {
         val collectionUrl = collectionProperties.getCollectionUrl()
         val filePath = FilePaths.getCollectionJsonPath(collectionUrl, collectionProperties, context)
-        val collectionJson = defaultInstance.toJson(CollectionResponse(collection))
+        val collectionJson = GsonHolder.defaultInstance.toJson(CollectionResponse(collection))
         FileUtils.writeTextToFile(collectionJson, filePath)
     }
 
