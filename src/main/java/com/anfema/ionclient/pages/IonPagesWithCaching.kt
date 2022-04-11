@@ -124,14 +124,14 @@ internal class IonPagesWithCaching(
     override fun fetchPagePreview(pageIdentifier: String): Single<PagePreview> =
         fetchCollection()
             .map { collection: Collection -> collection.pages }
-            .flatMapObservable { source: ArrayList<PagePreview>? -> Observable.fromIterable(source) }
+            .flatMapObservable { Observable.fromIterable(it) }
             .filter(PagesFilter.identifierEquals(pageIdentifier))
             .singleOrError()
 
     override fun fetchPagePreviews(pagesFilter: Predicate<PagePreview>): Observable<PagePreview> =
         fetchCollection()
             .map { collection: Collection -> collection.pages }
-            .flatMapObservable { source: ArrayList<PagePreview>? -> Observable.fromIterable(source) }
+            .flatMapObservable { Observable.fromIterable(it) }
             .filter(pagesFilter)
 
     override fun fetchAllPagePreviews(): Observable<PagePreview> =
@@ -206,7 +206,7 @@ internal class IonPagesWithCaching(
     override fun fetchPages(pagesFilter: Predicate<PagePreview>): Observable<Page> =
         fetchCollection()
             .map { collection: Collection -> collection.pages }
-            .flatMapObservable { source: ArrayList<PagePreview>? -> Observable.fromIterable(source) }
+            .flatMapObservable { Observable.fromIterable(it) }
             .filter(pagesFilter)
             .map { page: PagePreview -> page.identifier }
             .concatMapSingle { pageIdentifier: String -> fetchPage(pageIdentifier) }

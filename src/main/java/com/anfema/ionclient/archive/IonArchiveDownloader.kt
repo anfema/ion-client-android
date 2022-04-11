@@ -69,7 +69,7 @@ internal class IonArchiveDownloader(
         activeArchiveDownload = true
 
         // use inCollection or retrieve by making a collections call
-        val collectionObs: Single<Collection> =
+        val collectionSingle: Single<Collection> =
             if (inCollection == null) {
                 ionPages.fetchCollection(true)
             } else {
@@ -77,18 +77,22 @@ internal class IonArchiveDownloader(
             }
 
         val archiveRequestTime = DateTimeUtils.now()
-        return collectionObs.flatMap { collection: Collection ->
+        return collectionSingle.flatMap { collection: Collection ->
             // download archive
-            val archiveUrl = collection.archive.toHttpUrl()
-            ionFiles.request(
-                url = archiveUrl,
-                downloadUrl = getDownloadUrl(collection, archiveUrl),
-                checksum = null,
-                ignoreCaching = true,
-                targetFile = archivePath,
-            )
-                .map { fileWithStatus: FileWithStatus -> fileWithStatus.file }
-                .map { archiveFile: File -> CollectionArchive(collection, archiveFile) }
+            val archiveUrl = collection.archive?.toHttpUrl()
+            if (archiveUrl != null) {
+                ionFiles.request(
+                    url = archiveUrl,
+                    downloadUrl = archiveUrl.withLastUpdatedQueryParam(),
+                    checksum = null,
+                    ignoreCaching = true,
+                    targetFile = archivePath,
+                )
+                    .map { fileWithStatus: FileWithStatus -> fileWithStatus.file }
+                    .map { archiveFile: File -> CollectionArchive(collection, archiveFile) }
+            } else {
+                Single.error(IllegalStateException("Collection has no archive link"))
+            }
         }
             .flatMapCompletable { collArch: CollectionArchive ->
                 // untar archive
@@ -108,10 +112,10 @@ internal class IonArchiveDownloader(
 
     private class CollectionArchive(val collection: Collection, val archivePath: File)
 
-    private fun getDownloadUrl(collection: Collection, archiveUrl: HttpUrl) =
-        getLastUpdatedValue(collection.archive)?.let {
-            archiveUrl.newBuilder().addQueryParameter("lastUpdated", it).build()
-        } ?: archiveUrl
+    private fun HttpUrl.withLastUpdatedQueryParam() =
+        getLastUpdatedValue(toString())?.let {
+            newBuilder().addQueryParameter("lastUpdated", it).build()
+        } ?: this
 
     private fun getLastUpdatedValue(archive: String): String? {
         val fileCacheIndex = FileCacheIndex.retrieve(archive, collectionProperties, context)
