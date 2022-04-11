@@ -33,7 +33,7 @@ internal class IonArchiveDownloader(
     private var backgroundDownloadDisposable = Disposables.disposed()
 
     init {
-        if (config.archiveDownloads) {
+        if (config.automaticArchiveDownloads) {
             ionPages.onCollectionDownloaded
                 .doOnNext { downloadArchiveInBackground(it.collection, it.lastModified) }
                 .subscribe()

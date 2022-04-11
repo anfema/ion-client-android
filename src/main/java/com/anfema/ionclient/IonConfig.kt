@@ -29,7 +29,7 @@ class IonConfig @JvmOverloads constructor(
      * Should the whole archive be downloaded when the collection is downloaded?
      */
     @JvmField
-    val archiveDownloads: Boolean = false,
+    val automaticArchiveDownloads: Boolean = false,
 
     /**
      * Time after which collection is refreshed = fetched from server again.
