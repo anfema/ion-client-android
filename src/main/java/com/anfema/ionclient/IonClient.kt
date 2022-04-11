@@ -19,14 +19,19 @@ import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 
 /**
- * Main entry point for ION functionality.
- * Serving as entry point IonClient holds interfaces providing the actual implementation of its functionality.
+ * Main entry point for ION functionality, which includes
+ * - fetching pages
+ * - requesting files
+ * - download collection archive
  *
- * [context] must be the application context.
+ * All the above operations use a common cache.
+ *
+ * Request headers like 'Authorization' must be provided via [sharedOkHttpClient].
  */
 data class IonClient @JvmOverloads constructor(
     @JvmField
     val config: IonConfig,
+    /** must be application context */
     private val context: Context,
     @JvmField
     val sharedOkHttpClient: OkHttpClient,
