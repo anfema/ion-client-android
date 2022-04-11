@@ -2,7 +2,7 @@ package com.anfema.ionclient.caching.index
 
 import android.content.Context
 import com.anfema.ionclient.CollectionProperties
-import com.anfema.ionclient.pages.IonPageUrls
+import com.anfema.ionclient.pages.IonPageUrls.getCollectionUrl
 import com.anfema.ionclient.utils.DateTimeUtils
 import com.anfema.ionclient.utils.IonLog
 import org.joda.time.DateTime
@@ -43,7 +43,7 @@ class CollectionCacheIndex(
 
         @JvmStatic
         fun retrieve(collectionProperties: CollectionProperties, context: Context): CollectionCacheIndex? {
-            val requestUrl = IonPageUrls.getCollectionUrl(collectionProperties)
+            val requestUrl = collectionProperties.getCollectionUrl()
             return CacheIndexStore.retrieve(requestUrl, collectionProperties, context)
         }
 
@@ -54,7 +54,7 @@ class CollectionCacheIndex(
             lastModified: String?,
             lastUpdated: DateTime?,
         ) {
-            val url = IonPageUrls.getCollectionUrl(collectionProperties)
+            val url = collectionProperties.getCollectionUrl()
             val cacheIndex = CollectionCacheIndex(
                 lastUpdated ?: DateTimeUtils.now(),
                 lastModified,

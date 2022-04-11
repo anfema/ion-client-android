@@ -12,6 +12,8 @@ import com.anfema.ionclient.exceptions.NetworkRequestException
 import com.anfema.ionclient.exceptions.PageNotAvailableException
 import com.anfema.ionclient.exceptions.ReadFromCacheException
 import com.anfema.ionclient.okhttp.pagesOkHttpClient
+import com.anfema.ionclient.pages.IonPageUrls.getCollectionUrl
+import com.anfema.ionclient.pages.IonPageUrls.getPageUrl
 import com.anfema.ionclient.pages.models.Collection
 import com.anfema.ionclient.pages.models.Page
 import com.anfema.ionclient.pages.models.PagePreview
@@ -149,7 +151,7 @@ internal class IonPagesWithCaching(
      * Use default collection identifier as specified in [collectionProperties]
      */
     override fun fetchPage(pageIdentifier: String): Single<Page> {
-        val pageUrl = IonPageUrls.getPageUrl(collectionProperties, pageIdentifier)
+        val pageUrl = collectionProperties.getPageUrl(pageIdentifier)
 
         val pageCacheIndex = PageCacheIndex.retrieve(pageUrl, collectionProperties, context)
 
@@ -221,7 +223,7 @@ internal class IonPagesWithCaching(
         cacheIndex: CollectionCacheIndex?,
         serverCallAsBackup: Boolean,
     ): Single<Collection> {
-        val collectionUrl = IonPageUrls.getCollectionUrl(collectionProperties)
+        val collectionUrl = collectionProperties.getCollectionUrl()
 
         // retrieve from memory cache
         val collection = MemoryCache.getCollection(collectionUrl)
@@ -315,7 +317,7 @@ internal class IonPagesWithCaching(
                     }
                 }
                 .onErrorResumeNext { throwable: Throwable? ->
-                    val collectionUrl = IonPageUrls.getCollectionUrl(collectionProperties)
+                    val collectionUrl = collectionProperties.getCollectionUrl()
                     IonLog.e("Failed Request", "Network request $collectionUrl failed.")
                     Single.error(NetworkRequestException(collectionUrl, throwable))
                 }
@@ -333,7 +335,7 @@ internal class IonPagesWithCaching(
      * @param serverCallAsBackup If reading from cache is not successful, should a server call be made?
      */
     private fun fetchPageFromCache(pageIdentifier: String, serverCallAsBackup: Boolean): Single<Page> {
-        val pageUrl = IonPageUrls.getPageUrl(collectionProperties, pageIdentifier)
+        val pageUrl = collectionProperties.getPageUrl(pageIdentifier)
 
         // retrieve from memory cache
         val memPage = MemoryCache.getPage(pageUrl)
@@ -388,9 +390,9 @@ internal class IonPagesWithCaching(
                 .map { response: Response<PageResponse> ->
                     // unwrap page and remember byte count
                     if (response.isSuccessful) {
-                        val page = response.body()!!.page
+                        val page = response.body()!!.page.apply { }
                         page.byteCount = getContentByteCount(response).toLong()
-                        return@map page
+                        page
                     } else {
                         throw HttpException(response)
                     }
@@ -398,7 +400,7 @@ internal class IonPagesWithCaching(
                 .doOnSuccess { page: Page -> PageCacheIndex.save(page, collectionProperties, context) }
                 .doOnSuccess { page: Page -> MemoryCache.savePage(page, collectionProperties, context) }
                 .onErrorResumeNext { throwable: Throwable ->
-                    val pageUrl = IonPageUrls.getPageUrl(collectionProperties, pageIdentifier)
+                    val pageUrl = collectionProperties.getPageUrl(pageIdentifier)
                     IonLog.e("Failed Request", "Network request $pageUrl failed.")
                     Single.error(NetworkRequestException(pageUrl, throwable))
                 }

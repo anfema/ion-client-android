@@ -2,7 +2,7 @@ package com.anfema.ionclient.caching.index
 
 import android.content.Context
 import com.anfema.ionclient.CollectionProperties
-import com.anfema.ionclient.pages.IonPageUrls
+import com.anfema.ionclient.pages.IonPageUrls.getPageUrl
 import com.anfema.ionclient.pages.models.Page
 import org.joda.time.DateTime
 
@@ -38,7 +38,7 @@ class PageCacheIndex(
             collectionProperties: CollectionProperties,
             context: Context,
         ) {
-            val url = IonPageUrls.getPageUrl(collectionProperties, pageIdentifier)
+            val url = collectionProperties.getPageUrl(pageIdentifier)
             val cacheIndex = PageCacheIndex(pageLastChanged)
             CacheIndexStore.save(url, cacheIndex, collectionProperties, context)
         }
