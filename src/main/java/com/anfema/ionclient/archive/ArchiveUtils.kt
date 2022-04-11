@@ -297,11 +297,11 @@ internal object ArchiveUtils {
             )
             IonRequestType.PAGE -> {
                 val pageIdentifier = fileWithMeta.pageIdentifier
-                var lastChanged: DateTime? = null
-                try {
-                    lastChanged = collection.getPageLastChanged(pageIdentifier)
+                val lastChanged: DateTime? = try {
+                    collection.getPageLastChanged(pageIdentifier)
                 } catch (e: PageNotInCollectionException) {
                     IonLog.ex(TAG, e)
+                    null
                 }
                 PageCacheIndex.save(pageIdentifier!!, lastChanged!!, collectionProperties, context)
             }
