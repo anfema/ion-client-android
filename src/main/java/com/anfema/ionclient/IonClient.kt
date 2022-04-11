@@ -27,8 +27,7 @@ import okhttp3.OkHttpClient
 data class IonClient @JvmOverloads constructor(
     @JvmField
     val config: IonConfig,
-    @JvmField
-    val context: Context,
+    private val context: Context,
     @JvmField
     val sharedOkHttpClient: OkHttpClient,
     @JvmField
