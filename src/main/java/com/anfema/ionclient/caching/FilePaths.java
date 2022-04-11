@@ -2,7 +2,7 @@ package com.anfema.ionclient.caching;
 
 import android.content.Context;
 
-import com.anfema.ionclient.IonConfig;
+import com.anfema.ionclient.CollectionProperties;
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException;
 import com.anfema.ionclient.pages.IonPageUrls;
 import com.anfema.ionclient.pages.IonPageUrls.IonRequestInfo;
@@ -25,27 +25,27 @@ public class FilePaths
 	 * @throws NoIonPagesRequestException
 	 */
 	@NonNull
-	public static File getFilePath( String url, IonConfig config, Context context ) throws NoIonPagesRequestException
+	public static File getFilePath( String url, CollectionProperties collectionProperties, Context context ) throws NoIonPagesRequestException
 	{
-		return getFilePath( url, config, context, false );
+		return getFilePath( url, collectionProperties, context, false );
 	}
 
 	@NonNull
-	public static File getFilePath( String url, IonConfig config, Context context, boolean tempFolder ) throws NoIonPagesRequestException
+	public static File getFilePath( String url, CollectionProperties collectionProperties, Context context, boolean tempFolder ) throws NoIonPagesRequestException
 	{
-		IonRequestInfo requestInfo = IonPageUrls.analyze( url, config );
+		IonRequestInfo requestInfo = IonPageUrls.analyze( url, collectionProperties );
 
-		switch ( requestInfo.requestType )
+		switch ( requestInfo.getRequestType() )
 		{
 			case COLLECTION:
-				return getCollectionJsonPath( url, config, context, tempFolder );
+				return getCollectionJsonPath( url, collectionProperties, context, tempFolder );
 			case PAGE:
-				return getPageJsonPath( url, requestInfo.pageIdentifier, config, context, tempFolder );
+				return getPageJsonPath( url, requestInfo.getPageIdentifier(), collectionProperties, context, tempFolder );
 			case ARCHIVE:
-				return getArchiveFilePath( config, context );
+				return getArchiveFilePath( collectionProperties, context );
 			case MEDIA:
 			default:
-				return getMediaFilePath( url, config, context, tempFolder );
+				return getMediaFilePath( url, collectionProperties, context, tempFolder );
 		}
 	}
 
@@ -55,9 +55,9 @@ public class FilePaths
 	 * Creates folders if they do not exist yet.
 	 */
 	@NonNull
-	public static File getCollectionJsonPath( String url, IonConfig config, Context context )
+	public static File getCollectionJsonPath( String url, CollectionProperties collectionProperties, Context context )
 	{
-		return getCollectionJsonPath( url, config, context, false );
+		return getCollectionJsonPath( url, collectionProperties, context, false );
 	}
 
 	/**
@@ -66,13 +66,13 @@ public class FilePaths
 	 * Creates folders if they do not exist yet.
 	 */
 	@NonNull
-	public static File getCollectionJsonPath( String url, IonConfig config, Context context, boolean tempFolder )
+	public static File getCollectionJsonPath( String url, CollectionProperties collectionProperties, Context context, boolean tempFolder )
 	{
 		if ( url == null || url.isEmpty() )
 		{
-			url = IonPageUrls.getCollectionUrl( config );
+			url = IonPageUrls.getCollectionUrl( collectionProperties );
 		}
-		return new File( getCollectionFolderPath( config, context ).getPath() + appendTemp( tempFolder ), getFileName( url ) );
+		return new File( getCollectionFolderPath( collectionProperties, context ).getPath() + appendTemp( tempFolder ), getFileName( url ) );
 	}
 
 	/**
@@ -81,9 +81,9 @@ public class FilePaths
 	 * Creates folders if they do not exist yet.
 	 */
 	@NonNull
-	public static File getPageJsonPath( String url, String pageIdentifier, IonConfig config, Context context )
+	public static File getPageJsonPath( String url, String pageIdentifier, CollectionProperties collectionProperties, Context context )
 	{
-		return getPageJsonPath( url, pageIdentifier, config, context, false );
+		return getPageJsonPath( url, pageIdentifier, collectionProperties, context, false );
 	}
 
 	/**
@@ -92,13 +92,13 @@ public class FilePaths
 	 * Creates folders if they do not exist yet.
 	 */
 	@NonNull
-	public static File getPageJsonPath( String url, String pageIdentifier, IonConfig config, Context context, boolean tempFolder )
+	public static File getPageJsonPath( String url, String pageIdentifier, CollectionProperties collectionProperties, Context context, boolean tempFolder )
 	{
 		if ( url == null || url.isEmpty() )
 		{
-			url = IonPageUrls.getPageUrl( config, pageIdentifier );
+			url = IonPageUrls.getPageUrl( collectionProperties, pageIdentifier );
 		}
-		return new File( getCollectionFolderPath( config, context ).getPath() + appendTemp( tempFolder ), getFileName( url ) );
+		return new File( getCollectionFolderPath( collectionProperties, context ).getPath() + appendTemp( tempFolder ), getFileName( url ) );
 	}
 
 	/**
@@ -107,9 +107,9 @@ public class FilePaths
 	 * Creates folders if the do not exist yet.
 	 */
 	@NonNull
-	public static File getMediaFilePath( String url, IonConfig config, Context context )
+	public static File getMediaFilePath( String url, CollectionProperties collectionProperties, Context context )
 	{
-		return getMediaFilePath( url, config, context, false );
+		return getMediaFilePath( url, collectionProperties, context, false );
 	}
 
 	/**
@@ -118,9 +118,9 @@ public class FilePaths
 	 * Creates folders if the do not exist yet.
 	 */
 	@NonNull
-	public static File getMediaFilePath( String url, IonConfig config, Context context, boolean tempCollectionFolder )
+	public static File getMediaFilePath( String url, CollectionProperties collectionProperties, Context context, boolean tempCollectionFolder )
 	{
-		File mediaFolderPath = getMediaFolderPath( config, context, tempCollectionFolder );
+		File mediaFolderPath = getMediaFolderPath( collectionProperties, context, tempCollectionFolder );
 		if ( !mediaFolderPath.exists() )
 		{
 			mediaFolderPath.mkdirs();
@@ -133,18 +133,18 @@ public class FilePaths
 	 * does not create directories
 	 */
 	@NonNull
-	public static File getMediaFolderPath( IonConfig config, Context context, boolean tempCollectionFolder )
+	public static File getMediaFolderPath( CollectionProperties collectionProperties, Context context, boolean tempCollectionFolder )
 	{
-		return new File( getBasicCollectionFilePath( config.collectionIdentifier, context ) + FileUtils.SLASH + MEDIA + appendTemp( tempCollectionFolder ) );
+		return new File( getBasicCollectionFilePath( collectionProperties.collectionIdentifier, context ) + FileUtils.SLASH + MEDIA + appendTemp( tempCollectionFolder ) );
 	}
 
 	/**
 	 * creates directories
 	 */
 	@NonNull
-	public static File getCollectionFolderPath( IonConfig config, Context context )
+	public static File getCollectionFolderPath( CollectionProperties collectionProperties, Context context )
 	{
-		File folder = new File( getBasicCollectionFilePath( config.collectionIdentifier, context ) + FileUtils.SLASH + config.locale + FileUtils.SLASH + config.variation );
+		File folder = new File( getBasicCollectionFilePath( collectionProperties.collectionIdentifier, context ) + FileUtils.SLASH + collectionProperties.locale + FileUtils.SLASH + collectionProperties.variation );
 		if ( !folder.exists() )
 		{
 			folder.mkdirs();
@@ -153,9 +153,9 @@ public class FilePaths
 	}
 
 	@NonNull
-	public static File getArchiveFilePath( IonConfig config, Context context )
+	public static File getArchiveFilePath( CollectionProperties collectionProperties, Context context )
 	{
-		return new File( getBasicCollectionFilePath( config.collectionIdentifier, context ) + FileUtils.SLASH + config.locale + FileUtils.SLASH + config.variation + ".archive" );
+		return new File( getBasicCollectionFilePath( collectionProperties.collectionIdentifier, context ) + FileUtils.SLASH + collectionProperties.locale + FileUtils.SLASH + collectionProperties.variation + ".archive" );
 	}
 
 	@NonNull

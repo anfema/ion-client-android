@@ -1,7 +1,7 @@
 package com.anfema.ionclient.archive
 
 import android.content.Context
-import com.anfema.ionclient.IonConfig
+import com.anfema.ionclient.CollectionProperties
 import com.anfema.ionclient.caching.FilePaths
 import com.anfema.ionclient.caching.index.FileCacheIndex
 import com.anfema.ionclient.exceptions.HttpException
@@ -23,17 +23,20 @@ import java.net.HttpURLConnection
 internal class IonArchiveDownloader(
     private val ionPages: IonPages,
     private val ionFiles: IonFiles,
-    private val config: IonConfig,
+    automaticArchiveDownloads: Boolean,
     private val context: Context,
 ) : IonArchive {
+
+    private val collectionProperties: CollectionProperties = ionFiles.collectionProperties
+
     /**
      * Prevent multiple archive downloads at the same time.
      */
-    var activeArchiveDownload = false
+    private var activeArchiveDownload = false
     private var backgroundDownloadDisposable = Disposables.disposed()
 
     init {
-        if (config.automaticArchiveDownloads) {
+        if (automaticArchiveDownloads) {
             ionPages.onCollectionDownloaded
                 .doOnNext { downloadArchiveInBackground(it.collection, it.lastModified) }
                 .subscribe()
@@ -54,15 +57,15 @@ internal class IonArchiveDownloader(
      */
     private fun downloadArchive(inCollection: Collection?, lastModified: String?): Completable {
 
-        if (inCollection != null && inCollection.identifier != config.collectionIdentifier) {
+        if (inCollection != null && inCollection.identifier != collectionProperties.collectionIdentifier) {
             val e =
-                Exception("Archive download: inCollection.identifier: " + inCollection.identifier + " does not match config's collectionIdentifier: " + config.collectionIdentifier)
+                Exception("Archive download: inCollection.identifier: " + inCollection.identifier + " does not match config's collectionIdentifier: " + collectionProperties.collectionIdentifier)
             IonLog.ex(e)
             return Completable.error(e)
         }
 
-        val archivePath = FilePaths.getArchiveFilePath(config, context)
-        IonLog.i("ION Archive", "about to download archive for collection " + config.collectionIdentifier)
+        val archivePath = FilePaths.getArchiveFilePath(collectionProperties, context)
+        IonLog.i("ION Archive", "about to download archive for collection " + collectionProperties.collectionIdentifier)
         activeArchiveDownload = true
 
         // use inCollection or retrieve by making a collections call
@@ -94,7 +97,7 @@ internal class IonArchiveDownloader(
                     collArch.collection,
                     lastModified,
                     archiveRequestTime,
-                    config,
+                    collectionProperties,
                     context
                 )
             }
@@ -112,7 +115,7 @@ internal class IonArchiveDownloader(
         } ?: archiveUrl
 
     private fun getLastUpdatedValue(archive: String): String? {
-        val fileCacheIndex = FileCacheIndex.retrieve(archive, config, context)
+        val fileCacheIndex = FileCacheIndex.retrieve(archive, collectionProperties, context)
         return fileCacheIndex?.let { DateTimeUtils.toString(it.lastUpdated) }
     }
 

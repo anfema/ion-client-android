@@ -2,7 +2,7 @@ package com.anfema.ionclient.archive;
 
 import android.content.Context;
 
-import com.anfema.ionclient.IonConfig;
+import com.anfema.ionclient.CollectionProperties;
 import com.anfema.ionclient.archive.models.ArchiveIndex;
 import com.anfema.ionclient.caching.FilePaths;
 import com.anfema.ionclient.caching.MemoryCache;
@@ -48,12 +48,12 @@ class ArchiveUtils
 	private static final String TAG = "ArchiveUtils";
 
 	static Observable<File> unTar( @NonNull File archiveFile, @NonNull Collection collection, String lastModified, DateTime requestTime,
-								   IonConfig config, Context context )
+	                               CollectionProperties collectionProperties, Context context )
 	{
-		return Observable.fromCallable( () -> performUnTar( archiveFile, config, collection, lastModified, requestTime, context ) )
+		return Observable.fromCallable( () -> performUnTar( archiveFile, collectionProperties, collection, lastModified, requestTime, context ) )
 				.flatMap( Observable::fromIterable )
 				// write cache index entries
-				.map( fileWithType -> saveCacheIndex( fileWithType, collection, lastModified, requestTime, config, context ) );
+				.map( fileWithType -> saveCacheIndex( fileWithType, collection, lastModified, requestTime, collectionProperties, context ) );
 	}
 
 	/**
@@ -68,10 +68,10 @@ class ArchiveUtils
 	 * @throws IOException
 	 * @throws ArchiveException
 	 */
-	private static List<FileWithMeta> performUnTar( File archiveFile, IonConfig config, Collection collection, String lastModified,
-													DateTime requestTime, Context context ) throws IOException, ArchiveException
+	private static List<FileWithMeta> performUnTar( File archiveFile, CollectionProperties collectionProperties, Collection collection, String lastModified,
+	                                                DateTime requestTime, Context context ) throws IOException, ArchiveException
 	{
-		File collectionFolder = FilePaths.getCollectionFolderPath( config, context );
+		File collectionFolder = FilePaths.getCollectionFolderPath( collectionProperties, context );
 
 		final List<FileWithMeta> untaredFiles = new LinkedList<>();
 
@@ -110,7 +110,7 @@ class ArchiveUtils
 					}
 
 					IonLog.i( TAG, fileInfo.url );
-					FileWithMeta fileWithMeta = getFilePath( fileInfo, collectionFolder, config, context );
+					FileWithMeta fileWithMeta = getFilePath( fileInfo, collectionFolder, collectionProperties, context );
 					File targetFile = fileWithMeta.fileTemp;
 					FileUtils.createDir( targetFile.getParentFile() );
 
@@ -141,7 +141,7 @@ class ArchiveUtils
 		// if lastModified date was not passed, look if cache index entry exists for collection and retrieve it from there
 		if ( collection != null && lastModified == null )
 		{
-			CollectionCacheIndex collectionCacheIndex = CollectionCacheIndex.retrieve( config, context );
+			CollectionCacheIndex collectionCacheIndex = CollectionCacheIndex.retrieve( collectionProperties, context );
 			lastModified = collectionCacheIndex == null ? null : collectionCacheIndex.getLastModified();
 			IonLog.d( TAG, "Restoring last_modified from cache index: " + lastModified );
 		}
@@ -191,17 +191,17 @@ class ArchiveUtils
 			archiveUrls.add( indexEntry.url );
 		}
 		// get all index entries stored in the cache index store
-		Set<String> outdatedUrls = CacheIndexStore.retrieveAllUrls( config, context );
+		Set<String> outdatedUrls = CacheIndexStore.retrieveAllUrls( collectionProperties, context );
 		// subtract the current index entries - leaving outdated cache index entries
 		outdatedUrls.removeAll( archiveUrls );
 
 		for ( String outdatedUrl : outdatedUrls )
 		{
-			CacheIndexStore.delete( outdatedUrl, config, context );
+			CacheIndexStore.delete( outdatedUrl, collectionProperties, context );
 			try
 			{
 				// delete all files but archive file
-				File file = FilePaths.getFilePath( outdatedUrl, config, context );
+				File file = FilePaths.getFilePath( outdatedUrl, collectionProperties, context );
 				if ( file.exists() && !file.getPath().equals( archiveFile.getPath() ) )
 				{
 					file.delete();
@@ -217,11 +217,11 @@ class ArchiveUtils
 		// add collection to file cache again
 		if ( collection != null )
 		{
-			MemoryCache.saveCollection( collection, config, context );
+			MemoryCache.saveCollection( collection, collectionProperties, context );
 			try
 			{
-				saveCollectionToFileCache( config, collection, context );
-				CollectionCacheIndex.save( config, context, lastModified, requestTime );
+				saveCollectionToFileCache( collectionProperties, collection, context );
+				CollectionCacheIndex.save( collectionProperties, context, lastModified, requestTime );
 			}
 			catch ( IOException e )
 			{
@@ -233,7 +233,7 @@ class ArchiveUtils
 		// add archive to file cache again - not the actual file, but the last updated information is required for subsequent archive downloads
 		if ( archiveFile != null && archiveFile.exists() && collection != null )
 		{
-			FileCacheIndex.save( collection.archive, archiveFile, config, null, requestTime, context );
+			FileCacheIndex.save( collection.archive, archiveFile, collectionProperties, null, requestTime, context );
 			// delete archiveFile - yes that introduces an inconsistency, but it saves storage space on the other side
 			archiveFile.delete();
 		}
@@ -247,15 +247,15 @@ class ArchiveUtils
 		return untaredFiles;
 	}
 
-	private static void saveCollectionToFileCache( IonConfig config, Collection collection, Context context ) throws IOException
+	private static void saveCollectionToFileCache( CollectionProperties collectionProperties, Collection collection, Context context ) throws IOException
 	{
-		String collectionUrl = IonPageUrls.getCollectionUrl( config );
-		File filePath = FilePaths.getCollectionJsonPath( collectionUrl, config, context );
+		String collectionUrl = IonPageUrls.getCollectionUrl( collectionProperties );
+		File filePath = FilePaths.getCollectionJsonPath( collectionUrl, collectionProperties, context );
 		String collectionJson = GsonHolder.INSTANCE.getDefaultInstance().toJson( new CollectionResponse( collection ) );
 		FileUtils.writeTextToFile( collectionJson, filePath );
 	}
 
-	private static FileWithMeta getFilePath( ArchiveIndex fileInfo, File collectionFolder, IonConfig config, Context context )
+	private static FileWithMeta getFilePath( ArchiveIndex fileInfo, File collectionFolder, CollectionProperties collectionProperties, Context context )
 	{
 		File targetFileTemp;
 		File targetFile;
@@ -266,11 +266,11 @@ class ArchiveUtils
 		try
 		{
 			// check URL is a collections or pages call
-			IonRequestInfo requestInfo = IonPageUrls.analyze( url, config );
-			pageIdentifier = requestInfo.pageIdentifier;
-			type = requestInfo.requestType;
-			targetFileTemp = FilePaths.getFilePath( url, config, context, true );
-			targetFile = FilePaths.getFilePath( url, config, context, false );
+			IonRequestInfo requestInfo = IonPageUrls.analyze( url, collectionProperties );
+			pageIdentifier = requestInfo.getPageIdentifier();
+			type = requestInfo.getRequestType();
+			targetFileTemp = FilePaths.getFilePath( url, collectionProperties, context, true );
+			targetFile = FilePaths.getFilePath( url, collectionProperties, context, false );
 		}
 		catch ( NoIonPagesRequestException e )
 		{
@@ -303,7 +303,7 @@ class ArchiveUtils
 	}
 
 	private static File saveCacheIndex( @NonNull FileWithMeta fileWithMeta, Collection collection, String lastModified, DateTime requestTime,
-										IonConfig config, Context context )
+	                                    CollectionProperties collectionProperties, Context context )
 	{
 		IonRequestType type = fileWithMeta.type;
 		if ( type == null )
@@ -315,7 +315,7 @@ class ArchiveUtils
 		switch ( type )
 		{
 			case COLLECTION:
-				CollectionCacheIndex.save( config, context, lastModified, requestTime );
+				CollectionCacheIndex.save( collectionProperties, context, lastModified, requestTime );
 				break;
 			case PAGE:
 				String pageIdentifier = fileWithMeta.pageIdentifier;
@@ -328,10 +328,10 @@ class ArchiveUtils
 				{
 					IonLog.ex( TAG, e );
 				}
-				PageCacheIndex.save( pageIdentifier, lastChanged, config, context );
+				PageCacheIndex.save( pageIdentifier, lastChanged, collectionProperties, context );
 				break;
 			case MEDIA:
-				FileCacheIndex.save( fileWithMeta.archiveIndex.url, fileWithMeta.file, config, fileWithMeta.archiveIndex.checksum, requestTime, context );
+				FileCacheIndex.save( fileWithMeta.archiveIndex.url, fileWithMeta.file, collectionProperties, fileWithMeta.archiveIndex.checksum, requestTime, context );
 				break;
 		}
 		return fileWithMeta.file;

@@ -2,7 +2,7 @@ package com.anfema.ionclient.mediafiles
 
 import android.content.Context
 import com.anfema.ionclient.CachingStrategy
-import com.anfema.ionclient.IonConfig
+import com.anfema.ionclient.CollectionProperties
 import com.anfema.ionclient.caching.FilePaths
 import com.anfema.ionclient.caching.index.CollectionCacheIndex
 import com.anfema.ionclient.caching.index.FileCacheIndex
@@ -36,12 +36,12 @@ import java.io.IOException
  */
 internal class IonFilesWithCaching(
     sharedOkHttpClient: OkHttpClient,
-    private val config: IonConfig,
+    override val collectionProperties: CollectionProperties,
     private val context: Context,
     private val cachingStrategy: CachingStrategy,
 ) : IonFiles {
 
-    private val filesOkHttpClient = filesOkHttpClient(sharedOkHttpClient, config)
+    private val filesOkHttpClient = filesOkHttpClient(sharedOkHttpClient, collectionProperties)
 
     private val runningDownloads: PendingDownloadHandler<HttpUrl, File> = PendingDownloadHandler()
 
@@ -85,7 +85,7 @@ internal class IonFilesWithCaching(
                 // download media file
                 val downloadSingle = requestAndSaveToFile(downloadUrl, targetFile)
                     .doOnSuccess { file: File ->
-                        FileCacheIndex.save(url.toString(), file, config, null, requestTime, context)
+                        FileCacheIndex.save(url.toString(), file, collectionProperties, null, requestTime, context)
                     }
                     .subscribeOn(Schedulers.io())
                     .doFinally { runningDownloads.finished(url) }
@@ -107,13 +107,13 @@ internal class IonFilesWithCaching(
     }
 
     private fun isFileUpToDate(url: HttpUrl, checksum: String?): Boolean {
-        val fileCacheIndex = FileCacheIndex.retrieve(url.toString(), config, context) ?: return false
+        val fileCacheIndex = FileCacheIndex.retrieve(url.toString(), collectionProperties, context) ?: return false
         return if (checksum != null) {
             // check with file's checksum
             !fileCacheIndex.isOutdated(checksum)
         } else {
             // check with collection's last_modified (previewPage.last_changed would be slightly more precise)
-            val collectionCacheIndex = CollectionCacheIndex.retrieve(config, context)
+            val collectionCacheIndex = CollectionCacheIndex.retrieve(collectionProperties, context)
             val collectionLastModified = collectionCacheIndex?.lastModifiedDate
             val fileLastUpdated = fileCacheIndex.lastUpdated
             collectionLastModified != null && !collectionLastModified.isAfter(fileLastUpdated)
@@ -181,5 +181,5 @@ internal class IonFilesWithCaching(
      * @return {@param targetFile} or default file path
      */
     private fun getTargetFilePath(url: HttpUrl, targetFile: File?): File =
-        targetFile ?: FilePaths.getMediaFilePath(url.toString(), config, context)
+        targetFile ?: FilePaths.getMediaFilePath(url.toString(), collectionProperties, context)
 }

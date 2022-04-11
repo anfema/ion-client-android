@@ -3,7 +3,7 @@ package com.anfema.ionclient.caching;
 import android.content.Context;
 import android.util.LruCache;
 
-import com.anfema.ionclient.IonConfig;
+import com.anfema.ionclient.CollectionProperties;
 import com.anfema.ionclient.pages.IonPageUrls;
 import com.anfema.ionclient.pages.models.Collection;
 import com.anfema.ionclient.pages.models.Page;
@@ -12,7 +12,7 @@ import com.anfema.ionclient.utils.MemoryUtils;
 
 public class MemoryCache
 {
-	public static final int    CALC_REASONABLE_SIZE                     = -1;
+	public static final int CALC_REASONABLE_SIZE = -1;
 
 	/**
 	 * Size of LRU memory cache (for all client instances accumulated). The Unit is bytes.
@@ -39,9 +39,9 @@ public class MemoryCache
 		return ( Collection ) collectionsPagesMemoryCache.get( collectionUrl );
 	}
 
-	public static Collection getCollection( IonConfig config )
+	public static Collection getCollection( CollectionProperties collectionProperties )
 	{
-		String collectionUrl = IonPageUrls.getCollectionUrl( config );
+		String collectionUrl = IonPageUrls.getCollectionUrl( collectionProperties );
 		return getCollection( collectionUrl );
 	}
 
@@ -51,9 +51,9 @@ public class MemoryCache
 		collectionsPagesMemoryCache.put( collectionUrl, collection );
 	}
 
-	public static void saveCollection( Collection collection, IonConfig config, Context context )
+	public static void saveCollection( Collection collection, CollectionProperties collectionProperties, Context context )
 	{
-		String collectionUrl = IonPageUrls.getCollectionUrl( config );
+		String collectionUrl = IonPageUrls.getCollectionUrl( collectionProperties );
 		saveCollection( collection, collectionUrl, context );
 	}
 
@@ -66,9 +66,9 @@ public class MemoryCache
 		return ( Page ) collectionsPagesMemoryCache.get( pageUrl );
 	}
 
-	public static Page getPage( String pageIdentifier, IonConfig config )
+	public static Page getPage( String pageIdentifier, CollectionProperties collectionProperties )
 	{
-		String pageUrl = IonPageUrls.getPageUrl( config, pageIdentifier );
+		String pageUrl = IonPageUrls.getPageUrl( collectionProperties, pageIdentifier );
 		return getPage( pageUrl );
 	}
 
@@ -77,10 +77,10 @@ public class MemoryCache
 	 *
 	 * @param page page which should be saved
 	 */
-	public static void savePage( Page page, IonConfig config, Context context )
+	public static void savePage( Page page, CollectionProperties collectionProperties, Context context )
 	{
 		ensureLruCacheInitialized( context );
-		String pageUrl = IonPageUrls.getPageUrl( config, page.identifier );
+		String pageUrl = IonPageUrls.getPageUrl( collectionProperties, page.identifier );
 		collectionsPagesMemoryCache.put( pageUrl, page );
 	}
 

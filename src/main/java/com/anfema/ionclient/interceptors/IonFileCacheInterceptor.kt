@@ -2,7 +2,7 @@ package com.anfema.ionclient.interceptors
 
 import android.content.Context
 import com.anfema.ionclient.CachingStrategy
-import com.anfema.ionclient.IonConfig
+import com.anfema.ionclient.CollectionProperties
 import com.anfema.ionclient.caching.FilePaths
 import com.anfema.ionclient.caching.index.CollectionCacheIndex
 import com.anfema.ionclient.caching.index.FileCacheIndex
@@ -27,7 +27,7 @@ import java.net.HttpURLConnection.HTTP_OK
  * Does however not work for ION pages API.
  */
 internal class IonFileCacheInterceptor(
-    private val config: IonConfig,
+    private val collectionProperties: CollectionProperties,
     private val context: Context,
     private val cachingStrategy: CachingStrategy = CachingStrategy.NORMAL,
 ) : Interceptor {
@@ -40,7 +40,7 @@ internal class IonFileCacheInterceptor(
 
         val networkAvailable =
             NetworkUtils.isConnected(context) && cachingStrategy != CachingStrategy.STRICT_OFFLINE
-        val targetFile: File = FilePaths.getFilePath(url.toString(), config, context)
+        val targetFile: File = FilePaths.getFilePath(url.toString(), collectionProperties, context)
 
         // fetch file from local storage or download it?
 
@@ -65,7 +65,7 @@ internal class IonFileCacheInterceptor(
                         FileCacheIndex.save(
                             url.toString(),
                             cachedFile,
-                            config,
+                            collectionProperties,
                             null,
                             requestTime,
                             context
@@ -86,13 +86,13 @@ internal class IonFileCacheInterceptor(
     }
 
     private fun isFileUpToDate(url: HttpUrl, checksum: String?): Boolean {
-        val fileCacheIndex = FileCacheIndex.retrieve(url.toString(), config, context) ?: return false
+        val fileCacheIndex = FileCacheIndex.retrieve(url.toString(), collectionProperties, context) ?: return false
         return if (checksum != null) {
             // check with file's checksum
             !fileCacheIndex.isOutdated(checksum)
         } else {
             // check with collection's last_modified (previewPage.last_changed would be slightly more precise)
-            val collectionCacheIndex = CollectionCacheIndex.retrieve(config, context)
+            val collectionCacheIndex = CollectionCacheIndex.retrieve(collectionProperties, context)
             val collectionLastModified = collectionCacheIndex?.lastModifiedDate
             val fileLastUpdated = fileCacheIndex.lastUpdated
             collectionLastModified != null && !collectionLastModified.isAfter(fileLastUpdated)

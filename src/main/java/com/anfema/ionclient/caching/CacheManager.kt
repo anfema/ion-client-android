@@ -1,7 +1,7 @@
 package com.anfema.ionclient.caching
 
 import android.content.Context
-import com.anfema.ionclient.IonConfig
+import com.anfema.ionclient.CollectionProperties
 import com.anfema.ionclient.caching.index.CacheIndexStore
 import com.anfema.ionclient.utils.FileUtils
 import com.anfema.ionclient.utils.IonLog
@@ -32,15 +32,15 @@ object CacheManager {
     }
 
     /**
-     * clear collection defined through {@param config} entirely from cache
+     * clear collection defined through [collectionProperties] entirely from cache
      * - only specific collection data is cleared from file cache
      * - memory cache is cleared entirely
      */
     @JvmStatic
-    fun clearCollection(config: IonConfig, context: Context?) {
-        IonLog.i("Cache Clear", "Clear collection cache for " + config.collectionIdentifier)
-        CacheIndexStore.clearCollection(config, context!!)
+    fun clearCollection(collectionProperties: CollectionProperties, context: Context?) {
+        IonLog.i("Cache Clear", "Clear collection cache for " + collectionProperties.collectionIdentifier)
+        CacheIndexStore.clearCollection(collectionProperties, context!!)
         MemoryCache.clear()
-        FileUtils.deleteRecursive(FilePaths.getCollectionFolderPath(config, context))
+        FileUtils.deleteRecursive(FilePaths.getCollectionFolderPath(collectionProperties, context))
     }
 }

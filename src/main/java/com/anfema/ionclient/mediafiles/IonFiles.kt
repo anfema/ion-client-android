@@ -1,11 +1,14 @@
 package com.anfema.ionclient.mediafiles
 
+import com.anfema.ionclient.CollectionProperties
 import com.anfema.ionclient.pages.models.contents.Downloadable
 import io.reactivex.Single
 import okhttp3.HttpUrl
 import java.io.File
 
 internal interface IonFiles {
+
+    val collectionProperties: CollectionProperties
 
     fun request(content: Downloadable): Single<FileWithStatus>
 

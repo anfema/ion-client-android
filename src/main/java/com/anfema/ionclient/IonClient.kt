@@ -29,19 +29,45 @@ import okhttp3.OkHttpClient
  * Request headers like 'Authorization' must be provided via [sharedOkHttpClient].
  */
 data class IonClient @JvmOverloads constructor(
-    @JvmField
-    val config: IonConfig,
     /** must be application context */
     private val context: Context,
     @JvmField
     val sharedOkHttpClient: OkHttpClient,
     @JvmField
+    val collectionProperties: CollectionProperties,
+    /** Time after which collection is refreshed = fetched from server again */
+    @JvmField
+    val collectionRefetchIntervalInMin: Int = DEFAULT_COLLECTION_REFETCH_INTERVAL_IN_MIN,
+    /** Should the whole archive be downloaded when the collection is downloaded? */
+    @JvmField
+    val automaticArchiveDownloads: Boolean = false,
+    @JvmField
     val cachingStrategy: CachingStrategy = CachingStrategy.NORMAL,
 ) {
+    companion object {
+        const val DEFAULT_COLLECTION_REFETCH_INTERVAL_IN_MIN = 5
+    }
+
     // delegate classes
-    private val ionPages = IonPagesWithCaching(sharedOkHttpClient, config, context, cachingStrategy)
-    private val ionFiles: IonFiles = IonFilesWithCaching(sharedOkHttpClient, config, context, cachingStrategy)
-    private val ionArchive: IonArchive = IonArchiveDownloader(ionPages, ionFiles, config, context)
+    private val ionPages = IonPagesWithCaching(
+        sharedOkHttpClient = sharedOkHttpClient,
+        collectionProperties = collectionProperties,
+        collectionRefetchInMin = collectionRefetchIntervalInMin,
+        cachingStrategy = cachingStrategy,
+        context = context,
+    )
+    private val ionFiles: IonFiles = IonFilesWithCaching(
+        sharedOkHttpClient = sharedOkHttpClient,
+        collectionProperties = collectionProperties,
+        context = context,
+        cachingStrategy = cachingStrategy,
+    )
+    private val ionArchive: IonArchive = IonArchiveDownloader(
+        ionPages = ionPages,
+        ionFiles = ionFiles,
+        automaticArchiveDownloads = automaticArchiveDownloads,
+        context = context
+    )
 
     init {
         CacheCompatManager.clearCacheIfIncompatible(context)

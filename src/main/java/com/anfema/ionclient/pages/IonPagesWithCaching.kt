@@ -2,7 +2,7 @@ package com.anfema.ionclient.pages
 
 import android.content.Context
 import com.anfema.ionclient.CachingStrategy
-import com.anfema.ionclient.IonConfig
+import com.anfema.ionclient.CollectionProperties
 import com.anfema.ionclient.caching.FilePaths
 import com.anfema.ionclient.caching.MemoryCache
 import com.anfema.ionclient.caching.index.CollectionCacheIndex
@@ -39,16 +39,17 @@ import retrofit2.Response
  * A wrapper of "collections" and "pages" call of ION API.
  *
  *
- * Adds collection identifier and authorization token to request as retrieved via [IonConfig]<br></br>
+ * Adds collection identifier and authorization token to request as retrieved via [CollectionProperties]<br></br>
  *
  *
  * Uses a file and a memory cache.
  */
 internal class IonPagesWithCaching(
     sharedOkHttpClient: OkHttpClient,
-    private val config: IonConfig,
-    private val context: Context,
+    private val collectionProperties: CollectionProperties,
+    private val collectionRefetchInMin: Int,
     private val cachingStrategy: CachingStrategy,
+    private val context: Context,
 ) : IonPages {
 
     companion object {
@@ -81,15 +82,15 @@ internal class IonPagesWithCaching(
     private val ionApi: RetrofitIonPagesApi
 
     init {
-        val pagesOkHttpClient = pagesOkHttpClient(sharedOkHttpClient, config, context)
-        ionApi = retrofitIonPagesApi(pagesOkHttpClient, config.pagesBaseUrl)
+        val pagesOkHttpClient = pagesOkHttpClient(sharedOkHttpClient, collectionProperties, context)
+        ionApi = retrofitIonPagesApi(pagesOkHttpClient, collectionProperties.baseUrl)
         runningCollectionDownload = PendingDownloadHandler()
         runningPageDownloads = PendingDownloadHandler()
     }
 
     /**
-     * Retrieve collection. Strategy depends on [.cachingStrategy].
-     * Use default collection identifier as specified in [.config]
+     * Retrieve collection. Strategy depends on [cachingStrategy].
+     * Use default collection identifier as specified in [collectionProperties]
      */
     override fun fetchCollection(): Single<Collection> =
         fetchCollection(false)
@@ -98,8 +99,8 @@ internal class IonPagesWithCaching(
      * @param preferNetwork try network download as first option if set to false
      */
     override fun fetchCollection(preferNetwork: Boolean): Single<Collection> {
-        val cacheIndex = CollectionCacheIndex.retrieve(config, context)
-        val currentCacheEntry = cacheIndex != null && !cacheIndex.isOutdated(config)
+        val cacheIndex = CollectionCacheIndex.retrieve(collectionProperties, context)
+        val currentCacheEntry = cacheIndex != null && !cacheIndex.isOutdated(collectionRefetchInMin)
         val networkAvailable = NetworkUtils.isConnected(context) && cachingStrategy !== CachingStrategy.STRICT_OFFLINE
 
         return if (currentCacheEntry && !preferNetwork) {
@@ -145,12 +146,12 @@ internal class IonPagesWithCaching(
      *
      *
      * Add collection identifier and authorization token to request.<br></br>
-     * Use default collection identifier as specified in [config]
+     * Use default collection identifier as specified in [collectionProperties]
      */
     override fun fetchPage(pageIdentifier: String): Single<Page> {
-        val pageUrl = IonPageUrls.getPageUrl(config, pageIdentifier)
+        val pageUrl = IonPageUrls.getPageUrl(collectionProperties, pageIdentifier)
 
-        val pageCacheIndex = PageCacheIndex.retrieve(pageUrl, config, context)
+        val pageCacheIndex = PageCacheIndex.retrieve(pageUrl, collectionProperties, context)
 
         return if (pageCacheIndex != null) {
 
@@ -198,7 +199,7 @@ internal class IonPagesWithCaching(
 
     /**
      * A set of pages is "returned" by emitting multiple events.<br></br>
-     * Use collection identifier as specified in [config]
+     * Use collection identifier as specified in [collectionProperties]
      */
     override fun fetchPages(pagesFilter: Predicate<PagePreview>): Observable<Page> =
         fetchCollection()
@@ -210,7 +211,7 @@ internal class IonPagesWithCaching(
 
     /**
      * A set of pages is "returned" by emitting multiple events.<br></br>
-     * Use collection identifier as specified in [config]
+     * Use collection identifier as specified in [collectionProperties]
      */
     override fun fetchAllPages(): Observable<Page> =
         fetchPages(PagesFilter.ALL)
@@ -220,7 +221,7 @@ internal class IonPagesWithCaching(
         cacheIndex: CollectionCacheIndex?,
         serverCallAsBackup: Boolean,
     ): Single<Collection> {
-        val collectionUrl = IonPageUrls.getCollectionUrl(config)
+        val collectionUrl = IonPageUrls.getCollectionUrl(collectionProperties)
 
         // retrieve from memory cache
         val collection = MemoryCache.getCollection(collectionUrl)
@@ -231,7 +232,7 @@ internal class IonPagesWithCaching(
 
         // retrieve from file cache
         IonLog.i("File Cache Lookup", collectionUrl)
-        val filePath = FilePaths.getCollectionJsonPath(collectionUrl, config, context)
+        val filePath = FilePaths.getCollectionJsonPath(collectionUrl, collectionProperties, context)
         return if (!filePath.exists()) {
             Single.error(CollectionNotAvailableException())
         } else FileUtils.readTextFromFile(filePath) // deserialize collection and remember byte count
@@ -271,13 +272,16 @@ internal class IonPagesWithCaching(
     /**
      * Download collection from server.
      * Adds collection identifier and authorization token to request.<br></br>
-     * Uses default collection identifier as specified in [config]
+     * Uses default collection identifier as specified in [collectionProperties]
      */
     private fun fetchCollectionFromServer(cacheIndex: CollectionCacheIndex?): Single<Collection> {
         val lastModified = cacheIndex?.lastModified
         val requestTime = DateTimeUtils.now()
         val collectionSingle =
-            ionApi.getCollection(config.collectionIdentifier, config.locale, config.variation, lastModified)
+            ionApi.getCollection(collectionProperties.collectionIdentifier,
+                collectionProperties.locale,
+                collectionProperties.variation,
+                lastModified)
                 .flatMap { serverResponse: Response<CollectionResponse> ->
                     when {
                         serverResponse.code() == COLLECTION_NOT_MODIFIED -> {
@@ -297,7 +301,7 @@ internal class IonPagesWithCaching(
                                     collection
                                 }
                                 .doOnSuccess { collection: Collection ->
-                                    MemoryCache.saveCollection(collection, config, context)
+                                    MemoryCache.saveCollection(collection, collectionProperties, context)
                                 }
                                 .doOnSuccess { saveCollectionCacheIndex(lastModifiedReceived, requestTime) }
                                 .doOnSuccess { collection: Collection ->
@@ -311,14 +315,15 @@ internal class IonPagesWithCaching(
                     }
                 }
                 .onErrorResumeNext { throwable: Throwable? ->
-                    val collectionUrl = IonPageUrls.getCollectionUrl(config)
+                    val collectionUrl = IonPageUrls.getCollectionUrl(collectionProperties)
                     IonLog.e("Failed Request", "Network request $collectionUrl failed.")
                     Single.error(NetworkRequestException(collectionUrl, throwable))
                 }
                 .subscribeOn(Schedulers.io())
-                .doFinally { runningCollectionDownload.finished(config.collectionIdentifier) }
+                .doFinally { runningCollectionDownload.finished(collectionProperties.collectionIdentifier) }
 
-        return runningCollectionDownload.starting(config.collectionIdentifier, collectionSingle.toObservable())
+        return runningCollectionDownload.starting(collectionProperties.collectionIdentifier,
+            collectionSingle.toObservable())
             .singleOrError()
     }
     /// Get collection methods END
@@ -328,7 +333,7 @@ internal class IonPagesWithCaching(
      * @param serverCallAsBackup If reading from cache is not successful, should a server call be made?
      */
     private fun fetchPageFromCache(pageIdentifier: String, serverCallAsBackup: Boolean): Single<Page> {
-        val pageUrl = IonPageUrls.getPageUrl(config, pageIdentifier)
+        val pageUrl = IonPageUrls.getPageUrl(collectionProperties, pageIdentifier)
 
         // retrieve from memory cache
         val memPage = MemoryCache.getPage(pageUrl)
@@ -339,7 +344,7 @@ internal class IonPagesWithCaching(
 
         // retrieve from file cache
         IonLog.i("File Cache Lookup", pageUrl)
-        val filePath = FilePaths.getPageJsonPath(pageUrl, pageIdentifier, config, context)
+        val filePath = FilePaths.getPageJsonPath(pageUrl, pageIdentifier, collectionProperties, context)
         return if (!filePath.exists()) {
             handleUnsuccessfulPageCacheReading(pageIdentifier, serverCallAsBackup, pageUrl, PageNotAvailableException())
         } else FileUtils.readTextFromFile(filePath) // deserialize page and remember byte count
@@ -349,7 +354,7 @@ internal class IonPagesWithCaching(
                 page.byteCount = pagesString.byteCount()
                 page
             } // save to memory cache
-            .doOnSuccess { page: Page? -> MemoryCache.savePage(page, config, context) }
+            .doOnSuccess { page: Page? -> MemoryCache.savePage(page, collectionProperties, context) }
             .onErrorResumeNext { throwable: Throwable ->
                 handleUnsuccessfulPageCacheReading(pageIdentifier,
                     serverCallAsBackup,
@@ -376,7 +381,10 @@ internal class IonPagesWithCaching(
 
     private fun fetchPageFromServer(pageIdentifier: String): Single<Page> {
         val pageSingle =
-            ionApi.getPage(config.collectionIdentifier, pageIdentifier, config.locale, config.variation)
+            ionApi.getPage(collectionProperties.collectionIdentifier,
+                pageIdentifier,
+                collectionProperties.locale,
+                collectionProperties.variation)
                 .map { response: Response<PageResponse> ->
                     // unwrap page and remember byte count
                     if (response.isSuccessful) {
@@ -387,10 +395,10 @@ internal class IonPagesWithCaching(
                         throw HttpException(response)
                     }
                 }
-                .doOnSuccess { page: Page -> PageCacheIndex.save(page, config, context) }
-                .doOnSuccess { page: Page -> MemoryCache.savePage(page, config, context) }
+                .doOnSuccess { page: Page -> PageCacheIndex.save(page, collectionProperties, context) }
+                .doOnSuccess { page: Page -> MemoryCache.savePage(page, collectionProperties, context) }
                 .onErrorResumeNext { throwable: Throwable ->
-                    val pageUrl = IonPageUrls.getPageUrl(config, pageIdentifier)
+                    val pageUrl = IonPageUrls.getPageUrl(collectionProperties, pageIdentifier)
                     IonLog.e("Failed Request", "Network request $pageUrl failed.")
                     Single.error(NetworkRequestException(pageUrl, throwable))
                 }
@@ -403,6 +411,6 @@ internal class IonPagesWithCaching(
     /// Get page methods END
 
     private fun saveCollectionCacheIndex(lastModified: String?, lastUpdated: DateTime) {
-        CollectionCacheIndex.save(config, context, lastModified, lastUpdated)
+        CollectionCacheIndex.save(collectionProperties, context, lastModified, lastUpdated)
     }
 }
