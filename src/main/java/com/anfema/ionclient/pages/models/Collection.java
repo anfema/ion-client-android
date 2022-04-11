@@ -1,13 +1,12 @@
 package com.anfema.ionclient.pages.models;
 
-import androidx.annotation.NonNull;
-
 import com.anfema.ionclient.exceptions.PageNotInCollectionException;
 
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 
+import androidx.annotation.NonNull;
 import io.reactivex.Single;
 
 public class Collection implements SizeAware
@@ -32,12 +31,6 @@ public class Collection implements SizeAware
 	 * e.g "de_DE"
 	 */
 	public String default_locale;
-
-
-	/**
-	 * Path to sqlite database, which can be used for a locally performed full text search.
-	 */
-	public String fts_db;
 
 	/**
 	 * Zip file containing all pages and files of collection.
@@ -83,10 +76,16 @@ public class Collection implements SizeAware
 		return byteCount;
 	}
 
+	@NonNull
 	@Override
 	public String toString()
 	{
-		return "Collection [id = " + id + ", identifier = " + identifier + ", name = " + name + ", default_locale = " + default_locale
-				+ ", fts_db " + fts_db + ", archive " + archive + ", pages = " + pages + "]";
+		return "Collection ["
+				+ "id = " + id
+				+ ", identifier = " + identifier
+				+ ", name = " + name
+				+ ", default_locale = " + default_locale
+				+ ", archive " + archive + ", pages = " + pages
+				+ "]";
 	}
 }
