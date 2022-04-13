@@ -258,7 +258,7 @@ internal object ArchiveUtils {
         val filename = FilePaths.getFileName(url)
         try {
             // check URL is a collections or pages call
-            val requestInfo = IonPageUrls.analyze(url, collectionProperties)
+            val requestInfo = IonPageUrls.analyze(url, collectionProperties.baseUrl)
             pageIdentifier = requestInfo.pageIdentifier
             type = requestInfo.requestType
             targetFileTemp = FilePaths.getFilePath(url, collectionProperties, context, true)

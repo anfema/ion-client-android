@@ -32,7 +32,7 @@ internal object FilePaths {
         context: Context,
         tempFolder: Boolean,
     ): File {
-        val requestInfo = IonPageUrls.analyze(url, collectionProperties)
+        val requestInfo = IonPageUrls.analyze(url, collectionProperties.baseUrl)
 
         return when (requestInfo.requestType) {
             IonRequestType.COLLECTION -> getCollectionJsonPath(

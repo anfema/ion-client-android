@@ -4,7 +4,6 @@ import com.anfema.ionclient.CollectionProperties
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException
 import com.anfema.ionclient.utils.FileUtils.SLASH
 import okhttp3.HttpUrl.Companion.toHttpUrl
-import java.util.regex.Pattern
 
 internal object IonPageUrls {
 
@@ -26,7 +25,7 @@ internal object IonPageUrls {
 
     @JvmStatic
     @Throws(NoIonPagesRequestException::class)
-    fun analyze(url: String, collectionProperties: CollectionProperties): IonRequestInfo =
+    fun analyze(url: String, baseUrl: String): IonRequestInfo =
         when {
             isMediaRequestUrl(url) -> {
                 IonRequestInfo(IonRequestType.MEDIA, null, null, null, null)
@@ -35,42 +34,27 @@ internal object IonPageUrls {
                 IonRequestInfo(IonRequestType.ARCHIVE, null, null, null, null)
             }
             else -> {
-                // TODO use HttpUrl in this code block to simplify the destructuring of the URL
+                val httpUrl = url.toHttpUrl()
 
-                val relativeUrlPath = url.replace(collectionProperties.baseUrl, "")
-                val urlPathSegments = relativeUrlPath.split(SLASH).toTypedArray()
+                val ionSegments = let {
+                    val baseUrlSegments = baseUrl.toHttpUrl().pathSegments.filter { it.isNotEmpty() }
+                    val urlSegments = httpUrl.pathSegments
+                    urlSegments.subList(baseUrlSegments.size, urlSegments.size)
+                }
 
-                if (urlPathSegments.size !in 2..3) {
+                if (ionSegments.size !in 2..3) {
                     throw NoIonPagesRequestException(url)
                 }
 
-                val idPlusVariation =
-                    urlPathSegments[urlPathSegments.lastIndex].split(Pattern.quote("?"))
+                val pageIdentifier = ionSegments.getOrNull(2)
 
-                val locale: String
-                val variation: String
-                when (idPlusVariation.size) {
-                    2 -> {
-                        locale = urlPathSegments[0]
-                        variation = idPlusVariation[1]
-                    }
-                    1 -> {
-                        locale = urlPathSegments[0]
-                        variation = CollectionProperties.DEFAULT_VARIATION
-                    }
-                    else -> {
-                        throw NoIonPagesRequestException(url)
-                    }
-                }
-                if (urlPathSegments.size == 2) {
-                    val collectionIdentifier = idPlusVariation[0]
-                    IonRequestInfo(IonRequestType.COLLECTION, locale, variation, collectionIdentifier, null)
-                } else  // urlPathSegments.length == 3
-                {
-                    val collectionIdentifier = urlPathSegments[1]
-                    val pageIdentifier = idPlusVariation[0]
-                    IonRequestInfo(IonRequestType.PAGE, locale, variation, collectionIdentifier, pageIdentifier)
-                }
+                IonRequestInfo(
+                    requestType = if (pageIdentifier == null) IonRequestType.COLLECTION else IonRequestType.PAGE,
+                    locale = ionSegments[0],
+                    variation = httpUrl.queryParameter("variation"),
+                    collectionIdentifier = ionSegments[1],
+                    pageIdentifier = pageIdentifier
+                )
             }
         }
 
