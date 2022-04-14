@@ -161,25 +161,32 @@ internal object ArchiveUtils {
         MemoryCache.clear()
 
         // merge files from archive download into collection's cache
-        for (fileWithMeta in untaredFiles) {
+        for (untaredFile in untaredFiles) {
             try {
-                val writeSuccess = FileUtils.move(fileWithMeta.fileTemp, fileWithMeta.file, true)
+                val writeSuccess = FileUtils.move(untaredFile.fileTemp, untaredFile.file, true)
                 if (!writeSuccess) {
-                    throw IOException("File could not be moved to its final path '" + fileWithMeta.file.path + "'")
+                    throw IOException("File could not be moved to its final path '" + untaredFile.file.path + "'")
                 }
             } catch (e: FileMoveException) {
-                var entriesWithSameIdentifier = 0
-                for (meta in untaredFiles) {
-                    if (fileWithMeta.pageIdentifier != null && fileWithMeta.pageIdentifier == meta.pageIdentifier) {
-                        entriesWithSameIdentifier += 1
+
+                val entriesWithSameIdentifier = let {
+                    val request = untaredFile.request
+
+                    if (request is IonRequestType.Page) {
+                        untaredFiles.map { it.request }
+                            .filterIsInstance<IonRequestType.Page>()
+                            .count { it.pageIdentifier == request.pageIdentifier }
+                    } else {
+                        0
                     }
                 }
-                if (fileWithMeta.file.exists() && entriesWithSameIdentifier > 1) {
-                    IonLog.w("FileMoveException", "URL: " + fileWithMeta.originUrl
+
+                if (untaredFile.file.exists() && entriesWithSameIdentifier > 1) {
+                    IonLog.w("FileMoveException", "URL: " + untaredFile.originUrl
                         + ", ignore it because it was probably caused by the file being duplicated in the TAR file."
                     )
                 } else {
-                    IonLog.e("FileMoveException", "URL: " + fileWithMeta.originUrl)
+                    IonLog.e("FileMoveException", "URL: " + untaredFile.originUrl)
                     throw e
                 }
             }
@@ -252,24 +259,22 @@ internal object ArchiveUtils {
     ): FileWithMeta {
         var targetFileTemp: File?
         var targetFile: File
-        var type: IonRequestType? = null
         val url = fileInfo.url
-        var pageIdentifier: String? = null
+        var request: IonRequestType?
         val filename = FilePaths.getFileName(url)
         try {
             // check URL is a collections or pages call
-            val requestInfo = IonPageUrls.analyze(url, collectionProperties.baseUrl)
-            pageIdentifier = requestInfo.pageIdentifier
-            type = requestInfo.requestType
+            request = IonPageUrls.getRequestType(url, collectionProperties.baseUrl)
             targetFileTemp = FilePaths.getFilePath(url, collectionProperties, context, true)
             targetFile = FilePaths.getFilePath(url, collectionProperties, context, false)
         } catch (e: NoIonPagesRequestException) {
             IonLog.w(TAG, "URL $url cannot be handled properly. Is it invalid?")
             val collectionFolderTemp = FilePaths.getTempFilePath(collectionFolder)
+            request = null
             targetFileTemp = File(collectionFolderTemp, filename)
             targetFile = File(collectionFolder, filename)
         }
-        return FileWithMeta(targetFile, targetFileTemp, type, url, fileInfo, pageIdentifier)
+        return FileWithMeta(targetFile, targetFileTemp, request, url, fileInfo)
     }
 
     private fun saveCacheIndex(
@@ -280,23 +285,15 @@ internal object ArchiveUtils {
         collectionProperties: CollectionProperties,
         context: Context,
     ): File {
-        val type = fileWithMeta.type
-        if (type == null) {
-            IonLog.w(
-                TAG,
-                "It could not be determined of which kind the request " + fileWithMeta.archiveIndex.url + " is. Thus, do not create a cache index entry."
-            )
-            return fileWithMeta.file
-        }
-        when (type) {
-            IonRequestType.COLLECTION -> CollectionCacheIndex.save(
+        when (fileWithMeta.request) {
+            IonRequestType.Collection -> CollectionCacheIndex.save(
                 collectionProperties = collectionProperties,
                 context = context,
                 lastModified = lastModified,
                 lastUpdated = requestTime,
             )
-            IonRequestType.PAGE -> {
-                val pageIdentifier = fileWithMeta.pageIdentifier!!
+            is IonRequestType.Page -> {
+                val pageIdentifier = fileWithMeta.request.pageIdentifier
                 val lastChanged: DateTime? = try {
                     collection.getPageLastChanged(pageIdentifier)
                 } catch (e: PageNotInCollectionException) {
@@ -305,7 +302,7 @@ internal object ArchiveUtils {
                 }
                 PageCacheIndex.save(pageIdentifier, lastChanged!!, collectionProperties, context)
             }
-            IonRequestType.MEDIA -> FileCacheIndex.save(
+            IonRequestType.Media -> FileCacheIndex.save(
                 requestUrl = fileWithMeta.archiveIndex.url,
                 file = fileWithMeta.file,
                 collectionProperties = collectionProperties,
@@ -313,7 +310,13 @@ internal object ArchiveUtils {
                 requestTime = requestTime,
                 context = context,
             )
-            IonRequestType.ARCHIVE -> throw IllegalStateException("Archive downloads must not be cached")
+            IonRequestType.Archive -> {
+                throw IllegalStateException("Archive downloads must not be cached")
+            }
+            null -> IonLog.w(
+                TAG,
+                "It could not be determined of which kind the request " + fileWithMeta.archiveIndex.url + " is. Thus, do not create a cache index entry."
+            )
         }
         return fileWithMeta.file
     }
@@ -321,9 +324,8 @@ internal object ArchiveUtils {
     class FileWithMeta(
         val file: File,
         val fileTemp: File?,
-        val type: IonRequestType?,
+        val request: IonRequestType?,
         val originUrl: String,
         val archiveIndex: ArchiveIndex,
-        val pageIdentifier: String?,
     )
 }

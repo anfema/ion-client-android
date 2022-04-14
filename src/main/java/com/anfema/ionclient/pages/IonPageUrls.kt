@@ -11,28 +11,19 @@ internal object IonPageUrls {
     private val MEDIA_URL_INDICATORS = arrayOf("/media/", "/protected_media/")
     private const val ARCHIVE_URL_INDICATOR = ".tar"
 
-    class IonRequestInfo(
-        val requestType: IonRequestType,
-        val locale: String?,
-        val variation: String?,
-        val collectionIdentifier: String?,
-        val pageIdentifier: String?,
-    )
-
-    enum class IonRequestType {
-        COLLECTION, PAGE, MEDIA, ARCHIVE
+    sealed interface IonRequestType {
+        object Collection : IonRequestType
+        class Page(val pageIdentifier: String) : IonRequestType
+        object Media : IonRequestType
+        object Archive : IonRequestType
     }
 
     @JvmStatic
     @Throws(NoIonPagesRequestException::class)
-    fun analyze(url: String, baseUrl: String): IonRequestInfo =
+    fun getRequestType(url: String, baseUrl: String): IonRequestType =
         when {
-            isMediaRequestUrl(url) -> {
-                IonRequestInfo(IonRequestType.MEDIA, null, null, null, null)
-            }
-            isArchiveUrl(url) -> {
-                IonRequestInfo(IonRequestType.ARCHIVE, null, null, null, null)
-            }
+            isMediaRequestUrl(url) -> IonRequestType.Media
+            isArchiveUrl(url) -> IonRequestType.Archive
             else -> {
                 val httpUrl = url.toHttpUrl()
 
@@ -48,13 +39,11 @@ internal object IonPageUrls {
 
                 val pageIdentifier = ionSegments.getOrNull(2)
 
-                IonRequestInfo(
-                    requestType = if (pageIdentifier == null) IonRequestType.COLLECTION else IonRequestType.PAGE,
-                    locale = ionSegments[0],
-                    variation = httpUrl.queryParameter("variation"),
-                    collectionIdentifier = ionSegments[1],
-                    pageIdentifier = pageIdentifier
-                )
+                if (pageIdentifier == null) {
+                    IonRequestType.Collection
+                } else {
+                    IonRequestType.Page(pageIdentifier)
+                }
             }
         }
 

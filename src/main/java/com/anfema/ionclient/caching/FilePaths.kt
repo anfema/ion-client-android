@@ -31,27 +31,24 @@ internal object FilePaths {
         collectionProperties: CollectionProperties,
         context: Context,
         tempFolder: Boolean,
-    ): File {
-        val requestInfo = IonPageUrls.analyze(url, collectionProperties.baseUrl)
-
-        return when (requestInfo.requestType) {
-            IonRequestType.COLLECTION -> getCollectionJsonPath(
+    ): File =
+        when (val requestInfo = IonPageUrls.getRequestType(url, collectionProperties.baseUrl)) {
+            IonRequestType.Collection -> getCollectionJsonPath(
                 url = url,
                 collectionProperties = collectionProperties,
                 context = context,
                 tempFolder = tempFolder
             )
-            IonRequestType.PAGE -> getPageJsonPath(
+            is IonRequestType.Page -> getPageJsonPath(
                 url = url,
                 pageIdentifier = requestInfo.pageIdentifier,
                 collectionProperties = collectionProperties,
                 context = context,
                 tempFolder = tempFolder
             )
-            IonRequestType.ARCHIVE -> getArchiveFilePath(collectionProperties, context)
-            IonRequestType.MEDIA -> getMediaFilePath(url, collectionProperties, context, tempFolder)
+            IonRequestType.Archive -> getArchiveFilePath(collectionProperties, context)
+            IonRequestType.Media -> getMediaFilePath(url, collectionProperties, context, tempFolder)
         }
-    }
 
     /**
      * Find appropriate file path for collection.

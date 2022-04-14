@@ -1,11 +1,12 @@
 package com.anfema.ionclient.pages
 
 import com.anfema.ionclient.CollectionProperties
-import com.anfema.ionclient.CollectionProperties.Companion.DEFAULT_VARIATION
+import com.anfema.ionclient.pages.IonPageUrls.IonRequestType
 import com.anfema.ionclient.pages.IonPageUrls.getCollectionUrl
 import com.anfema.ionclient.pages.IonPageUrls.getPageUrl
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import kotlin.test.assertIs
 
 class IonPageUrlsTest {
 
@@ -29,58 +30,39 @@ class IonPageUrlsTest {
     )
 
     @Test
-    fun analyze_collection() {
-        val requestInfo = IonPageUrls.analyze(collectionUrl, props.baseUrl)
+    fun getRequestType_collection() {
+        val request = IonPageUrls.getRequestType(collectionUrl, props.baseUrl)
 
-        assertEquals(IonPageUrls.IonRequestType.COLLECTION, requestInfo.requestType)
-        assertEquals(collectionIdentifier, requestInfo.collectionIdentifier)
-        assertEquals(locale, requestInfo.locale)
-        assertEquals(null, requestInfo.pageIdentifier)
-        assertEquals(DEFAULT_VARIATION, requestInfo.variation)
+        assertIs<IonRequestType.Collection>(request)
     }
 
     @Test
-    fun analyze_collection_with_more_segments() {
-        val requestInfo = IonPageUrls.analyze(collectionUrlMoreSegments, baseUrlMoreSegments)
+    fun getRequestType_collection_with_more_segments() {
+        val request = IonPageUrls.getRequestType(collectionUrlMoreSegments, baseUrlMoreSegments)
 
-        assertEquals(IonPageUrls.IonRequestType.COLLECTION, requestInfo.requestType)
-        assertEquals(collectionIdentifier, requestInfo.collectionIdentifier)
-        assertEquals(locale, requestInfo.locale)
-        assertEquals(null, requestInfo.pageIdentifier)
-        assertEquals(DEFAULT_VARIATION, requestInfo.variation)
+        assertIs<IonRequestType.Collection>(request)
     }
 
     @Test
-    fun analyze_page() {
-        val requestInfo = IonPageUrls.analyze(pageUrl, props.baseUrl)
+    fun getRequestType_page() {
+        val request = IonPageUrls.getRequestType(pageUrl, props.baseUrl)
 
-        assertEquals(IonPageUrls.IonRequestType.PAGE, requestInfo.requestType)
-        assertEquals(collectionIdentifier, requestInfo.collectionIdentifier)
-        assertEquals(locale, requestInfo.locale)
-        assertEquals(pageIdentifier, requestInfo.pageIdentifier)
-        assertEquals(DEFAULT_VARIATION, requestInfo.variation)
+        assertIs<IonRequestType.Page>(request)
+        assertEquals(pageIdentifier, request.pageIdentifier)
     }
 
     @Test
-    fun analyze_archive() {
-        val requestInfo = IonPageUrls.analyze(archiveUrl, props.baseUrl)
+    fun getRequestType_archive() {
+        val request = IonPageUrls.getRequestType(archiveUrl, props.baseUrl)
 
-        assertEquals(IonPageUrls.IonRequestType.ARCHIVE, requestInfo.requestType)
-        assertEquals(null, requestInfo.collectionIdentifier)
-        assertEquals(null, requestInfo.locale)
-        assertEquals(null, requestInfo.pageIdentifier)
-        assertEquals(null, requestInfo.variation)
+        assertIs<IonRequestType.Archive>(request)
     }
 
     @Test
-    fun analyze_media() {
-        val requestInfo = IonPageUrls.analyze(mediaUrl, props.baseUrl)
+    fun getRequestType_media() {
+        val request = IonPageUrls.getRequestType(mediaUrl, props.baseUrl)
 
-        assertEquals(IonPageUrls.IonRequestType.MEDIA, requestInfo.requestType)
-        assertEquals(null, requestInfo.collectionIdentifier)
-        assertEquals(null, requestInfo.locale)
-        assertEquals(null, requestInfo.pageIdentifier)
-        assertEquals(null, requestInfo.variation)
+        assertIs<IonRequestType.Media>(request)
     }
 
     @Test
