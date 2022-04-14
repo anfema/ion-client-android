@@ -61,7 +61,7 @@ internal object ArchiveUtils {
         }
             .flatMapObservable { source: List<FileWithMeta>? -> Observable.fromIterable(source) }
             // write cache index entries
-            .map { fileWithType: FileWithMeta ->
+            .doOnNext { fileWithType: FileWithMeta ->
                 saveCacheIndex(
                     fileWithMeta = fileWithType,
                     collection = collection,
@@ -284,7 +284,7 @@ internal object ArchiveUtils {
         requestTime: DateTime,
         collectionProperties: CollectionProperties,
         context: Context,
-    ): File {
+    ) {
         when (fileWithMeta.request) {
             IonRequestType.Collection -> CollectionCacheIndex.save(
                 collectionProperties = collectionProperties,
@@ -318,7 +318,6 @@ internal object ArchiveUtils {
                 "It could not be determined of which kind the request " + fileWithMeta.archiveIndex.url + " is. Thus, do not create a cache index entry."
             )
         }
-        return fileWithMeta.file
     }
 
     class FileWithMeta(
