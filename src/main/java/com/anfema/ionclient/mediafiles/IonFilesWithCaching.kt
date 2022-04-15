@@ -56,6 +56,8 @@ internal class IonFilesWithCaching(
         targetFile: File?,
     ): Single<FileWithStatus> {
 
+        // TODO Use IonFileCacheInterceptor and remove duplicate logic here
+        
         val networkAvailable =
             NetworkUtils.isConnected(context) && cachingStrategy != CachingStrategy.STRICT_OFFLINE
 
