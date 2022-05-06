@@ -21,36 +21,26 @@ TBD: Make ION client available as a dependency.
 
 ## Usage
 
-The recommended way to access the ION client is to create an adapter class (e.g. "Ion.java") to obtain an instance of IonClient with a concise syntax. The adapter class takes responsibility for creating an instance of IonConfig.
+The main entry point is the class `IonClient`. Create one or multiple instance of `IonClient` (the latter can be done by
+using the `copy` constructor on an already created instance). Try to re-use/share the `OkHttpClient` instance to use a
+common thread pool for network calls.
 
-Here is a simple example:
+`IonClient` requires an instance of `CollectionProperties`, which contains the essential configuration data.
 
-- Ion.java
-```
-public class Ion
-{
-	public static IonClient client( Context context )
-	{
-		IonConfig ionConfig = new IonConfig(context.getString(R.string.base_url),
-            context.getString(R.string.collection_identifier),
-            context.getString(R.string.locale),
-            BasicAuth.getAuthHeaderValue(context.getString(R.string.username), context.getString(R.string.password)),
-            false,
-            false);
-        return IonClient.getInstance( ionConfig, context );
-	}
-```
-- resource XML file
-```
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="base_url">https://example.com/client/v1/</string>
-    <string name="collection_identifier">my_example_collection</string>
-    <string name="locale">en_US</string>
-    <string name="variation">default</string>
-    <string name="username">my_username_</string>
-    <string name="password">my_password_</string>
-</resources>
-```
+## Migration guide
 
- The example is using a single collection, locale, and variation. Automatic archive and FTS database downloads are disabled. For authentication Basic Auth is used.
+### v2 -> v3
+
+`IonClient.loadImage()` was removed. This call used `Picasso` under the hood. Replace these calls with an image loading
+library of your choice (e.g. `Coil` or `Glide`) and configure that library by setting a custom `OkHttpClient` instance, 
+which is best obtained by calling `OkHttpClient.withIonFileCache()`.
+
+### v3 -> v4
+
+- Replace `BasicAuth.getAuthHeaderValue(username, password)` with `Credentials.basic(username, password)`
+- `IonClient.getInstance()` was removed, use the constructor. If multiple instances are created (which is the case for Bayern International) you might want to remember the different instances in your app.
+- Log level ist set via `IonLog.logLevel` (before: `IonConfig.logLevel`)
+- `IonConfig`: `authorization()`, `additionalHeaders()`, and `networkTimeout()` were removed.
+   - Headers (incl. Authorization Header) must be defined in the `OkHttpClient` instance passed to the `IonClient` constructor.
+   - There are okhttp helper classes in the androidkit (module: jvm-core)
+- `IonConfig` renamed to `CollectionProperties`
