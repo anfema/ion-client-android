@@ -4,12 +4,15 @@
 
 ### Integration
 
-1. Add this as a submodule to your Git repository with local path 'ionclient'. Folder 'ionclient' must be in the same directory as your app module. (If your code is not in a Git repository clone this repository into folder 'ionclient'.)
+1. Add this as a submodule to your Git repository with local path 'ionclient'. Folder 'ionclient' must be in the same
+   directory as your app module. (If your code is not in a Git repository clone this repository into folder '
+   ionclient'.)
    Carefully select a branch:
     - develop: Contains the latest version of ION
     - develop-old-ion-structure: Older version before breaking API changes, might contain some recent bugfixes
 1. In settings.gradle: `include ':ionclient'`
-1. In build.gradle of your app module add module dependency 
+1. In build.gradle of your app module add module dependency
+
 ```
 implementation project(':ionclient')
 ``` 
