@@ -1,8 +1,8 @@
 package com.anfema.ionclient.caching.index
 
 import android.content.Context
-import com.anfema.ionclient.IonConfig
-import com.anfema.ionclient.pages.IonPageUrls
+import com.anfema.ionclient.CollectionProperties
+import com.anfema.ionclient.pages.IonPageUrls.getPageUrl
 import com.anfema.ionclient.pages.models.Page
 import org.joda.time.DateTime
 
@@ -19,19 +19,28 @@ class PageCacheIndex(
     companion object {
 
         @JvmStatic
-        fun retrieve(requestUrl: String, config: IonConfig, context: Context): PageCacheIndex? =
-            CacheIndexStore.retrieve(requestUrl, config, context)
+        fun retrieve(
+            requestUrl: String,
+            collectionProperties: CollectionProperties,
+            context: Context,
+        ): PageCacheIndex? =
+            CacheIndexStore.retrieve(requestUrl, collectionProperties, context)
 
         @JvmStatic
-        fun save(page: Page, config: IonConfig, context: Context) {
-            save(page.identifier, page.last_changed, config, context)
+        fun save(page: Page, collectionProperties: CollectionProperties, context: Context) {
+            save(page.identifier, page.last_changed, collectionProperties, context)
         }
 
         @JvmStatic
-        fun save(pageIdentifier: String?, pageLastChanged: DateTime, config: IonConfig, context: Context) {
-            val url = IonPageUrls.getPageUrl(config, pageIdentifier)
+        fun save(
+            pageIdentifier: String,
+            pageLastChanged: DateTime,
+            collectionProperties: CollectionProperties,
+            context: Context,
+        ) {
+            val url = collectionProperties.getPageUrl(pageIdentifier)
             val cacheIndex = PageCacheIndex(pageLastChanged)
-            CacheIndexStore.save(url, cacheIndex, config, context)
+            CacheIndexStore.save(url, cacheIndex, collectionProperties, context)
         }
     }
 }

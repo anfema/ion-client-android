@@ -1,7 +1,7 @@
 package com.anfema.ionclient.interceptors
 
 import android.content.Context
-import com.anfema.ionclient.IonConfig
+import com.anfema.ionclient.CollectionProperties
 import com.anfema.ionclient.caching.FilePaths
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException
 import com.anfema.ionclient.utils.FileUtils
@@ -17,7 +17,7 @@ import java.io.IOException
  * That's bad coherence/encapsulation.
  */
 class WriteIonCacheInterceptor(
-    private val config: IonConfig,
+    private val collectionProperties: CollectionProperties,
     private val context: Context,
 ) : Interceptor {
 
@@ -34,7 +34,7 @@ class WriteIonCacheInterceptor(
             val responseBody = response.peekBody(Long.MAX_VALUE)
 
             try {
-                val filePath = FilePaths.getFilePath(url.toString(), config, context)
+                val filePath = FilePaths.getFilePath(url.toString(), collectionProperties, context)
                 FileUtils.writeToFile(responseBody.byteStream(), filePath)
             } catch (e: NoIonPagesRequestException) {
                 IonLog.ex(e)

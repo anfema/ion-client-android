@@ -14,7 +14,7 @@ import java.lang.reflect.Type
 /**
  * Hook into deserialization of [Collection] to sort page previews by position.
  */
-class CollectionDeserializer : JsonDeserializer<Collection> {
+internal class CollectionDeserializer : JsonDeserializer<Collection> {
 
     companion object {
         private val gson = plainInstance.newBuilder()

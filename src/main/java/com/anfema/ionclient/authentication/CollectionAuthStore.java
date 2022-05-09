@@ -7,6 +7,8 @@ import android.content.SharedPreferences.Editor;
 import java.util.HashMap;
 import java.util.Map;
 
+import okhttp3.Credentials;
+
 /**
  * This is a useful helper for apps, that use more than one collection with each one requiring its own authorization.
  */
@@ -67,7 +69,7 @@ public class CollectionAuthStore
 	 */
 	public static void set( String collectionIdentifier, String username, String password, Context context )
 	{
-		set( collectionIdentifier, BasicAuth.getAuthHeaderValue( username, password ), context );
+		set( collectionIdentifier, Credentials.basic( username, password ), context );
 	}
 
 	private static SharedPreferences getPrefs( Context context )

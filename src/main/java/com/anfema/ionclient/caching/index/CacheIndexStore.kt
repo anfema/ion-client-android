@@ -3,7 +3,7 @@ package com.anfema.ionclient.caching.index
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import com.anfema.ionclient.IonConfig
+import com.anfema.ionclient.CollectionProperties
 import com.anfema.ionclient.caching.FilePaths
 import com.anfema.ionclient.exceptions.NoIonPagesRequestException
 import com.anfema.ionclient.serialization.GsonHolder
@@ -20,12 +20,12 @@ import com.anfema.utils.byteCount
 object CacheIndexStore {
     internal inline fun <reified T : CacheIndex> retrieve(
         requestUrl: String,
-        config: IonConfig,
+        collectionProperties: CollectionProperties,
         context: Context,
     ): T? {
         // check shared preferences
         IonLog.d("Index Lookup", "$requestUrl from shared preferences")
-        val prefs = getPrefs(config, context)
+        val prefs = getPrefs(collectionProperties, context)
         val json = prefs.getString(requestUrl, null)
         val index = GsonHolder.defaultInstance.fromJson(json, T::class.java)
         if (index != null) {
@@ -35,17 +35,22 @@ object CacheIndexStore {
         return index
     }
 
-    fun <T : CacheIndex> save(requestUrl: String, cacheIndex: T, config: IonConfig, context: Context) {
+    fun <T : CacheIndex> save(
+        requestUrl: String,
+        cacheIndex: T,
+        collectionProperties: CollectionProperties,
+        context: Context,
+    ) {
         IonLog.d("Cache Index", "saving index for $requestUrl")
         try {
-            val file = FilePaths.getFilePath(requestUrl, config, context)
+            val file = FilePaths.getFilePath(requestUrl, collectionProperties, context)
             if (file.exists() && file.length() > 0) {
                 // make cache index aware of its size by storing byte count to its field
                 val indexSerialized = GsonHolder.defaultInstance.toJson(cacheIndex)
                 cacheIndex.byteCount = indexSerialized.byteCount().toInt()
 
                 // save to shared preferences
-                getPrefs(config, context)
+                getPrefs(collectionProperties, context)
                     .edit()
                     .putString(requestUrl, indexSerialized)
                     .apply()
@@ -53,7 +58,7 @@ object CacheIndexStore {
                 // register shared prefs instance
                 getMetaPrefs(context)
                     .edit()
-                    .putBoolean(getPrefKey(config), true)
+                    .putBoolean(getPrefKey(collectionProperties), true)
                     .apply()
             } else {
                 IonLog.e("Cache Index",
@@ -66,25 +71,25 @@ object CacheIndexStore {
     }
 
     @JvmStatic
-    fun delete(requestUrl: String, config: IonConfig, context: Context) {
+    fun delete(requestUrl: String, collectionProperties: CollectionProperties, context: Context) {
         IonLog.d("Cache Index", "deleting index for $requestUrl")
 
         // delete from shared preferences
-        getPrefs(config, context)
+        getPrefs(collectionProperties, context)
             .edit()
             .remove(requestUrl)
             .apply()
     }
 
     /**
-     * @param config to determine collection
+     * @param collectionProperties to determine collection
      * @return all index entry URLs of collection
      */
     @JvmStatic
-    fun retrieveAllUrls(config: IonConfig, context: Context): Set<String> {
+    fun retrieveAllUrls(collectionProperties: CollectionProperties, context: Context): Set<String> {
         // check shared preferences
-        IonLog.d("Cache Index", "Retrieve all index entries of collection " + config.collectionIdentifier)
-        val prefs = getPrefs(config, context)
+        IonLog.d("Cache Index", "Retrieve all index entries of collection " + collectionProperties.collectionIdentifier)
+        val prefs = getPrefs(collectionProperties, context)
         val urls: MutableSet<String> = HashSet()
         for ((key) in prefs.all) {
             urls.add(key)
@@ -93,18 +98,18 @@ object CacheIndexStore {
     }
 
     /**
-     * clear entire cache index in memory and file cache for a specific collection defined through {@param config}
+     * clear entire cache index in memory and file cache for a specific collection defined through [collectionProperties]
      */
     @JvmStatic
     @SuppressLint("CommitPrefEdits")
-    fun clearCollection(config: IonConfig, context: Context) {
+    fun clearCollection(collectionProperties: CollectionProperties, context: Context) {
         // clear shared preferences - shared prefs file is still going to exist
-        getPrefs(config, context).edit().clear().apply()
+        getPrefs(collectionProperties, context).edit().clear().apply()
 
         // unregister shared prefs instance
         getMetaPrefs(context)
             .edit()
-            .remove(getPrefKey(config))
+            .remove(getPrefKey(collectionProperties))
             .apply()
     }
 
@@ -133,11 +138,11 @@ object CacheIndexStore {
         metaPrefs.edit().clear().apply()
     }
 
-    private fun getPrefs(config: IonConfig, context: Context): SharedPreferences =
-        context.getSharedPreferences(getPrefKey(config), 0)
+    private fun getPrefs(collectionProperties: CollectionProperties, context: Context): SharedPreferences =
+        context.getSharedPreferences(getPrefKey(collectionProperties), 0)
 
-    private fun getPrefKey(config: IonConfig): String =
-        "cache_index_" + config.collectionIdentifier + "_" + config.locale + "_" + config.variation
+    private fun getPrefKey(collectionProperties: CollectionProperties): String =
+        "cache_index_" + collectionProperties.collectionIdentifier + "_" + collectionProperties.locale + "_" + collectionProperties.variation
 
     private fun getMetaPrefs(context: Context): SharedPreferences =
         context.getSharedPreferences("cache_index_meta", 0)

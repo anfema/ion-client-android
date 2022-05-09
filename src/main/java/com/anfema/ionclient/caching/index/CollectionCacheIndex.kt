@@ -1,9 +1,8 @@
 package com.anfema.ionclient.caching.index
 
 import android.content.Context
-import com.anfema.ionclient.IonConfig
-import com.anfema.ionclient.caching.index.CollectionCacheIndex
-import com.anfema.ionclient.pages.IonPageUrls
+import com.anfema.ionclient.CollectionProperties
+import com.anfema.ionclient.pages.IonPageUrls.getCollectionUrl
 import com.anfema.ionclient.utils.DateTimeUtils
 import com.anfema.ionclient.utils.IonLog
 import org.joda.time.DateTime
@@ -19,8 +18,8 @@ class CollectionCacheIndex(
     val lastModified: String?,
 ) : CacheIndex() {
 
-    fun isOutdated(config: IonConfig): Boolean =
-        lastUpdated.isBefore(DateTimeUtils.now().minusMinutes(config.minutesUntilCollectionRefetch))
+    fun isOutdated(collectionRefetchIntervalInMin: Int): Boolean =
+        lastUpdated.isBefore(DateTimeUtils.now().minusMinutes(collectionRefetchIntervalInMin))
 
     val lastModifiedDate: DateTime?
         get() {
@@ -43,19 +42,24 @@ class CollectionCacheIndex(
     companion object {
 
         @JvmStatic
-        fun retrieve(config: IonConfig, context: Context): CollectionCacheIndex? {
-            val requestUrl = IonPageUrls.getCollectionUrl(config)
-            return CacheIndexStore.retrieve(requestUrl, config, context)
+        fun retrieve(collectionProperties: CollectionProperties, context: Context): CollectionCacheIndex? {
+            val requestUrl = collectionProperties.getCollectionUrl()
+            return CacheIndexStore.retrieve(requestUrl, collectionProperties, context)
         }
 
         @JvmStatic
-        fun save(config: IonConfig, context: Context, lastModified: String?, lastUpdated: DateTime?) {
-            val url = IonPageUrls.getCollectionUrl(config)
+        fun save(
+            collectionProperties: CollectionProperties,
+            context: Context,
+            lastModified: String?,
+            lastUpdated: DateTime?,
+        ) {
+            val url = collectionProperties.getCollectionUrl()
             val cacheIndex = CollectionCacheIndex(
                 lastUpdated ?: DateTimeUtils.now(),
                 lastModified,
             )
-            CacheIndexStore.save(url, cacheIndex, config, context)
+            CacheIndexStore.save(url, cacheIndex, collectionProperties, context)
         }
     }
 }

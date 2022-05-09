@@ -1,7 +1,7 @@
 package com.anfema.ionclient.caching.index
 
 import android.content.Context
-import com.anfema.ionclient.IonConfig
+import com.anfema.ionclient.CollectionProperties
 import com.anfema.ionclient.utils.DateTimeUtils
 import com.anfema.ionclient.utils.IonLog
 import com.anfema.utils.HashUtils
@@ -25,8 +25,12 @@ data class FileCacheIndex(
     companion object {
 
         @JvmStatic
-        fun retrieve(requestUrl: String, config: IonConfig, context: Context): FileCacheIndex? =
-            CacheIndexStore.retrieve(requestUrl, config, context)
+        fun retrieve(
+            requestUrl: String,
+            collectionProperties: CollectionProperties,
+            context: Context,
+        ): FileCacheIndex? =
+            CacheIndexStore.retrieve(requestUrl, collectionProperties, context)
 
         /**
          * @param checksum can be null
@@ -35,7 +39,7 @@ data class FileCacheIndex(
         fun save(
             requestUrl: String,
             file: File?,
-            config: IonConfig,
+            collectionProperties: CollectionProperties,
             checksum: String?,
             requestTime: DateTime?,
             context: Context,
@@ -49,7 +53,7 @@ data class FileCacheIndex(
                 checksum ?: "sha256:" + HashUtils.getSha256(file),
                 requestTime ?: DateTimeUtils.now(),
             )
-            CacheIndexStore.save(requestUrl, cacheIndex, config, context)
+            CacheIndexStore.save(requestUrl, cacheIndex, collectionProperties, context)
         }
     }
 }
