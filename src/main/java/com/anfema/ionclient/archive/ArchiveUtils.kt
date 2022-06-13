@@ -294,13 +294,12 @@ internal object ArchiveUtils {
             )
             is IonRequestType.Page -> {
                 val pageIdentifier = fileWithMeta.request.pageIdentifier
-                val lastChanged: DateTime? = try {
-                    collection.getPageLastChanged(pageIdentifier)
+                try {
+                    val lastChanged: DateTime = collection.getPageLastChanged(pageIdentifier)
+                    PageCacheIndex.save(pageIdentifier, lastChanged, collectionProperties, context)
                 } catch (e: PageNotInCollectionException) {
                     IonLog.ex(TAG, e)
-                    null
                 }
-                PageCacheIndex.save(pageIdentifier, lastChanged!!, collectionProperties, context)
             }
             IonRequestType.Media -> FileCacheIndex.save(
                 requestUrl = fileWithMeta.archiveIndex.url,
