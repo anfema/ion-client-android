@@ -137,25 +137,25 @@ internal class IonFilesWithCaching(
     /**
      * Perform get request
      */
-    private fun performRequest(url: HttpUrl): Single<Response> {
+    private fun performRequest(url: HttpUrl): Single<Response> =
+        Single.defer {
+            val request: Request = Request.Builder().url(url).build()
 
-        val request: Request = Request.Builder().url(url).build()
+            try {
+                val response = filesOkHttpClient.newCall(request).execute()
 
-        return try {
-            val response = filesOkHttpClient.newCall(request).execute()
-
-            if (!response.isSuccessful) {
-                val responseBody = response.body
-                responseBody?.close()
-                return Single.error(HttpException(response.code, response.message))
+                if (!response.isSuccessful) {
+                    val responseBody = response.body
+                    responseBody?.close()
+                    Single.error(HttpException(response.code, response.message))
+                } else {
+                    // use custom target file path
+                    Single.just(response)
+                }
+            } catch (e: IOException) {
+                Single.error(e)
             }
-
-            // use custom target file path
-            Single.just(response)
-        } catch (e: IOException) {
-            Single.error(e)
-        }
-    }
+        }.subscribeOn(Schedulers.io())
 
     /**
      * write from input stream to file
