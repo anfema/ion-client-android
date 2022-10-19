@@ -34,6 +34,10 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.util.LinkedList
 
+// set to true in production
+// set to false in debug builds to inspect the TAR file
+private const val DELETE_ARCHIVE_FILE = true
+
 internal object ArchiveUtils {
     private const val TAG = "ArchiveUtils"
 
@@ -225,8 +229,10 @@ internal object ArchiveUtils {
         // add archive to file cache again - not the actual file, but the last updated information is required for subsequent archive downloads
         if (archiveFile.exists() && collection.archive != null) {
             FileCacheIndex.save(collection.archive, archiveFile, collectionProperties, null, requestTime, context)
-            // delete archiveFile - yes that introduces an inconsistency, but it saves storage space on the other side
-            archiveFile.delete()
+            if (DELETE_ARCHIVE_FILE) {
+                // delete archiveFile - yes that introduces an inconsistency, but it saves storage space on the other side
+                archiveFile.delete()
+            }
         } else {
             val archiveFilePath = archiveFile.path
             IonLog.e(
