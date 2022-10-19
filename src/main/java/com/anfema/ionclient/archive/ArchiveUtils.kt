@@ -237,6 +237,8 @@ internal object ArchiveUtils {
             if (DELETE_ARCHIVE_FILE) {
                 // delete archiveFile - yes that introduces an inconsistency, but it saves storage space on the other side
                 archiveFile.delete()
+            } else {
+                IonLog.i(TAG, "Archive file path: ${archiveFile.path}")
             }
         } else {
             val archiveFilePath = archiveFile.path
