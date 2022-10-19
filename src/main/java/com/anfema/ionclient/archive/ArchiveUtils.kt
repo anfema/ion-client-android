@@ -131,8 +131,12 @@ internal object ArchiveUtils {
                                 // get index.json
                                 val inputStreamReader = InputStreamReader(debInputStream, "UTF-8")
                                 archiveIndexes =
-                                    listOf(*GsonHolder.defaultInstance.fromJson(inputStreamReader,
-                                        Array<ArchiveIndex>::class.java))
+                                    listOf(
+                                        *GsonHolder.defaultInstance.fromJson(
+                                            inputStreamReader,
+                                            Array<ArchiveIndex>::class.java
+                                        )
+                                    )
                                 indexHasBeenRead = true
                                 continue
                             }
@@ -186,8 +190,9 @@ internal object ArchiveUtils {
                 }
 
                 if (untaredFile.file.exists() && entriesWithSameIdentifier > 1) {
-                    IonLog.w("FileMoveException", "URL: " + untaredFile.originUrl
-                        + ", ignore it because it was probably caused by the file being duplicated in the TAR file."
+                    IonLog.w(
+                        "FileMoveException", "URL: " + untaredFile.originUrl
+                            + ", ignore it because it was probably caused by the file being duplicated in the TAR file."
                     )
                 } else {
                     IonLog.e("FileMoveException", "URL: " + untaredFile.originUrl)
